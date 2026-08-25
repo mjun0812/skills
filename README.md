@@ -156,3 +156,23 @@ apm install mjun0812/skills#v1.0.0
 # Update
 apm update
 ```
+
+### Removed skills
+
+How a skill removed from this repo is handled depends on the install method.
+
+| Method                     | Behavior                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| Claude Code / Codex plugin | Removed automatically on update (the whole bundle is replaced)                    |
+| apm                        | Removed automatically on update (cleaned up as stale files based on the lockfile) |
+| npx skills / gh skill      | Local copies remain; delete them manually                                         |
+
+## Release
+
+Releases are cut with the mise task:
+
+```bash
+mise run release 0.2.0
+```
+
+It syncs the version into `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json`, commits, tags `v0.2.0`, and pushes. The tag push triggers [release.yml](.github/workflows/release.yml), which verifies that the tag matches the manifest versions and creates a GitHub Release with auto-generated notes.

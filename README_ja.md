@@ -156,3 +156,23 @@ apm install mjun0812/skills#v1.0.0
 # Update
 apm update
 ```
+
+### 廃止されたskillの扱い
+
+このrepoから削除されたskillの扱いは、install経路によって異なる。
+
+| 経路                       | 挙動                                                                |
+| -------------------------- | ------------------------------------------------------------------- |
+| Claude Code / Codex plugin | 更新時に自動で削除される (バンドル全体が置き換わるため)             |
+| apm                        | 更新時に自動で削除される (lockfileを基にstale fileとして掃除される) |
+| npx skills / gh skill      | ローカルコピーが残るため、手動で削除する                            |
+
+## Release
+
+リリースはmise taskで行う。
+
+```bash
+mise run release 0.2.0
+```
+
+`.claude-plugin/plugin.json` と `.codex-plugin/plugin.json` へversionをsyncしてcommitし、`v0.2.0` タグを作成してpushする。tagのpushで [release.yml](.github/workflows/release.yml) が起動し、tagとmanifestのversion一致を検証した上でGitHub Releaseを自動作成する。
