@@ -1,0 +1,13 @@
+{
+  "name": "mjun",
+  "owner": { "name": "Junya Morioka" },
+  "description": "mjun's personal agent skills marketplace.",
+  "plugins": [
+    {
+      "name": "mjun-skills",
+      "source": "./",
+      "description": "mjun's personal agent skills marketplace.",
+      "category": "productivity"
+    }
+  ]
+}

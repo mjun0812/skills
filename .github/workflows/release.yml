@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify tag matches plugin manifest versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for manifest in .claude-plugin/plugin.json .codex-plugin/plugin.json; do
+            version=$(python -c "import json; print(json.load(open('$manifest'))['version'])")
+            if [ "$tag" != "$version" ]; then
+              echo "::error file=$manifest::tag v$tag does not match $manifest version $version"
+              exit 1
+            fi
+          done
+
+      - name: Create GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

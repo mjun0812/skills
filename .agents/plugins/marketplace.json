@@ -1,0 +1,4 @@
+{
+  "name": "mjun",
+  "plugins": [{ "name": "mjun-skills", "source": "./" }]
+}

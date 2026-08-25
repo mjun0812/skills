@@ -1,0 +1,11 @@
+[tools]
+"npm:oxfmt" = "latest"
+"pipx:ruff" = "latest"
+prek = "latest"
+python = "3.14"
+shellcheck = "latest"
+shfmt = "latest"
+
+[tasks.release]
+description = "Sync the version into plugin manifests, commit, tag, and push"
+run = "bash scripts/release.sh"

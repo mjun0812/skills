@@ -1,0 +1,46 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-layout
+        name: check skills layout
+        entry: python scripts/check_layout.py
+        language: system
+        pass_filenames: false
+        files: ^skills/
+
+      - id: check-plugin-manifest
+        name: check plugin manifest
+        entry: python scripts/check_plugin_manifest.py
+        language: system
+        pass_filenames: false
+        files: ^(skills/|\.claude-plugin/|\.codex-plugin/)
+
+      - id: oxfmt
+        name: format with oxfmt
+        entry: oxfmt
+        language: system
+        types_or: [markdown, json]
+
+      - id: ruff-check
+        name: lint with ruff
+        entry: ruff check --fix
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: format with ruff
+        entry: ruff format
+        language: system
+        types: [python]
+
+      - id: shellcheck
+        name: lint with shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+
+      - id: shfmt
+        name: format with shfmt
+        entry: shfmt -i 4 -sr -w
+        language: system
+        types: [shell]
