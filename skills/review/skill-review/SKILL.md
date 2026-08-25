@@ -5,12 +5,7 @@ description: >-
   評価のみ行い、ファイルの編集はしない。
   ユーザーが「このskillを評価して」「skillをレビューして」「SKILL.mdの品質を見て」のように依頼したら必ずこのSkillを使うこと。
   skillの新規作成や編集そのものを依頼された場合は使わない。
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash(find *)
-  - Bash(rg *)
+allowed-tools: Read, Glob, Grep, Bash(find *), Bash(rg *)
   - Bash(ls *)
   - Bash(wc *)
 ---
