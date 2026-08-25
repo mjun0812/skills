@@ -6,13 +6,7 @@
     "name": "Junya Morioka"
   },
   "repository": "https://github.com/mjun0812/skills",
-  "keywords": [
-    "skills",
-    "github",
-    "git",
-    "review",
-    "writing"
-  ],
+  "keywords": ["skills", "github", "git", "review", "writing"],
   "skills": [
     "./skills/delegation/claude",
     "./skills/delegation/codex",
