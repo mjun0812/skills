@@ -6,6 +6,7 @@
     "name": "Junya Morioka"
   },
   "repository": "https://github.com/mjun0812/skills",
+  "license": "MIT",
   "keywords": ["skills", "github", "git", "review", "writing"],
   "skills": [
     "./skills/delegation/claude",

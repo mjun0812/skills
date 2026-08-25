@@ -4,5 +4,6 @@
   "description": "mjun's agent skills",
   "author": { "name": "Junya Morioka" },
   "repository": "https://github.com/mjun0812/skills",
+  "license": "MIT",
   "skills": "./skills"
 }
