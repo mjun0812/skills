@@ -70,17 +70,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 require() {
-    local name="$1" value="$2" flag="$3"
+    local value="$1" flag="$2"
     if [[ -z $value ]]; then
         echo "Missing required argument: $flag" >&2
         exit 2
     fi
 }
-require REPO "$REPO" --repo
-require PR "$PR" --pr
-require COMMIT "$COMMIT" --commit
-require EVENT "$EVENT" --event
-require BODY_FILE "$BODY_FILE" --body-file
+require "$REPO" --repo
+require "$PR" --pr
+require "$COMMIT" --commit
+require "$EVENT" --event
+require "$BODY_FILE" --body-file
 
 case "$EVENT" in
 APPROVE | REQUEST_CHANGES | COMMENT) ;;
@@ -110,7 +110,7 @@ trap 'rm -f "$PAYLOAD_FILE" "$PR_FILES_FILE" "$SPLIT_FILE" "$VALID_COMMENTS_FILE
 # (path, line, side) is part of the PR diff. Invalid entries are omitted from
 # inline comments without changing the review body.
 if [[ -n $COMMENTS_FILE ]]; then
-    gh api "repos/${REPO}/pulls/${PR}/files" --paginate >"$PR_FILES_FILE"
+    gh api "repos/${REPO}/pulls/${PR}/files" --paginate > "$PR_FILES_FILE"
 
     jq --slurpfile comments "$COMMENTS_FILE" '
     def parse_patch:
@@ -152,9 +152,9 @@ if [[ -n $COMMENTS_FILE ]]; then
         valid:   [ $annotated[] | . as $c | select($valid_set | index($c._key) != null) | del(._key) ],
         invalid: [ $annotated[] | . as $c | select($valid_set | index($c._key) == null) | del(._key) ]
       }
-  ' "$PR_FILES_FILE" >"$SPLIT_FILE"
+  ' "$PR_FILES_FILE" > "$SPLIT_FILE"
 
-    jq '.valid' "$SPLIT_FILE" >"$VALID_COMMENTS_FILE"
+    jq '.valid' "$SPLIT_FILE" > "$VALID_COMMENTS_FILE"
 
     INVALID_COUNT=$(jq '.invalid | length' "$SPLIT_FILE")
     VALID_COUNT=$(jq 'length' "$VALID_COMMENTS_FILE")
@@ -179,14 +179,14 @@ if [[ -n $COMMENTS_FILE ]]; then
         --arg event "$EVENT" \
         --slurpfile comments "$COMMENTS_FILE" \
         '{body: $body, commit_id: $commit_id, event: $event, comments: $comments[0]}' \
-        >"$PAYLOAD_FILE"
+        > "$PAYLOAD_FILE"
 else
     jq -n \
         --rawfile body "$BODY_FILE" \
         --arg commit_id "$COMMIT" \
         --arg event "$EVENT" \
         '{body: $body, commit_id: $commit_id, event: $event}' \
-        >"$PAYLOAD_FILE"
+        > "$PAYLOAD_FILE"
 fi
 
 RESPONSE=$(gh api -X POST \

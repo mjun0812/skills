@@ -42,7 +42,7 @@ for thread_id in "${THREAD_IDS[@]}"; do
             thread { id isResolved }
           }
         }' \
-        -f threadId="$thread_id" >/dev/null
+        -f threadId="$thread_id" > /dev/null
     RESOLVED_COUNT=$((RESOLVED_COUNT + 1))
 done
 

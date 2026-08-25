@@ -59,7 +59,7 @@ fi
 PAYLOAD_FILE=$(mktemp)
 trap 'rm -f "$PAYLOAD_FILE"' EXIT
 
-jq -n --rawfile body "$BODY_FILE" '{body: $body}' >"$PAYLOAD_FILE"
+jq -n --rawfile body "$BODY_FILE" '{body: $body}' > "$PAYLOAD_FILE"
 
 ENDPOINT="repos/${REPO}/issues/${PR}/comments"
 RESPONSE=$(gh api -X POST "$ENDPOINT" --input "$PAYLOAD_FILE")

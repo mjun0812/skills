@@ -62,7 +62,7 @@ for review_id in "${REVIEW_IDS[@]}"; do
     echo "Dismissing existing review #${review_id}..." >&2
     gh api -X PUT \
         "repos/${REPO}/pulls/${PR}/reviews/${review_id}/dismissals" \
-        -f message="$MESSAGE" >/dev/null
+        -f message="$MESSAGE" > /dev/null
     DISMISSED_COUNT=$((DISMISSED_COUNT + 1))
 done
 

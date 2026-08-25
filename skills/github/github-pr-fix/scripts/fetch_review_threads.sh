@@ -48,10 +48,11 @@ NAME="${REPO##*/}"
 RESULT_FILE="$(mktemp)"
 trap 'rm -f "$RESULT_FILE" "$RESULT_FILE.new"' EXIT
 
-echo "[]" >"$RESULT_FILE"
+echo "[]" > "$RESULT_FILE"
 
 CURSOR="null"
 while :; do
+    # shellcheck disable=SC2016  # the GraphQL query must not expand shell variables
     PAGE_JSON="$(gh api graphql \
         -F owner="$OWNER" \
         -F name="$NAME" \
@@ -108,7 +109,7 @@ while :; do
       })
   ')"
 
-    jq --argjson page "$PAGE_THREADS" '. + $page' "$RESULT_FILE" >"$RESULT_FILE.new"
+    jq --argjson page "$PAGE_THREADS" '. + $page' "$RESULT_FILE" > "$RESULT_FILE.new"
     mv "$RESULT_FILE.new" "$RESULT_FILE"
 
     HAS_NEXT="$(echo "$PAGE_JSON" | jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage')"

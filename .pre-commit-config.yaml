@@ -32,3 +32,15 @@ repos:
         entry: ruff format
         language: system
         types: [python]
+
+      - id: shellcheck
+        name: lint with shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+
+      - id: shfmt
+        name: format with shfmt
+        entry: shfmt -i 4 -sr -w
+        language: system
+        types: [shell]
