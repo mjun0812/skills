@@ -6,7 +6,13 @@
     "name": "Junya Morioka"
   },
   "repository": "https://github.com/mjun0812/skills",
-  "keywords": ["skills", "github", "git", "review", "writing"],
+  "keywords": [
+    "skills",
+    "github",
+    "git",
+    "review",
+    "writing"
+  ],
   "skills": [
     "./skills/delegation/claude",
     "./skills/delegation/codex",
@@ -15,10 +21,8 @@
     "./skills/docs/md-note",
     "./skills/git/git-commit",
     "./skills/git/git-fix-conflict",
-    "./skills/git/git-squash",
     "./skills/github/github-fix-ci",
     "./skills/github/github-issue-create",
-    "./skills/github/github-issue-discover",
     "./skills/github/github-issue-polish",
     "./skills/github/github-issue-resolve",
     "./skills/github/github-issue-update",
@@ -29,7 +33,6 @@
     "./skills/planning/experiment-plan",
     "./skills/planning/grill-me",
     "./skills/planning/grill-self",
-    "./skills/review/self-review",
     "./skills/review/skill-review",
     "./skills/tools/wezterm-control",
     "./skills/writing/cognitive-rhythm-writing",
