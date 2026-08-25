@@ -1,0 +1,39 @@
+{
+  "name": "mjun-skills",
+  "version": "0.1.0",
+  "description": "mjun's agent skills",
+  "author": {
+    "name": "Junya Morioka"
+  },
+  "repository": "https://github.com/mjun0812/skills",
+  "keywords": ["skills", "github", "git", "review", "writing"],
+  "skills": [
+    "./skills/delegation/claude",
+    "./skills/delegation/codex",
+    "./skills/delegation/resume-other-agent",
+    "./skills/docs/doc-sync",
+    "./skills/docs/md-note",
+    "./skills/git/git-commit",
+    "./skills/git/git-fix-conflict",
+    "./skills/git/git-squash",
+    "./skills/github/github-fix-ci",
+    "./skills/github/github-issue-create",
+    "./skills/github/github-issue-discover",
+    "./skills/github/github-issue-polish",
+    "./skills/github/github-issue-resolve",
+    "./skills/github/github-issue-update",
+    "./skills/github/github-pr-create",
+    "./skills/github/github-pr-fix",
+    "./skills/github/github-pr-review",
+    "./skills/github/github-resolve-pr-comment",
+    "./skills/planning/experiment-plan",
+    "./skills/planning/grill-me",
+    "./skills/planning/grill-self",
+    "./skills/review/self-review",
+    "./skills/review/skill-review",
+    "./skills/tools/wezterm-control",
+    "./skills/writing/cognitive-rhythm-writing",
+    "./skills/writing/japanese-tech-writing",
+    "./skills/writing/stop-ai-slop-jp"
+  ]
+}

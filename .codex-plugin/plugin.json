@@ -1,0 +1,8 @@
+{
+  "name": "mjun-skills",
+  "version": "0.1.0",
+  "description": "mjun's agent skills",
+  "author": { "name": "Junya Morioka" },
+  "repository": "https://github.com/mjun0812/skills",
+  "skills": "./skills"
+}
