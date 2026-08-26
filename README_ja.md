@@ -74,6 +74,10 @@ graph LR
     github-pr-fix --> github-resolve-pr-comment
 ```
 
+### Agents
+
+github-pr-review skillは、[agents/](agents/) に定義された3つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-standards`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の経路でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+
 ## Installation
 
 - plugin: mjun0812/skillをrepositoryとして扱い、skillを選択してinstallする。
