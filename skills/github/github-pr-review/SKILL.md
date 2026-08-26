@@ -58,6 +58,7 @@ CIの失敗はレポートの概要に記載し、Finderの内部証拠として
 ### Phase 2: レビュー
 
 Finder SubAgentが変更全体から候補を収集し、Verifier SubAgentがfalse positiveを落とす。並行してStandards SubAgentが規約・品質の指摘候補を収集し、確定指摘と確定規約指摘からレビューレポートを作成する。
+`code-reviewer-finder`・`code-reviewer-standards`・`code-reviewer-verifier` のagentが利用できない環境では、各agentに渡すpromptと制約をそのまま汎用のSubAgentに与えて代替する。SubAgentも使えない場合は、同じ手順を自分で順に実行する。
 
 #### Phase 2.1: FinderとStandards SubAgentの実行
 
