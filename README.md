@@ -44,11 +44,10 @@ My [Agent Skills](https://agentskills.io).
 
 ### writing
 
-| skill                                                               | Description                                                              |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | Guidelines for designing rhythm and tempo in expository writing          |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | Writing guidelines for Japanese technical documents and book manuscripts |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | Rewrite AI-generated Japanese into natural, readable prose               |
+| skill                                                         | Description                                                              |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing) | Writing guidelines for Japanese technical documents and book manuscripts |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)             | Rewrite AI-generated Japanese into natural, readable prose               |
 
 ### docs
 
