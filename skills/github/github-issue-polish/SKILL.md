@@ -10,8 +10,6 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 
 # Polish GitHub Issue
 
-GitHub操作は必ず`gh` CLIで行うこと。GitHub connector/pluginやMCPのGitHubツールは使用しない。
-
 指定されたissueを、実装者が追加調査なしで着手できる「issueだけで実装できる」状態まで磨き上げるSkill。コードベース調査で原因と変更箇所を特定し、設計の分岐点を根拠付きで決定し、worktreeでのお試し実装で修正方針を検証した上で、承認を得てissue本文を書き換える。
 
 ## Arguments

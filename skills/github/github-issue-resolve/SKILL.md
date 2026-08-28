@@ -17,8 +17,6 @@ Skill toolが使えない環境では、連結先skillのSKILL.mdを直接読み
 - `--draft` (任意): draft PRとして作成
 - `--dry-run` (任意): 指定時はPhase 1の調査と実装方針の提示で停止し、worktree作成以降 (Phase 2〜) は一切実行しない
 
-GitHub操作は必ず`gh` CLIで行うこと。GitHub connector/pluginやMCPのGitHubツールは使用しない。
-
 ## Task
 
 ### Phase 1: 事前調査と分析
