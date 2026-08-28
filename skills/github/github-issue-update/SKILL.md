@@ -20,7 +20,6 @@ open issueを点検し、次の3種類の更新を行うSkill。ユーザーか�
 
 - `language`: コメント本文の言語。デフォルト: `ja`
 - `--max <N>`: 1回の実行で反映する候補の上限。デフォルト: `100`
-- `--dry-run`: Phase 3のsummary提示までで停止し、承認フロー・書き込みを一切行わない
 
 ## Task
 
@@ -107,8 +106,6 @@ Summary例:
 - #120 +documentation
 - #125 -bug
 ```
-
-`--dry-run` 指定時はsummaryの提示で終了する。反映するには `--dry-run` を外して再実行するよう案内する。
 
 承認は AskUserQuestion で多段に取る（AskUserQuestionツールが使えない環境では、同等の選択肢をテキストで提示して回答を待つ）:
 
