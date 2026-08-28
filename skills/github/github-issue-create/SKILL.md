@@ -8,8 +8,6 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(ls:*), Read, Glob, Grep, WebSearch,
 
 # Create GitHub Issue
 
-GitHub操作は必ず`gh` CLIで行うこと。GitHub connector/pluginやMCPのGitHubツールは使用しない。
-
 ユーザーから自由入力で受け取ったIssue概要と同一会話の文脈を元に、素材に含まれる主張を裏取りし、種別とラベルを自動判定してGitHub Issueを作成する。事実の確認だけを行い、解決策の決定はしない。
 
 ## Arguments

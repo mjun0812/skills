@@ -20,8 +20,6 @@ Finder SubAgentが出した指摘候補は，1件ずつ Verifier SubAgent が反
 
 ## Task
 
-GitHub操作は必ず`gh` CLIで行うこと。GitHub connector/pluginやMCPのGitHubツールは使用しない。
-
 ### Phase 1: 準備
 
 #### Phase 1.1: 対象PRの特定

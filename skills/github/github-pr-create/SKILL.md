@@ -10,8 +10,6 @@ allowed-tools: Read, Write, Task, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 
 このSkillは、現在のbranchからpull requestを作成するためのものです。PRのタイトルと説明文は、変更内容に基づいて自動生成されます。PRの説明文は、コードを参照しなくてもPRの内容が理解できるように、概要・背景、関連Issue、実装方針、変更内容、影響範囲、検証結果を説明します。
 
-GitHub操作は必ず`gh` CLIで行うこと。GitHub connector/pluginやMCPのGitHubツールは使用しない。
-
 ## Arguments
 
 - `language`: PRのタイトルと説明文の言語（例: "ja", "en"）。デフォルト: "English"
