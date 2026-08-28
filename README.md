@@ -11,7 +11,7 @@ My [Agent Skills](https://agentskills.io).
 | [git-commit](skills/git/git-commit)                                  | Review the current changes and commit them in Conventional Commits format                              |
 | [git-fix-conflict](skills/git/git-fix-conflict)                      | Detect and resolve conflicts from merge, rebase, cherry-pick, and more                                 |
 | [github-fix-ci](skills/github/github-fix-ci)                         | Analyze CI failures and fix them automatically                                                         |
-| [github-issue-create](skills/github/github-issue-create)             | Gather information from the user and create a GitHub Issue                                             |
+| [github-issue-create](skills/github/github-issue-create)             | Verify the claims in the draft and search related issues, then create one GitHub Issue                 |
 | [github-issue-polish](skills/github/github-issue-polish)             | Polish a GitHub issue until it can be implemented from the issue alone                                 |
 | [github-issue-resolve](skills/github/github-issue-resolve)           | Run investigation → worktree creation → implementation → PR creation end-to-end from an issue          |
 | [github-issue-update](skills/github/github-issue-update)             | Review open issues across the board and apply close / follow-up / label changes in bulk after approval |
