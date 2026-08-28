@@ -82,6 +82,8 @@ The github-pr-review skill uses three reviewer agents defined in [agents/](agent
 - plugin: register mjun0812/skills as a plugin repository and install skills through it.
 - npx skills / gh skills / apm: copy only the skills you want as plain files
 
+See [docs/skill-distribution-comparison.md](docs/skill-distribution-comparison.md) for a detailed comparison of the five install methods.
+
 ### Claude Code plugin
 
 ```bash

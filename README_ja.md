@@ -82,6 +82,8 @@ github-pr-review skillは、[agents/](agents/) に定義された3つのレビ�
 - plugin: mjun0812/skillをrepositoryとして扱い、skillを選択してinstallする。
 - npx skills / gh skills / apm: 欲しいskillだけを選んでファイルとしてコピーする
 
+5つのinstall方法の詳細な比較は [docs/skill-distribution-comparison.md](docs/skill-distribution-comparison.md) を参照。
+
 ### Claude Code plugin
 
 ```bash
