@@ -11,7 +11,7 @@ My [Agent Skills](https://agentskills.io).
 | [git-commit](skills/git/git-commit)                                  | 現在の変更を確認してConventional Commits形式でコミットする                                 |
 | [git-fix-conflict](skills/git/git-fix-conflict)                      | merge・rebase・cherry-pickなどで発生したコンフリクトを検出して解消する                     |
 | [github-fix-ci](skills/github/github-fix-ci)                         | CIの失敗を分析して自動修正する                                                             |
-| [github-issue-create](skills/github/github-issue-create)             | ユーザーから情報を収集してGitHub Issueを作成する                                           |
+| [github-issue-create](skills/github/github-issue-create)             | 素材の主張を裏取りし、関連Issueを検索してからGitHub Issueを1件作成する                     |
 | [github-issue-polish](skills/github/github-issue-polish)             | GitHub issueを「issueだけで実装できる」状態まで磨き上げる                                  |
 | [github-issue-resolve](skills/github/github-issue-resolve)           | issueを起点に「調査 → worktree作成 → 実装 → PR作成」を一気通貫で実行する                   |
 | [github-issue-update](skills/github/github-issue-update)             | open issueを横断的に点検し、close・追記・ラベル変更を承認の上で一括反映する                |
