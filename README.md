@@ -42,6 +42,12 @@ My [Agent Skills](https://agentskills.io).
 | ------------------------------------------ | --------------------------------------------------------------------------------------- |
 | [skill-review](skills/review/skill-review) | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes |
 
+### research
+
+| skill                                          | Description                                                                                                           |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [deep-research](skills/research/deep-research) | Deep-research a topic with web search, present a cited Markdown note, and save it in the current directory on request |
+
 ### writing
 
 | skill                                                         | Description                                                              |

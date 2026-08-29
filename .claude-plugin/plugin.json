@@ -28,6 +28,7 @@
     "./skills/planning/experiment-plan",
     "./skills/planning/grill-me",
     "./skills/planning/grill-self",
+    "./skills/research/deep-research",
     "./skills/review/skill-review",
     "./skills/tools/wezterm-control",
     "./skills/writing/japanese-tech-writing",
