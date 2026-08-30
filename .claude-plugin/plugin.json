@@ -16,6 +16,7 @@
     "./skills/docs/md-note",
     "./skills/git/git-commit",
     "./skills/git/git-fix-conflict",
+    "./skills/git/git-squash",
     "./skills/github/github-fix-ci",
     "./skills/github/github-issue-create",
     "./skills/github/github-issue-polish",

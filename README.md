@@ -10,6 +10,7 @@ My [Agent Skills](https://agentskills.io).
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | [git-commit](skills/git/git-commit)                                  | Review the current changes and commit them in Conventional Commits format                              |
 | [git-fix-conflict](skills/git/git-fix-conflict)                      | Detect and resolve conflicts from merge, rebase, cherry-pick, and more                                 |
+| [git-squash](skills/git/git-squash)                                  | Squash and tidy the commits on the current branch, then push with force-with-lease when needed         |
 | [github-fix-ci](skills/github/github-fix-ci)                         | Analyze CI failures and fix them automatically                                                         |
 | [github-issue-create](skills/github/github-issue-create)             | Verify the claims in the draft and search related issues, then create one GitHub Issue                 |
 | [github-issue-polish](skills/github/github-issue-polish)             | Polish a GitHub issue until it can be implemented from the issue alone                                 |

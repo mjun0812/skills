@@ -10,6 +10,7 @@ My [Agent Skills](https://agentskills.io).
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | [git-commit](skills/git/git-commit)                                  | 現在の変更を確認してConventional Commits形式でコミットする                                 |
 | [git-fix-conflict](skills/git/git-fix-conflict)                      | merge・rebase・cherry-pickなどで発生したコンフリクトを検出して解消する                     |
+| [git-squash](skills/git/git-squash)                                  | 現在のbranchのcommitをsquash・整理し、必要に応じてforce-with-leaseでpushする               |
 | [github-fix-ci](skills/github/github-fix-ci)                         | CIの失敗を分析して自動修正する                                                             |
 | [github-issue-create](skills/github/github-issue-create)             | 素材の主張を裏取りし、関連Issueを検索してからGitHub Issueを1件作成する                     |
 | [github-issue-polish](skills/github/github-issue-polish)             | GitHub issueを「issueだけで実装できる」状態まで磨き上げる                                  |
