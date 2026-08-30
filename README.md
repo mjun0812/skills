@@ -82,7 +82,7 @@ graph LR
 
 ### Agents
 
-The github-pr-review skill uses three reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-standards`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skill falls back to generic subagents given the same prompts.
+The github-pr-review skill uses four reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-standards`, `code-reviewer-contract`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skill falls back to generic subagents given the same prompts.
 
 ## Installation
 
