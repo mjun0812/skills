@@ -56,6 +56,8 @@ My [Agent Skills](https://agentskills.io).
 | [japanese-tech-writing](skills/writing/japanese-tech-writing) | 日本語の技術文書・書籍原稿の文章規範             |
 | [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)             | AIで書いた日本語を自然で読みやすい文章に書き直す |
 
+`japanese-tech-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)をもとに改変した。原文はUnlicenseで公開されている。
+
 ### docs
 
 | skill                            | 説明                                                          |
