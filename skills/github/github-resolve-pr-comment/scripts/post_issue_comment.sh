@@ -46,7 +46,8 @@ done
 
 for var in REPO PR BODY_FILE; do
     if [[ -z ${!var} ]]; then
-        echo "Missing required argument: --${var,,}" >&2
+        flag="$(echo "$var" | tr '[:upper:]_' '[:lower:]-')"
+        echo "Missing required argument: --${flag}" >&2
         exit 2
     fi
 done

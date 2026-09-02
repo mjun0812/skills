@@ -16,7 +16,7 @@ allowed-tools: Read, Write, Task, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 - `spec`: 解決するGitHub Issue番号 (任意。mjun-implementなどの呼び出し元から渡される)。関連Issue (`Closes`) の最優先候補として扱う
 - `--dry-run`: 生成したPRタイトル・本文・base/head branchのみを提示し、pushや `gh pr create` を実行せず終了する
 
-base branchは引数ではなく自動推定で決定する（事前チェック2を参照）。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
+base branchは引数ではなく自動推定で決定する（「0. 事前チェック」の2を参照）。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
 
 ## 0. 事前チェック
 
@@ -72,7 +72,7 @@ base branchは引数ではなく自動推定で決定する（事前チェック
 
 ## 3. PRタイトル、関連Issue、Labelの生成
 
-`2. 変更内容の取得` で得た差分とcommitを根拠に、以下を順に決定する。
+「2. 変更内容の取得」で得た差分とcommitを根拠に、以下を順に決定する。
 
 ### タイトル
 
@@ -95,8 +95,8 @@ base branchは引数ではなく自動推定で決定する（事前チェック
 
 ## 4. 説明文の生成
 
-- **PR template**: 事前チェックで選択したtemplateの言語とrepository固有の追加項目に従う（repositoryのtemplateは指定言語では翻訳しない）
-- `2. 変更内容の取得` で取得した差分概要、commit一覧、詳細差分を根拠にして本文を生成する
+- **PR template**: 「0. 事前チェック」で選択したtemplateの言語とrepository固有の追加項目に従う（repositoryのtemplateは指定言語では翻訳しない）
+- 「2. 変更内容の取得」で取得した差分概要、commit一覧、詳細差分を根拠にして本文を生成する
 - 本文には、以下の6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする
   1. **概要・背景 / Overview and Background**: 最初にこのPRで実現する結果を述べ、続けて変更前の挙動、発生条件、原因、利用者や運用への影響を説明する。同じ内容を概要と背景として繰り返さない
   2. **関連Issue / Related Issues**: 解決するIssueには `Closes #xxx`、参照のみのIssueには `Related to #xxx` を使う。関連Issueがない場合は、指定言語で該当なしと明記する
@@ -131,7 +131,7 @@ base branchは引数ではなく自動推定で決定する（事前チェック
      [--label <name> ...]
    ```
 
-   labelはステップ3で決定した自動判定の結果を付与する（該当labelが無い場合は付与しない）
+   labelは「3. PRタイトル、関連Issue、Labelの生成」で決定した自動判定の結果を付与する（該当labelが無い場合は付与しない）
 
 ## 6. 結果の表示
 

@@ -8,12 +8,13 @@ allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 
 # Resolve PR Review Comments
 
+PRに付いた3種類のレビューコメント (inline review thread、review summary body、PR-level issue comment) を横断して取得し、重要度を判断して修正・返信するSkill。修正はcommit・pushし、対応した各コメントには必ずリプライを投稿する。
+
 ## 引数
 
 - `PR number`: 対応するPR番号（任意、デフォルトは現在のブランチのPR）
 - `--dry-run`: コメントの分類結果（Must Fix/Should Fix/質問/情報共有）と対応方針のみを提示し、ファイル編集・commit・push・リプライ投稿を一切行わない
 
-対応後は**常に**GitHubへリプライコメントを投稿する。
 inline review thread / conversation は `isResolved` を基準にし、すべての unresolved thread を対応対象にする。
 review 全体の state や `isOutdated` だけで対応対象から除外しない。
 
@@ -24,7 +25,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 - **Review thread (inline)**: コードの行に紐づくスレッド。最も一般的なレビューコメント。
   - 取得方法: GraphQL `reviewThreads` ([fetch_review_threads.sh](scripts/fetch_review_threads.sh))
   - リプライ先: `repos/{owner/repo}/pulls/{pr}/comments/{root-comment-id}/replies` に thread 内コメントとして追記
-  - **重要**: inline スレッドへのリプライには **スレッドの先頭コメントの `databaseId`**（root comment id）を使うこと。スレッド内の途中コメントのIDではない。`fetch_review_threads.sh` は `root_comment_id` フィールドにこのIDを入れて返す。
+  - **重要**: inline スレッドへのリプライには **スレッドの先頭コメントの `databaseId`**（root comment id）を使うこと。スレッド内の途中コメントのIDだと 404 になる。`fetch_review_threads.sh` は `root_comment_id` フィールドにこのIDを入れて返す。
 - **Review summary body**: レビュー全体に付く本文。`COMMENTED` / `CHANGES_REQUESTED` などの state を持つ。
   - 取得方法: `gh pr view <pr> --json reviews`
   - リプライ先: ネイティブなスレッド機構はないため、引用形式の issue comment として投稿
@@ -63,7 +64,6 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
   - `--only-unresolved` は `isResolved=false` の thread を返す。`isOutdated=true` でも unresolved なら対象に含める
   - 各スレッドは `thread_id` / `path` / `line` / `root_comment_id` / `comments[]` を持つ
-  - **重要**: リプライ先のコメントIDは必ず `root_comment_id`（スレッド先頭コメントの `databaseId`）を使う
 
 - **Review summary body を取得**:
 
@@ -173,7 +173,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 1. リプライ本文を Markdown ファイルに書き出す（Write tool 使用）
    - 出力先: `/tmp/pr-reply-<root-comment-id>.md`
 2. `post_review_reply.sh` で投稿する
-   - `<root-comment-id>` は `fetch_review_threads.sh` の出力の `root_comment_id` を使う（スレッド先頭コメントの `databaseId`）
+   - `<root-comment-id>` は `fetch_review_threads.sh` の出力の `root_comment_id` を使う
 
 ```bash
 bash <skill-dir>/scripts/post_review_reply.sh \
@@ -230,4 +230,3 @@ Phase 6-B で投稿した PR-level コメント（コメントサマリー）の
 - レビュアーと意見が異なる場合は、敬意を持って具体的な技術的根拠を提示する
 - 解決済みのスレッド (`isResolved=true`) はスキップする。`isOutdated=true` は単独では除外条件にせず、unresolved なら対応対象に含める
 - リプライ本文は**必ずファイル経由**で渡す。`-f body=...` や `--body "..."` でのシェル引数渡しは禁止
-- inline スレッドへのリプライ先 ID は**スレッドの先頭コメントの `databaseId`**（`root_comment_id`）を使う。スレッド内途中のコメントIDだと 404 になる

@@ -8,11 +8,11 @@ allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash
 
 # Pull Request Review
 
-PRのhead commitを worktree にチェックアウトし，Finder SubAgentが指摘候補を探す．
-Finder SubAgentが出した指摘候補は，1件ずつ Verifier SubAgent が反証を試み，
-検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する．
-並行して Standards SubAgent がmergeをブロックすべき規約違反・コードスメルの指摘候補を探し，1件ずつ Verifier の検証を経たものだけを同じレビューに含める．
-spec sourceを解決できる場合は，Contract SubAgent がspecとの不整合の指摘候補を第3の軸として探し，同じくVerifierの検証を経たものだけをレビューに含める．
+PRのhead commitを worktree にチェックアウトし、Finder SubAgentが指摘候補を探す。
+Finder SubAgentが出した指摘候補は、1件ずつ Verifier SubAgent が反証を試み、
+検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する。
+並行して Standards SubAgent がmergeをブロックすべき規約違反・コードスメルの指摘候補を探し、1件ずつ Verifier の検証を経たものだけを同じレビューに含める。
+spec sourceを解決できる場合は、Contract SubAgent がspecとの不整合の指摘候補を第3の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
 
 ## Arguments
 
@@ -228,7 +228,7 @@ Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.
 
 #### Phase 3.1: event種別の決定
 
-- self review モードでは `--event COMMENT` を渡すが，body 内の Verdict 表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHub の仕様で自分の PR に `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
+- self review モードでは `--event COMMENT` を渡すが、body 内の Verdict 表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHub の仕様で自分の PR に `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
 - self review 以外の通常レビューでは、レビューレポートのVerdictが `APPROVE` → `--event APPROVE`、`REQUEST_CHANGES` → `--event REQUEST_CHANGES` を渡す
 
 #### Phase 3.2: inline commentの作成と投稿
@@ -280,8 +280,8 @@ bash "<skill-dir>/scripts/post_review.sh" \
 - レビュー本文とinline commentはファイルで渡し、シェル引数にしない
 - **重要**: `gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てた JSON 文字列の直接渡しは禁止
 - Inline Coments のルール:
-  - 行番号は，`side` が `RIGHT`(既定)の場合は変更後ファイル(diff の右側)の行に，`LEFT` の場合は変更前ファイル(diff の左側)の行に対応していなければならない
-  - `post_review.sh` は防御的な再確認として、投稿前に PR の files API から各ファイルの patch を取得し，`(path, line, side)` が diff に含まれているかを検証する。invalid なエントリはinline対象から除外し、レポート本文は変更しない。残りのinline投稿は継続し、除外件数を標準エラーに `Warning:` として出力する
+  - 行番号は、`side` が `RIGHT`(既定)の場合は変更後ファイル(diff の右側)の行に、`LEFT` の場合は変更前ファイル(diff の左側)の行に対応していなければならない
+  - `post_review.sh` は防御的な再確認として、投稿前に PR の files API から各ファイルの patch を取得し、`(path, line, side)` が diff に含まれているかを検証する。invalid なエントリはinline対象から除外し、レポート本文は変更しない。残りのinline投稿は継続し、除外件数を標準エラーに `Warning:` として出力する
 
 #### Phase 3.3: 以前のレビューの後始末
 
