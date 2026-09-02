@@ -1,7 +1,7 @@
 ---
 name: github-pr-fix
 description: PRの全問題 (コンフリクト、CI失敗、レビューコメント) を自動検出してgit worktree内で修正するSkill。ユーザーが「PRの問題を全部直して」「PRをまとめて修正して」のように依頼したら使うこと。コンフリクト解消・CI修正・レビューコメント対応のうち1種類だけの依頼には使わない。
-allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(bash:*), Bash(mkdir:*), Bash(rm:*), Bash(test:*), Bash(basename:*)
+allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(bash:*)
 ---
 
 # GitHub PR Fix

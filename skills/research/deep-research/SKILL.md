@@ -18,7 +18,9 @@ description: ユーザーが与えたテーマについて、モデルの事前�
 メモ本文を書く前に次の2つを読み、その規範に従って書く。
 
 - [references/japanese-tech-writing.md](references/japanese-tech-writing.md): 日本語技術文書の文章規範
-- [references/stop-ai-slop-jp.md](references/stop-ai-slop-jp.md): AIが書いた日本語を自然な文章に直すための点検項目
+- [references/stop-ai-slop-jp.md](references/stop-ai-slop-jp.md): AIが書いた日本語を自然な文章に直すための点検項目。判定基準の本体は次の2ファイルにあるので、点検時に併せて読む
+  - [references/stop-ai-slop-jp-structures.md](references/stop-ai-slop-jp-structures.md): 避けるべき構造パターン
+  - [references/stop-ai-slop-jp-phrases.md](references/stop-ai-slop-jp-phrases.md): 撲滅すべき語彙
 
 ## ルール
 
