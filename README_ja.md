@@ -63,11 +63,12 @@ My [Agent Skills](https://agentskills.io).
 
 ### docs
 
-| skill                            | 説明                                                                   |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| [doc-sync](skills/docs/doc-sync) | ドキュメントと実装の乖離を検出して更新する                             |
-| [exhtml](skills/docs/exhtml)     | 概念や仕組みを、用語集・図・ダーク/ライト切替付きの1枚のHTMLで解説する |
-| [md-note](skills/docs/md-note)   | 会話で調査・検討した内容を日本語のMarkdown1ファイルにまとめる          |
+| skill                            | 説明                                                                        |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| [doc-sync](skills/docs/doc-sync) | ドキュメントと実装の乖離を検出して更新する                                  |
+| [exhtml](skills/docs/exhtml)     | 概念や仕組みを、用語集・図・ダーク/ライト切替付きの1枚のHTMLで解説する      |
+| [exmd](skills/docs/exmd)         | 概念や仕組みを、用語表・目次・Mermaid図付きの1枚のMarkdown (GFM) で解説する |
+| [md-note](skills/docs/md-note)   | 会話で調査・検討した内容を日本語のMarkdown1ファイルにまとめる               |
 
 ### tools
 
