@@ -1,12 +1,12 @@
 ---
-name: md-note
+name: chat-note
 description: >-
   現在の会話で調査・検討した内容を、外部情報を足さずに日本語のMarkdown1ファイルへ書き出すskill。
   ユーザーが「今の内容をメモにまとめて」「ここまでの話をMarkdownにまとめて」のように依頼したら使うこと。
   会話に無い題材の解説や、調査から始める依頼 (exmd) には使わない。
 ---
 
-# md-note
+# chat-note
 
 ## Objective
 

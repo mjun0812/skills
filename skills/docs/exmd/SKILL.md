@@ -5,7 +5,7 @@ description: >-
   同梱のtemplateを埋めて作成し、既存のexmd成果物は本文だけを更新する。
   会話に無い題材でも、調査したうえで解説する。
   ユーザーが「Markdownで解説して」「exmdで作って」「解説記事をMarkdownで」「〜についてMarkdownにまとめて」のように依頼したら使うこと。
-  会話で確立した内容をそのまま書き出す依頼 (md-note) や、HTMLでの解説 (exhtml) には使わない。
+  会話で確立した内容をそのまま書き出す依頼 (chat-note) や、HTMLでの解説 (exhtml) には使わない。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*), Bash(date:*), Bash(ls:*), Bash(cat:*)
 ---
 
