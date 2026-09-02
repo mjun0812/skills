@@ -69,11 +69,15 @@ allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
      - 英語: `merge: resolve conflicts with <base-branch>`
      - 日本語: `merge: <base-branch>とのコンフリクトを解消`
 
-7. **変更をプッシュ**:
+7. **テストの実行**:
+   - リポジトリのテスト・lint・buildコマンドを実行し、解消後に問題がないことを確認する
+   - 失敗した場合は該当するコンフリクトの解消内容を見直し、必要なら手順5からやり直す
+
+8. **変更をプッシュ**:
    - PR branch へ反映する必要がある場合は `git push`
    - rebase などで履歴が書き換わっている場合は、push前にユーザーへ確認し、必要な場合のみ `git push --force-with-lease` を使う
 
-8. **結果を返す**（検出された言語で）:
+9. **結果を返す**（検出された言語で）:
    - English: [`references/summary_template.md`](references/summary_template.md)
    - Japanese: [`references/summary_template_ja.md`](references/summary_template_ja.md)
 
@@ -82,4 +86,3 @@ allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 - 複雑なコンフリクト（大きなファイル、アーキテクチャの変更）の場合は、コンフリクトを表示してユーザーに判断を求める
 - 新規にrebaseを開始しない。rebase中のコンフリクトは解消して `git rebase --continue` する
 - 履歴を書き換えるpushが必要な場合は、必ず事前にユーザーへ確認し、`--force` ではなく `--force-with-lease` を使用する
-- 解消後、問題がないことを確認するためにテストの実行を行う

@@ -1,15 +1,13 @@
 ---
 name: github-issue-resolve
-description: GitHub issueを起点に「調査 → worktree作成 → 実装 → PR作成」を一気通貫で実行するSkill。実装はSubAgentに委譲し、commitとPR作成はgit-commit・github-pr-create skillに連結して実行する。「#N を解決して」「issueから実装してPRまで」のような複合依頼に使う。
+description: GitHub issueを起点に、調査から実装、PR作成までを一気通貫で実行するSkill。「#N を解決して」「issueから実装してPRまで」のような複合依頼に使う。
 allowed-tools: Task, Read, Write, Glob, Grep, Bash(gh:*), Bash(git:*), Bash(jq:*), Bash(cd:*), Skill(git-commit), Skill(github-pr-create)
 ---
 
 # GitHub Issue Resolve
 
-issue番号を起点に、調査 → 実装 → PR作成までを順に進めるSkill。
-メイン会話が担うのは調査・worktree作成・SubAgentへの引き継ぎ・結果検証・クリーンアップであり、**実装(Phase 3)はSubAgentに委譲し、commitとPR作成(Phase 4)は`git-commit` skillと`github-pr-create` skillに連結する**。
-SubAgent機能が使えない環境では、SubAgentの作業をメイン会話内で同じ手順で順に実施する。
-Skill toolが使えない環境では、連結先skillのSKILL.mdを直接読み込み、その手順に従って実行する。
+issue番号を起点に、調査から実装、PR作成までを一気通貫で進めるSkill。
+実装はレビューと検証コマンドを通過したものだけを確定し、元の作業ツリーは変更しない。commitとPR作成は `git-commit` skillと `github-pr-create` skillに連結する。
 
 ## Arguments
 
@@ -112,6 +110,7 @@ Phase 3の間は以下の制約を守る。
 
 1. **`git-commit` skillでcommitを作成する**:
    - 対象はPhase 3でworktree内に作られたすべての変更
+   - Phase 1で決めた出力言語を `language` として渡す
 2. **`github-pr-create` skillでPRを作成する**:
    - Phase 1で決めた出力言語を `language` として渡し、`--draft` の指定有無を転送する
    - push・PRタイトルと本文の生成・PR作成の実行はすべて連結先skillが行う。手順をこちらで再実装しない
@@ -131,7 +130,7 @@ Phase 3の間は以下の制約を守る。
 
 ### Phase 6: worktreeクリーンアップ
 
-実装が完了した場合も、Phase 2〜5の途中でエラーまたはユーザーの中止により中断した場合も、以下のクリーンアップを行う:
+実装が完了した場合も、Phase 2〜5の途中でエラーまたはユーザーの中止により中断した場合も、以下のクリーンアップを行う。ただし、Phase 4でPR作成に失敗して中止した場合は手動修正の余地を残すため、worktreeとbranchを削除しない:
 
 1. `git worktree remove --force <worktree-path>`
 2. `git branch -D <branch-name>` (ローカルbranchも削除する)

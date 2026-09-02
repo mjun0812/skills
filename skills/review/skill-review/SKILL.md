@@ -4,7 +4,7 @@ description: >-
   Agent skill (SKILL.md)の品質を評価基準に沿って採点し、観点ごとの判定と修正案をレポートするSkill。
   ユーザーが「このskillを評価して」「skillをレビューして」「SKILL.mdの品質を見て」のように依頼したら必ずこのSkillを使うこと。
   レビュー後の修正で決まった判断を「この判断を基準にして」のように評価基準へ反映する依頼にも使う。
-allowed-tools: Read, Glob, Grep, Bash(find *), Bash(rg *), Bash(ls *), Bash(wc *), Bash(which *), Bash(bash *), Bash(shellcheck *), Bash(shfmt *), Bash(ruff *), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash(find:*), Bash(rg:*), Bash(ls:*), Bash(wc:*), Bash(which:*), Bash(bash:*), Bash(shellcheck:*), Bash(shfmt:*), Bash(ruff:*), AskUserQuestion
 ---
 
 # skill-review

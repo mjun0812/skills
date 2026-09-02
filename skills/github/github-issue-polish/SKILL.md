@@ -87,7 +87,7 @@ Target Structureに沿って本文を再構成し、磨き上げ後の全文と�
 
 ### Phase 6: 承認と反映
 
-AskUserQuestionで承認を取る (AskUserQuestionが使えない環境では、同等の選択肢をテキストで提示して回答を待つ):
+AskUserQuestionで承認を取る:
 
 1. 「反映する / 修正して再提示 / キャンセル」
 2. 「修正して再提示」の場合は指摘を反映してPhase 5からやり直す
