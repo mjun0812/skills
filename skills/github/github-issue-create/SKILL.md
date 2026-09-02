@@ -3,7 +3,7 @@ name: github-issue-create
 description: >-
   Todo・メモ・バグ報告を、素材に含まれる主張を裏取りしてからGitHub Issueとして1件起票するSkill。
   ユーザーが「issue作って」「これIssueにしといて」「調べてからissueにして」「バグ報告を起票して」「Todoを起票して」のように依頼したら使うこと。
-allowed-tools: Bash(gh:*), Bash(git:*), Bash(ls:*), Read, Glob, Grep, WebSearch, WebFetch
+allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Read, Glob, Grep, WebSearch, WebFetch
 ---
 
 # Create GitHub Issue

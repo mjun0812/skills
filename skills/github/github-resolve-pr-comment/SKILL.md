@@ -3,7 +3,7 @@ name: github-resolve-pr-comment
 description: >-
   PRのレビューコメントを確認し、対応・返信するSkill。
   ユーザーが「レビューコメントに対応して」「PRコメントに返信して」のように依頼したら使うこと。
-allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(mktemp:*), Bash(bash:*)
+allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(bash:*)
 ---
 
 # Resolve PR Review Comments

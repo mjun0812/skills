@@ -1,7 +1,7 @@
 ---
 name: resume-other-agent
 description: 別のcoding agent (Codex / Claude Code) のsession IDを受け取り、そのログから直前作業を復元してresumeするSkill。ユーザーが「前回のsessionから再開して」「Codexの続きをやって」のように依頼したら使うこと。
-allowed-tools: Bash(find:*), Bash(ls:*), Bash(rg:*), Bash(jq:*), Bash(git:*), Bash(pwd), Read, Glob, Grep, Write, AskUserQuestion
+allowed-tools: Bash(find:*), Bash(ls:*), Bash(rg:*), Bash(jq:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(pwd), Read, Glob, Grep, Write, AskUserQuestion
 ---
 
 # Resume Other Agent
