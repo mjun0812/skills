@@ -1,0 +1,528 @@
+<!-- exhtml template v1 -->
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>{{TITLE}}</title>
+<!--
+  exhtml:template-begin
+  この <style> から exhtml:template-end までは exhtml のテンプレート本体。
+  ページ作成時・更新時に書き換えない。検査scriptがテンプレートとの一致を確認する。
+-->
+<style>
+:root {
+  --ex-bg: #141414;
+  --ex-surface: #1c1c1c;
+  --ex-ink: #e8e8e8;
+  --ex-ink-body: #d4d4d4;
+  --ex-muted: #9a9a9a;
+  --ex-faint: #6a6a6a;
+  --ex-rule: #333333;
+  --ex-border: #e8e8e8;
+  --ex-link: #6cb2f5;
+  --ex-accent: #ef6a5e;
+  --ex-code-bg: #101010;
+  --ex-diff-ins: #6fbf73;
+  --ex-diff-del: #ef6a5e;
+  --ex-fig-1: #243d63;
+  --ex-fig-2: #5a4210;
+  --ex-fig-3: #1f4630;
+  --ex-fig-4: #452b5e;
+  --ex-font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+  --ex-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono CJK JP", monospace;
+  --ex-radius: 0;
+  --ex-chip-radius: 999px;
+  --ex-border-w: 1.5px;
+}
+:root[data-theme="light"] {
+  --ex-bg: #faf9f6;
+  --ex-surface: #ffffff;
+  --ex-ink: #111110;
+  --ex-ink-body: #1a1a1a;
+  --ex-muted: #595959;
+  --ex-faint: #a5a5a5;
+  --ex-rule: #dfdfdf;
+  --ex-border: #111110;
+  --ex-link: #2990da;
+  --ex-accent: #d63a2f;
+  --ex-code-bg: #f3f3f0;
+  --ex-diff-ins: #2e7d32;
+  --ex-diff-del: #d63a2f;
+  --ex-fig-1: #d3e2f7;
+  --ex-fig-2: #f6e4b8;
+  --ex-fig-3: #cfe9d6;
+  --ex-fig-4: #e5d6f2;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--ex-bg); }
+body {
+  margin: 0;
+  background: var(--ex-bg);
+  color: var(--ex-ink-body);
+  font-family: var(--ex-font-sans);
+  font-size: 16px;
+  line-height: 1.9;
+  font-feature-settings: "palt";
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---- ページ骨格: 左目次 / 本文 / 右用語集 ---------------------------- */
+.ex-page { max-width: 1400px; margin: 0 auto; padding: 40px 48px 64px; }
+.ex-wrap {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 300px;
+  gap: 48px;
+  align-items: start;
+  margin-top: 56px;
+}
+.ex-main { min-width: 0; }
+.ex-main > h2:first-child { margin-top: 0; }
+.ex-toc, .ex-glossary {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.ex-toc { padding-right: 16px; border-right: var(--ex-border-w) solid var(--ex-rule); }
+.ex-glossary { padding-left: 24px; border-left: var(--ex-border-w) solid var(--ex-rule); }
+@media (max-width: 1100px) {
+  .ex-page { padding: 24px 20px 48px; }
+  .ex-wrap { display: block; }
+  .ex-toc, .ex-glossary {
+    position: static; max-height: none; overflow: visible;
+    padding: 0; border: none; margin-bottom: 32px;
+  }
+}
+
+/* ---- ヘッダー ------------------------------------------------------- */
+.ex-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.ex-meta {
+  margin: 8px 0 0;
+  font-family: var(--ex-font-mono);
+  font-size: 13px;
+  color: var(--ex-muted);
+}
+.ex-lede { margin: 16px 0 0; font-size: 16.5px; }
+.ex-theme-toggle {
+  flex: none;
+  font: inherit;
+  font-size: 13px;
+  font-family: var(--ex-font-mono);
+  color: var(--ex-ink);
+  background: var(--ex-surface);
+  border: var(--ex-border-w) solid var(--ex-border);
+  border-radius: var(--ex-radius);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.ex-summary {
+  margin: 24px 0 0;
+  padding: 12px 20px;
+  background: var(--ex-surface);
+  border: var(--ex-border-w) solid var(--ex-border);
+  border-radius: var(--ex-radius);
+}
+.ex-summary ul { margin: 0; padding-left: 1.2em; }
+.ex-footer { margin-top: 64px; font-size: 12px; color: var(--ex-faint); }
+
+/* ---- 見出し --------------------------------------------------------- */
+h1, h2, h3, h4 { color: var(--ex-ink); font-weight: 700; line-height: 1.45; margin: 0; }
+h1 { font-size: 28px; border-left: 12px solid var(--ex-ink); padding-left: 18px; }
+h2 { font-size: 22px; border-left: 10px solid var(--ex-ink); padding-left: 14px; margin: 56px 0 16px; }
+h3 { font-size: 18px; margin: 36px 0 12px; }
+h4 { font-size: 16px; margin: 24px 0 8px; }
+
+/* ---- 目次 ----------------------------------------------------------- */
+.ex-toc ol { list-style: none; margin: 0; padding: 0; }
+.ex-toc li { margin: 0; }
+.ex-toc li.ex-toc-h3 { padding-left: 14px; font-size: 13px; }
+.ex-toc a { display: block; padding: 2px 0; color: var(--ex-muted); text-decoration: none; }
+.ex-toc a:hover { color: var(--ex-ink); }
+.ex-toc a.is-active { color: var(--ex-ink); font-weight: 700; }
+
+/* ---- 用語集 --------------------------------------------------------- */
+.ex-glossary h2 { font-size: 15px; border: none; padding: 0; margin: 0 0 12px; }
+.ex-glossary dl { margin: 0; }
+.ex-glossary dt { font-weight: 700; color: var(--ex-ink); margin-top: 10px; }
+.ex-glossary dd { margin: 0 0 4px; font-size: 13.5px; color: var(--ex-ink-body); }
+.ex-glossary dt:target, .ex-glossary dt.is-target { color: var(--ex-accent); }
+a.ex-term { color: inherit; text-decoration: underline dotted var(--ex-muted); text-underline-offset: 3px; }
+
+/* ---- 本文要素 -------------------------------------------------------- */
+p { margin: 12px 0; }
+a { color: var(--ex-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--ex-ink); }
+em { font-style: normal; font-weight: 700; color: var(--ex-accent); }
+ul, ol { padding-left: 1.4em; }
+li { margin: 4px 0; }
+hr { border: none; border-top: var(--ex-border-w) solid var(--ex-rule); margin: 40px 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 16px 0; background: var(--ex-surface); }
+th, td { text-align: left; padding: 8px 12px; border: 1px solid var(--ex-rule); vertical-align: top; }
+th { color: var(--ex-ink); font-weight: 700; border-bottom: var(--ex-border-w) solid var(--ex-border); }
+.ex-rowlabel { white-space: nowrap; font-weight: 700; color: var(--ex-ink); }
+
+.ex-card {
+  background: var(--ex-surface);
+  border: var(--ex-border-w) solid var(--ex-border);
+  border-radius: var(--ex-radius);
+  padding: 14px 18px;
+  margin: 16px 0;
+}
+.ex-card-label { font-size: 12px; font-weight: 700; color: var(--ex-muted); letter-spacing: 0.06em; margin-bottom: 6px; }
+.ex-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 720px) { .ex-grid-2 { grid-template-columns: 1fr; } }
+.ex-chip {
+  display: inline-block;
+  font-size: 12.5px;
+  line-height: 1.5;
+  padding: 1px 10px;
+  border: 1px solid var(--ex-border);
+  border-radius: var(--ex-chip-radius);
+  color: var(--ex-ink);
+  margin-right: 4px;
+}
+.ex-note {
+  border-left: 4px solid var(--ex-rule);
+  padding: 4px 16px;
+  margin: 16px 0;
+  color: var(--ex-muted);
+}
+.ex-note.is-important { border-left-color: var(--ex-accent); color: var(--ex-ink-body); }
+blockquote.ex-quote {
+  margin: 16px 0;
+  padding: 12px 20px;
+  background: var(--ex-surface);
+  border: var(--ex-border-w) solid var(--ex-border);
+}
+blockquote.ex-quote p { margin: 6px 0; }
+.ex-quote-source { font-family: var(--ex-font-mono); font-size: 12.5px; color: var(--ex-muted); }
+details { margin: 12px 0; }
+summary { cursor: pointer; color: var(--ex-ink); font-weight: 700; }
+
+/* ---- 図 ------------------------------------------------------------- */
+.ex-figure { margin: 24px 0; }
+.ex-figure-frame {
+  background: var(--ex-surface);
+  border: var(--ex-border-w) solid var(--ex-border);
+  border-radius: var(--ex-radius);
+  padding: 20px;
+  overflow-x: auto;
+  color: var(--ex-ink);
+}
+.ex-figure-frame svg { display: block; max-width: 100%; height: auto; margin: 0 auto; font-family: var(--ex-font-sans); }
+.ex-figure figcaption { margin-top: 8px; font-size: 13.5px; color: var(--ex-muted); }
+.ex-defs { position: absolute; width: 0; height: 0; overflow: hidden; color: var(--ex-ink); }
+/* 手描きSVGの部品。線と塗りは currentColor でテーマに追従する */
+.fig-node { fill: var(--ex-surface); stroke: currentColor; stroke-width: 1.5; }
+.fig-node.is-emphasis { stroke-width: 3; }
+.fig-group { fill: none; stroke: currentColor; stroke-width: 1; stroke-dasharray: 6 4; }
+.fig-edge { fill: none; stroke: currentColor; stroke-width: 1.5; marker-end: url(#ex-arrow); }
+.fig-edge.is-dashed { stroke-dasharray: 6 4; }
+.fig-edge.is-plain { marker-end: none; }
+.fig-label { fill: currentColor; font-size: 14px; text-anchor: middle; dominant-baseline: central; }
+.fig-label.is-small { font-size: 12px; }
+.fig-label.is-start { text-anchor: start; }
+.fig-label.is-muted { fill: var(--ex-muted); }
+.fig-wrap { font-size: 14px; line-height: 1.5; color: var(--ex-ink); text-align: center; padding: 6px 8px; }
+/* 図のカテゴリ色。塗りにだけ使い、線と文字は currentColor のまま。意味は figcaption に書く */
+.fig-node.c1 { fill: var(--ex-fig-1); }
+.fig-node.c2 { fill: var(--ex-fig-2); }
+.fig-node.c3 { fill: var(--ex-fig-3); }
+.fig-node.c4 { fill: var(--ex-fig-4); }
+pre.mermaid { background: transparent; border: none; padding: 0; margin: 0; text-align: center; }
+pre.mermaid svg { max-width: 100%; height: auto; background: transparent !important; }
+pre.mermaid .node.c1 > rect, pre.mermaid .node.c1 > polygon, pre.mermaid .node.c1 > circle, pre.mermaid .node.c1 .label-container { fill: var(--ex-fig-1) !important; }
+pre.mermaid .node.c2 > rect, pre.mermaid .node.c2 > polygon, pre.mermaid .node.c2 > circle, pre.mermaid .node.c2 .label-container { fill: var(--ex-fig-2) !important; }
+pre.mermaid .node.c3 > rect, pre.mermaid .node.c3 > polygon, pre.mermaid .node.c3 > circle, pre.mermaid .node.c3 .label-container { fill: var(--ex-fig-3) !important; }
+pre.mermaid .node.c4 > rect, pre.mermaid .node.c4 > polygon, pre.mermaid .node.c4 > circle, pre.mermaid .node.c4 .label-container { fill: var(--ex-fig-4) !important; }
+
+/* ---- コード ---------------------------------------------------------- */
+pre {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: var(--ex-code-bg);
+  border: 1px solid var(--ex-rule);
+  border-radius: var(--ex-radius);
+  overflow-x: auto;
+  font-family: var(--ex-font-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+pre code { font-family: inherit; background: none; padding: 0; }
+code { font-family: var(--ex-font-mono); font-size: 0.9em; background: var(--ex-code-bg); padding: 1px 5px; }
+pre.shiki, pre.shiki code { background: var(--ex-code-bg) !important; }
+:root[data-theme="dark"] .shiki span { color: var(--shiki-dark); font-style: var(--shiki-dark-font-style); font-weight: var(--shiki-dark-font-weight); }
+:root[data-theme="light"] .shiki span { color: var(--shiki-light); font-style: var(--shiki-light-font-style); font-weight: var(--shiki-light-font-weight); }
+pre.ex-diff .ins { color: var(--ex-diff-ins); }
+pre.ex-diff .del { color: var(--ex-diff-del); }
+pre.ex-diff .ins::before { content: "+ "; }
+pre.ex-diff .del::before { content: "- "; }
+pre.ex-diff .ctx::before { content: "  "; }
+
+/* ---- 数式 ----------------------------------------------------------- */
+mjx-container[display="true"] { margin: 16px 0; overflow-x: auto; }
+
+/* ---- 印刷: 常にライト ---------------------------------------------- */
+@media print {
+  :root, :root[data-theme="dark"] {
+    --ex-bg: #ffffff;
+    --ex-surface: #ffffff;
+    --ex-ink: #111110;
+    --ex-ink-body: #1a1a1a;
+    --ex-muted: #595959;
+    --ex-faint: #a5a5a5;
+    --ex-rule: #dfdfdf;
+    --ex-border: #111110;
+    --ex-link: #2990da;
+    --ex-accent: #d63a2f;
+    --ex-code-bg: #f3f3f0;
+    --ex-fig-1: #d3e2f7;
+    --ex-fig-2: #f6e4b8;
+    --ex-fig-3: #cfe9d6;
+    --ex-fig-4: #e5d6f2;
+  }
+  :root[data-theme="dark"] .shiki span { color: var(--shiki-light); font-style: var(--shiki-light-font-style); font-weight: var(--shiki-light-font-weight); }
+  body { font-size: 12pt; line-height: 1.7; }
+  .ex-page { max-width: none; padding: 0; }
+  .ex-wrap { display: block; }
+  .ex-toc, .ex-theme-toggle { display: none; }
+  .ex-glossary { position: static; max-height: none; border: none; padding: 0; page-break-inside: avoid; }
+  .ex-figure, .ex-card, pre, table { page-break-inside: avoid; }
+  a { color: inherit; }
+  h2 { page-break-after: avoid; }
+}
+</style>
+<!-- exhtml:template-end -->
+
+<!-- exhtml:mathjax 数式が無いページでは、このコメントから /exhtml:mathjax までを削除する -->
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]], displayMath: [["$$", "$$"], ["\\[", "\\]"]] },
+  options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<!-- /exhtml:mathjax -->
+</head>
+<body>
+<svg class="ex-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ex-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+</svg>
+<div class="ex-page">
+
+<header class="ex-header">
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p class="ex-meta">created {{CREATED}} / updated {{UPDATED}} / model {{MODEL}}</p>
+  </div>
+  <button class="ex-theme-toggle" type="button" data-theme-toggle aria-label="テーマ切替">light</button>
+</header>
+
+<p class="ex-lede">{{LEDE}}</p>
+
+<div class="ex-summary">
+  <ul>
+{{SUMMARY}}
+  </ul>
+</div>
+
+<div class="ex-wrap">
+
+<nav class="ex-toc" aria-label="目次" data-toc></nav>
+
+<main class="ex-main">
+{{BODY}}
+</main>
+
+<aside class="ex-glossary">
+  <h2>用語</h2>
+  <dl>
+{{GLOSSARY}}
+  </dl>
+</aside>
+
+</div>
+
+<footer class="ex-footer">exhtml</footer>
+</div>
+
+<!-- exhtml:runtime テーマ切替と目次生成。削除しない -->
+<script>
+(() => {
+  const KEY = "exhtml-theme";
+  const root = document.documentElement;
+  const button = document.querySelector("[data-theme-toggle]");
+  const apply = (theme) => {
+    root.dataset.theme = theme;
+    if (button) button.textContent = theme === "dark" ? "light" : "dark";
+    document.dispatchEvent(new CustomEvent("exhtml:theme", { detail: { theme } }));
+  };
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (_) { saved = null; }
+  apply(saved === "light" ? "light" : "dark");
+  if (button) {
+    button.addEventListener("click", () => {
+      const next = root.dataset.theme === "dark" ? "light" : "dark";
+      try { localStorage.setItem(KEY, next); } catch (_) {}
+      apply(next);
+    });
+  }
+
+  const glossary = document.querySelector(".ex-glossary");
+  const wide = window.matchMedia("(min-width: 1101px)");
+  if (glossary) {
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest('a[href^="#term-"]');
+      if (!link || !wide.matches) return;
+      const dt = glossary.querySelector(link.getAttribute("href"));
+      if (!dt) return;
+      event.preventDefault();
+      glossary.querySelectorAll("dt.is-target").forEach((el) => el.classList.remove("is-target"));
+      dt.classList.add("is-target");
+      glossary.scrollTo({ top: dt.offsetTop - 8, behavior: "smooth" });
+    });
+  }
+
+  const toc = document.querySelector("[data-toc]");
+  const main = document.querySelector(".ex-main");
+  if (!toc || !main) return;
+  const headings = [...main.querySelectorAll("h2[id], h3[id]")];
+  if (headings.length === 0) return;
+  const list = document.createElement("ol");
+  const links = new Map();
+  for (const h of headings) {
+    const li = document.createElement("li");
+    li.className = h.tagName === "H3" ? "ex-toc-h3" : "ex-toc-h2";
+    const a = document.createElement("a");
+    a.href = "#" + h.id;
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    list.appendChild(li);
+    links.set(h.id, a);
+  }
+  toc.appendChild(list);
+  let current = null;
+  const setActive = (id) => {
+    if (id === current) return;
+    if (current && links.get(current)) links.get(current).classList.remove("is-active");
+    if (links.get(id)) links.get(id).classList.add("is-active");
+    current = id;
+  };
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    if (visible.length > 0) setActive(visible[0].target.id);
+  }, { rootMargin: "0px 0px -70% 0px", threshold: 0 });
+  headings.forEach((h) => observer.observe(h));
+  setActive(headings[0].id);
+})();
+</script>
+<!-- /exhtml:runtime -->
+
+<!-- exhtml:shiki コードブロックが無いページでは、このコメントから /exhtml:shiki までを削除する -->
+<script type="module">
+try {
+  const { codeToHtml } = await import("https://esm.sh/shiki@4");
+  const blocks = [...document.querySelectorAll("pre > code[class*='language-']")];
+  for (const code of blocks) {
+    const lang = (code.className.match(/language-([\w-]+)/) || [])[1];
+    if (!lang || lang === "plaintext" || lang === "text") continue;
+    const pre = code.parentElement;
+    try {
+      const html = await codeToHtml(code.textContent, {
+        lang,
+        themes: { light: "github-light", dark: "tokyo-night" },
+        defaultColor: false,
+      });
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      const rendered = tmp.firstElementChild;
+      if (rendered) pre.replaceWith(rendered);
+    } catch (_) {
+      /* 未対応言語はそのまま表示する */
+    }
+  }
+} catch (_) {
+  /* CDNに到達できないときは素のコードのまま表示する */
+}
+</script>
+<!-- /exhtml:shiki -->
+
+<!-- exhtml:mermaid Mermaidの図が無いページでは、このコメントから /exhtml:mermaid までを削除する -->
+<script type="module">
+try {
+  const mermaid = (await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs")).default;
+  const nodes = [...document.querySelectorAll("pre.mermaid")];
+  if (nodes.length === 0) throw new Error("no diagrams");
+  nodes.forEach((n) => { n.dataset.src = n.textContent; n.classList.add("ex-mermaid"); });
+  let generation = 0;
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const render = async () => {
+    generation += 1;
+    const theme = document.documentElement.dataset.theme;
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "base",
+      darkMode: theme === "dark",
+      fontFamily: cssVar("--ex-font-sans"),
+      themeVariables: {
+        background: cssVar("--ex-surface"),
+        primaryColor: cssVar("--ex-surface"),
+        primaryTextColor: cssVar("--ex-ink"),
+        primaryBorderColor: cssVar("--ex-ink"),
+        secondaryColor: cssVar("--ex-bg"),
+        secondaryTextColor: cssVar("--ex-ink"),
+        secondaryBorderColor: cssVar("--ex-ink"),
+        tertiaryColor: cssVar("--ex-bg"),
+        tertiaryTextColor: cssVar("--ex-ink"),
+        tertiaryBorderColor: cssVar("--ex-ink"),
+        lineColor: cssVar("--ex-ink"),
+        textColor: cssVar("--ex-ink"),
+        mainBkg: cssVar("--ex-surface"),
+        nodeBorder: cssVar("--ex-ink"),
+        clusterBkg: cssVar("--ex-bg"),
+        clusterBorder: cssVar("--ex-muted"),
+        edgeLabelBackground: cssVar("--ex-surface"),
+        actorBkg: cssVar("--ex-surface"),
+        actorBorder: cssVar("--ex-ink"),
+        actorTextColor: cssVar("--ex-ink"),
+        signalColor: cssVar("--ex-ink"),
+        signalTextColor: cssVar("--ex-ink"),
+        noteBkgColor: cssVar("--ex-bg"),
+        noteBorderColor: cssVar("--ex-ink"),
+        noteTextColor: cssVar("--ex-ink"),
+        attributeBackgroundColorOdd: cssVar("--ex-surface"),
+        attributeBackgroundColorEven: cssVar("--ex-bg"),
+        fontSize: "14px",
+      },
+    });
+    for (let i = 0; i < nodes.length; i++) {
+      try {
+        const { svg } = await mermaid.render(`ex-fig-${generation}-${i}`, nodes[i].dataset.src);
+        nodes[i].innerHTML = svg;
+      } catch (err) {
+        nodes[i].textContent = nodes[i].dataset.src;
+        console.error("mermaid render failed", i, err);
+      }
+    }
+  };
+  await render();
+  document.addEventListener("exhtml:theme", () => { render(); });
+} catch (_) {
+  /* CDNに到達できないときは記法をそのまま表示する */
+}
+</script>
+<!-- /exhtml:mermaid -->
+</body>
+</html>
