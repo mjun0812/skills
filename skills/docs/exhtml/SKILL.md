@@ -4,7 +4,7 @@ description: >-
   概念・仕組み・調査内容を、用語集・目次・図・コードを備えた1枚の自己完結HTMLで解説するSkill。
   同梱のtemplateを埋めて作成し、既存のexhtml成果物は本文だけを更新する。
   ユーザーが「HTMLで解説して」「exhtmlで作って」「解説ページにして」「HTMLにまとめて」のように依頼したら使うこと。
-  Markdownでのまとめ (md-note) や、図やスライド単体の作成には使わない。
+  Markdownでのまとめ (chat-note) や、図やスライド単体の作成には使わない。
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*), Bash(date:*), Bash(open:*), Bash(ls:*), Bash(cat:*)
 ---
 
