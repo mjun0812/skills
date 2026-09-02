@@ -13,6 +13,7 @@
     "./skills/delegation/codex",
     "./skills/delegation/resume-other-agent",
     "./skills/docs/doc-sync",
+    "./skills/docs/exhtml",
     "./skills/docs/md-note",
     "./skills/git/git-commit",
     "./skills/git/git-fix-conflict",

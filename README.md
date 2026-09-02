@@ -63,10 +63,11 @@ The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](h
 
 ### docs
 
-| skill                            | Description                                                                                          |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| [doc-sync](skills/docs/doc-sync) | Detect and fix drift between documentation and the implementation                                    |
-| [md-note](skills/docs/md-note)   | Summarize research and discussion from the current conversation into a single Japanese Markdown file |
+| skill                            | Description                                                                                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [doc-sync](skills/docs/doc-sync) | Detect and fix drift between documentation and the implementation                                                 |
+| [exhtml](skills/docs/exhtml)     | Explain a concept or system as a single self-contained HTML page with a glossary, figures, and a dark/light theme |
+| [md-note](skills/docs/md-note)   | Summarize research and discussion from the current conversation into a single Japanese Markdown file              |
 
 ### tools
 
