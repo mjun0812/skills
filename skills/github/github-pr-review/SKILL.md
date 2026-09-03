@@ -100,7 +100,7 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 `<change-summary>` にはchangedFiles / additions / deletionsを、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
 
-どちらのSubAgentにも、Gitの差分と履歴の参照、ファイルの検索と読み取りだけを許可する。
+いずれのSubAgentにも、Gitの差分と履歴の参照、ファイルの検索と読み取りだけを許可する。
 worktree内のコード、テスト、ビルド、lint、型チェック、package script、再現コードは実行させない。
 
 #### Phase 2.2: Finder候補の選別と敵対的検証
@@ -277,8 +277,7 @@ bash "<skill-dir>/scripts/post_review.sh" \
 ```
 
 - 成功時は PR レビューの URL が標準出力に出力される
-- レビュー本文とinline commentはファイルで渡し、シェル引数にしない
-- **重要**: `gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てた JSON 文字列の直接渡しは禁止
+- レビュー本文とinline commentはファイルで渡す。`gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てたJSON文字列の直接渡しは、引用符やJSONのエスケープが崩れるため使わない
 - Inline Coments のルール:
   - 行番号は、`side` が `RIGHT`(既定)の場合は変更後ファイル(diff の右側)の行に、`LEFT` の場合は変更前ファイル(diff の左側)の行に対応していなければならない
   - `post_review.sh` は防御的な再確認として、投稿前に PR の files API から各ファイルの patch を取得し、`(path, line, side)` が diff に含まれているかを検証する。invalid なエントリはinline対象から除外し、レポート本文は変更しない。残りのinline投稿は継続し、除外件数を標準エラーに `Warning:` として出力する
