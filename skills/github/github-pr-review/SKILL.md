@@ -17,7 +17,7 @@ spec sourceを解決できる場合は、Contract SubAgent がspecとの不整�
 ## Arguments
 
 - `PR number`: レビューするPR番号 (optional, defaults to PR for current branch)
-- `--spec <source>`: Contract reviewに使うspec source (GitHub Issue番号またはspecファイルのパス)。指定時は関連Issueより優先する
+- `--spec <issue-number>`: Contract reviewに使うspecのGitHub Issue番号。指定時は関連Issueより優先する
 - `--dry-run`: レビューレポートをチャットに提示するのみで、`post_review.sh` 等の投稿スクリプト・dismiss・resolve操作を一切呼ばない(worktreeの後片付けは通常どおり行う)
 
 ## Task
@@ -46,14 +46,12 @@ CIの失敗はレポートの概要に記載し、Finderの内部証拠として
 
 さらに、Contract review用のspec contractを次の順で解決する。
 
-1. `--spec` が指定されていればそれを使う。Issue番号なら `gh issue view` で本文のcontractセクション群 (Context〜Out of Scope、Decision Log) を読む。ファイルパスなら**skillを起動したworking tree**を基準に解決して読む (レビュー用worktreeにはgit管理外のファイルが存在しないため、worktree内では探さない)
+1. `--spec` が指定されていれば、そのIssueを `gh issue view` で取得し、本文のcontractセクション群 (Context〜Out of Scope、Decision Log) を使う
 2. PR本文に `Closes #N` があれば `gh issue view N` で本文を取得し、contractセクション群を使う
 
 Issueがcontractセクション群 (Context〜Out of Scope) を持たない普通のIssueの場合は、本文全体をcontract相当として扱う。明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
 
-どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したcontractは `<spec-contract>` として保持する。Issue本文より新しいspecファイルが手元にある場合は、`--spec` でそのファイルを渡す。
-
-**specファイル由来のContract指摘は投稿しない**: `--spec` でファイルパスを解決した場合、Contract軸の確定指摘はverdictへ通常どおり計上するが、レポート本文へは個別項目として記載せず (Phase 2.5 step 5の概要1行のみ)、inline commentも生成せず、全文はPhase 4のチャット報告にのみ含める。specファイルはGitHub上に無い内部文書なので、その引用やパスをGitHubへ投稿せず、specの記述は「spec」とだけ呼ぶ。`Closes #N` 経由で解決した場合のContract指摘は、公開済みIssueの引用であり通常どおり投稿する。
+どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したcontractは `<spec-contract>` として保持する。
 
 他のレビュワーのレビューやthreadは参照しない。初回レビューではどちらのID一覧も空になる。
 
@@ -206,7 +204,6 @@ Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.
 3. Verdictを決める。
    - 校正済み指摘、校正済み規約指摘、校正済み契約指摘のいずれかが1件以上の場合は`REQUEST_CHANGES`
    - すべて0件の場合は`APPROVE`
-   - specファイル由来のContract指摘もverdictへ計上する。レポート・inline comment・チャット報告での扱いはstep 5とPhase 3.2、Phase 4の分岐に従う
    - self reviewを含め、レポート内では`COMMENT`を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
 4. 出力言語に対応するテンプレートを読み込む。
    - 日本語の場合は`references/report-ja.md`
@@ -216,7 +213,6 @@ Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.
    - `<short-sha>`: `<latest-commit-sha>`の先頭7文字
    - CIが失敗している場合は概要に1行記載する
    - 校正済み指摘、校正済み規約指摘、校正済み契約指摘の順に同じ`指摘事項`または`Findings`セクションへ記載し、全体を1から連番にする
-   - ただしspecファイル由来のContract指摘は個別項目として記載せず、概要に「Contract軸でN件の指摘があるが、内部specに基づくため詳細はチャット報告にのみ含める」と1行記載する。連番はセクションへ記載する指摘だけで振る
 
 確定指摘一覧、`証拠`、`検証結果`は、校正後も内部確認用として保持する。
 レポート本文とinline commentの指摘部分は、校正済み指摘一覧・校正済み規約指摘一覧・校正済み契約指摘一覧だけから生成する。
@@ -234,7 +230,6 @@ Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.
 #### Phase 3.2: inline commentの作成と投稿
 
 Phase 2.5の校正済み各一覧について、`(path, line, side)`がPRのdiffに含まれるか検証し、diff内の指摘からinline comments JSONを生成する。
-specファイル由来のContract指摘からはinline commentを生成しない。
 レポート本文を解析してinline commentsを作らず、レポートと同じ校正済み一覧から生成する。
 Finder由来の指摘の番号と、`カテゴリ` / `要約` / `問題` / `発生経路` / `完了条件` はレポート本文に一致させる。
 Standards由来とContract由来の指摘の番号と、`カテゴリ` / `要約` / `問題` / `根拠` / `完了条件` もレポート本文に一致させる。
@@ -322,6 +317,5 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
 - Verdict、Finder由来・Standards由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、レポート本文
-- specファイル由来のため未投稿としたContract指摘の全文 (該当がある場合)
 - レビューURL(`post_review.sh` の標準出力)。`--dry-run`、head commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)
