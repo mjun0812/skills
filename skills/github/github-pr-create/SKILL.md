@@ -13,7 +13,7 @@ allowed-tools: Read, Write, Task, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 ## Arguments
 
 - `language`: PRのタイトルと説明文の言語（例: "ja", "en"）。デフォルト: "English"
-- `spec`: 解決するGitHub Issue番号 (任意。mjun-implementなどの呼び出し元から渡される)。関連Issue (`Closes`) の最優先候補として扱う
+- `spec`: 解決するGitHub Issue番号 (任意。呼び出し元のskillから渡される)。関連Issue (`Closes`) の最優先候補として扱う
 - `--dry-run`: 生成したPRタイトル・本文・base/head branchのみを提示し、pushや `gh pr create` を実行せず終了する
 
 base branchは引数ではなく自動推定で決定する（「0. 事前チェック」の2を参照）。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
@@ -107,7 +107,7 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
 - 検証で実行したコマンドと結果は、コピペ可能な形式で記載する
 - CIで自動実行されるlint・format・型チェックは記載しない（そのチェック設定自体を変更したPRを除く）。記載するのはCIが検証しない動作確認の手順と結果
 - テストを実行していない場合は、未実行であることと理由を明記する
-- PRタイトル・本文に `.mjun/` 配下のパスやgit管理外の内部文書 (Local specなど) を言及しない。これらは内部文書であり、外部へ見せる参照にはGitHub Issueだけを使う
+- PRタイトル・本文に、GitHub上で公開されていない内部文書 (ローカルのspecファイルやgit管理外のメモなど) のパスや内容を言及しない。外部へ見せる参照にはGitHub Issueだけを使う
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
 - PR作成前に、6項目が所定の順序で存在し、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
 

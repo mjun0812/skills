@@ -82,7 +82,7 @@ PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head b
 
 **実行内容**:
 
-- すべての変更をステージング: `git add -A`
+- Phase 6で修正したファイルだけをステージング: `git add <修正したファイル>`。無関係な変更やuntracked fileを含めない
 - 検出された言語でコミットメッセージを記述:
   - 英語: `fix: resolve CI failures - <brief description>`
   - 日本語: `fix: CI失敗を修正 - <簡潔な説明>`
