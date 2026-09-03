@@ -13,7 +13,6 @@ Authoring rules:
 - A Standards finding's `Problem` combines the facts visible in the diff and why deferring it until after merge is unsafe.
 - A Contract finding's `Problem` combines the current state of the implementation and how it diverges from the contract's promise.
 - A Contract finding's `Basis` quotes the relevant spec statement and cites the implementation `file:line`.
-- Do not list Contract findings that come from a local spec as individual items; state their count and why they are withheld in one line in the Summary.
 - `Execution path` traces the runtime path that reaches the problem as a chain of `file:line`.
 - `Completion condition` describes the state that demonstrates the problem is resolved, not an implementation method.
 - Do not include the Finder's and verifier's raw `Evidence` or verification logs in the review body or inline comments. Present reachability as a polished `Execution path`.
