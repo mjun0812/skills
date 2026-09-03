@@ -117,8 +117,7 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
 
 1. 生成したPR説明文は、先にMarkdownファイルへ書き出す:
    - 例: `/tmp/YYYYMMDD-HHMMSS-pr-body.md`
-   - `--body "<PR Description>"` のように本文を直接コマンド引数へ埋め込むことは禁止
-   - 複数行本文、Markdown、引用符、バッククォート、絵文字を安全に渡すため、必ず `--body-file` を使う
+   - 本文は `--body-file` で渡す。複数行本文、Markdown、引用符、バッククォート、絵文字を `--body "<PR Description>"` のようにコマンド引数へ直接埋め込むとエスケープが崩れるため
 2. PRを作成する:
    `--assignee @me` を**必ず**付与し、PRの担当者を自分（PR作成者）に設定する
 
