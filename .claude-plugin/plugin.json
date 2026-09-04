@@ -16,6 +16,7 @@
     "./skills/docs/doc-sync",
     "./skills/docs/exhtml",
     "./skills/docs/exmd",
+    "./skills/docs/show-me",
     "./skills/git/git-commit",
     "./skills/git/git-fix-conflict",
     "./skills/git/git-squash",

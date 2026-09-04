@@ -63,12 +63,15 @@ The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](h
 
 ### docs
 
-| skill                              | Description                                                                                                                   |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [chat-note](skills/docs/chat-note) | Summarize research and discussion from the current conversation into a single Japanese Markdown file                          |
-| [doc-sync](skills/docs/doc-sync)   | Detect and fix drift between documentation and the implementation                                                             |
-| [exhtml](skills/docs/exhtml)       | Explain a concept or system as a single self-contained HTML page with a glossary, figures, and a dark/light theme             |
-| [exmd](skills/docs/exmd)           | Explain a concept or system as a single GitHub-flavored Markdown page with a glossary, table of contents, and Mermaid figures |
+| skill                              | Description                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [chat-note](skills/docs/chat-note) | Summarize research and discussion from the current conversation into a single Japanese Markdown file                                |
+| [doc-sync](skills/docs/doc-sync)   | Detect and fix drift between documentation and the implementation                                                                   |
+| [exhtml](skills/docs/exhtml)       | Explain a concept or system as a single self-contained HTML page with a glossary, figures, and a dark/light theme                   |
+| [exmd](skills/docs/exmd)           | Explain a concept or system as a single GitHub-flavored Markdown page with a glossary, table of contents, and Mermaid figures       |
+| [show-me](skills/docs/show-me)     | Show the current topic in chat with the smallest fitting sketch: pseudocode, call tree, component tree, file tree, diff, or Mermaid |
+
+The `show-me` skill is adapted from [humanlayer/skills](https://github.com/humanlayer/skills/tree/main/plugins/show-me). The original is released under the MIT License.
 
 ### tools
 
