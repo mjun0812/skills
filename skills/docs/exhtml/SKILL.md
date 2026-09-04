@@ -108,14 +108,15 @@ exhtmlは構成と見た目だけを定め、文章の書き方は再定義し�
 
 ## 図
 
-| 内容                                                      | 手段                        |
-| --------------------------------------------------------- | --------------------------- |
-| 構成要素と関係 (ノード10個程度まで)、層構造、before/after | 手描きSVG                   |
-| 直線的な手順                                              | 番号付きの説明 (図にしない) |
-| 分岐のある処理                                            | Mermaid `flowchart TD`      |
-| 複数の登場人物の往復                                      | Mermaid `sequenceDiagram`   |
-| テーブル間の関係                                          | Mermaid `erDiagram`         |
-| 状態遷移                                                  | Mermaid `stateDiagram-v2`   |
+| 内容                                                          | 手段                        |
+| ------------------------------------------------------------- | --------------------------- |
+| 構成要素と関係 (ノード10個程度まで)、層構造、before/after     | 手描きSVG                   |
+| 既存の形に対する小さな変更 (file tree、call tree、擬似コード) | `pre.ex-diff` の差分        |
+| 直線的な手順                                                  | 番号付きの説明 (図にしない) |
+| 分岐のある処理                                                | Mermaid `flowchart TD`      |
+| 複数の登場人物の往復                                          | Mermaid `sequenceDiagram`   |
+| テーブル間の関係                                              | Mermaid `erDiagram`         |
+| 状態遷移                                                      | Mermaid `stateDiagram-v2`   |
 
 原典に重要な図がある場合は出所を明記してリンクで参照し、模倣図を作らない。
 
@@ -142,6 +143,17 @@ Mermaidの規則:
 - `<pre><code class="language-xxx">` に書く。ハイライトしないなら `language-plaintext`
 - `<` と `&` はHTMLエスケープする
 - 差分は `pre.ex-diff` に行ごとの `span` で書き、変更理由を散文で先に説明する
+- 差分にするのは、周囲の形が既にあり、要点が「何が変わるか」のとき。大半が新規なら差分にせずブロック全体を示す
+- 差分の対象はコードに限らない。file tree、call tree、擬似コードのような構造のスケッチも `pre.ex-diff` で示す。関係や層構造そのものを示すなら手描きSVGにする
+
+  ```html
+  <pre class="ex-diff"><span class="ctx">src/</span>
+  <span class="ctx">├── api/</span>
+  <span class="del">└── config.ts</span>
+  <span class="ins">└── config/</span>
+  <span class="ins">    ├── load.ts</span>
+  <span class="ins">    └── schema.ts</span></pre>
+  ```
 
 ## 数式
 
