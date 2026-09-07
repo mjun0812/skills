@@ -29,7 +29,7 @@ skill本体、配布用manifest、英日READMEの一覧を常に一致させる�
 - `allowed-tools`を指定する場合は文字列で記載し、YAMLの配列にしない。
 - skillを追加、削除、改名した場合は`.claude-plugin/plugin.json`の`skills`一覧を更新する。
 - `.codex-plugin/plugin.json`は`./skills`全体を参照するため、個別skillの追加だけでは変更しない。
-- skill一覧を変更した場合は`README.md`と`README_ja.md`を同時に更新する。
+- skill一覧を変更した場合は`README.md`と`README_ja.md`を同時に更新する。categoryに`README.md`がある場合はそれも更新する。
 - 外部素材をもとにしたskillの出典は両READMEへ記載し、`SKILL.md`には追加しない。
 
 ## 開発

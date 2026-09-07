@@ -4,7 +4,7 @@ My [Agent Skills](https://agentskills.io).
 
 ## Skills
 
-### git / github
+### [git](skills/git) / [github](skills/github)
 
 | skill                                                                | 説明                                                                                       |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -21,7 +21,7 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Finder/Verifier SubAgentでPRのコードレビューを行い、レポートとインラインコメントを投稿する |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | PRのレビューコメントを確認し、対応・返信する                                               |
 
-### delegation
+### [delegation](skills/delegation)
 
 | skill                                                      | 説明                                                                    |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -29,7 +29,7 @@ My [Agent Skills](https://agentskills.io).
 | [codex](skills/delegation/codex)                           | Codex CLIを非対話モードで呼び出し、相談または作業委譲の結果を得る       |
 | [resume-other-agent](skills/delegation/resume-other-agent) | 別のcoding agentのsession logから直前作業を復元してresumeする           |
 
-### planning
+### [planning](skills/planning)
 
 | skill                                              | 説明                                                                      |
 | -------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -37,19 +37,19 @@ My [Agent Skills](https://agentskills.io).
 | [grill-me](skills/planning/grill-me)               | 計画・設計の分岐点が解消されるまでユーザーへ質問を繰り返す                |
 | [grill-self](skills/planning/grill-self)           | 計画・設計の分岐点をagentが調査と自己問答で解消し、意思決定ログを提示する |
 
-### review
+### [review](skills/review)
 
 | skill                                      | 説明                                                        |
 | ------------------------------------------ | ----------------------------------------------------------- |
 | [skill-review](skills/review/skill-review) | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする |
 
-### research
+### [research](skills/research)
 
 | skill                                          | 説明                                                                                          |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | [deep-research](skills/research/deep-research) | テーマをdeep researchして引用付きの調査メモを提示し、確認のうえカレントディレクトリに保存する |
 
-### writing
+### [writing](skills/writing)
 
 | skill                                                               | 説明                                             |
 | ------------------------------------------------------------------- | ------------------------------------------------ |
@@ -61,7 +61,7 @@ My [Agent Skills](https://agentskills.io).
 
 `japanese-tech-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)をもとに改変した。原文はUnlicenseで公開されている。
 
-### docs
+### [docs](skills/docs)
 
 | skill                              | 説明                                                                        |
 | ---------------------------------- | --------------------------------------------------------------------------- |
@@ -70,7 +70,7 @@ My [Agent Skills](https://agentskills.io).
 | [exhtml](skills/docs/exhtml)       | 概念や仕組みを、用語集・図・ダーク/ライト切替付きの1枚のHTMLで解説する      |
 | [exmd](skills/docs/exmd)           | 概念や仕組みを、用語表・目次・Mermaid図付きの1枚のMarkdown (GFM) で解説する |
 
-### tools
+### [tools](skills/tools)
 
 | skill                                           | 説明                                                  |
 | ----------------------------------------------- | ----------------------------------------------------- |
