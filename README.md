@@ -4,7 +4,7 @@ My [Agent Skills](https://agentskills.io).
 
 ## Skills
 
-### git / github
+### [git](skills/git) / [github](skills/github)
 
 | skill                                                                | Description                                                                                            |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -21,7 +21,7 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Review a PR with Finder/Verifier subagents and post a report and inline comments                       |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | Check PR review comments, address them, and reply                                                      |
 
-### delegation
+### [delegation](skills/delegation)
 
 | skill                                                      | Description                                                                     |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -29,7 +29,7 @@ My [Agent Skills](https://agentskills.io).
 | [codex](skills/delegation/codex)                           | Call the Codex CLI non-interactively for consultation or delegated work         |
 | [resume-other-agent](skills/delegation/resume-other-agent) | Restore another coding agent's previous work from its session log and resume it |
 
-### planning
+### [planning](skills/planning)
 
 | skill                                              | Description                                                                                                     |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -37,19 +37,19 @@ My [Agent Skills](https://agentskills.io).
 | [grill-me](skills/planning/grill-me)               | Keep questioning the user until every decision point in a plan or design is resolved                            |
 | [grill-self](skills/planning/grill-self)           | Resolve every decision point through the agent's own research and self-questioning, then present a decision log |
 
-### review
+### [review](skills/review)
 
 | skill                                      | Description                                                                             |
 | ------------------------------------------ | --------------------------------------------------------------------------------------- |
 | [skill-review](skills/review/skill-review) | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes |
 
-### research
+### [research](skills/research)
 
 | skill                                          | Description                                                                                                           |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | [deep-research](skills/research/deep-research) | Deep-research a topic with web search, present a cited Markdown note, and save it in the current directory on request |
 
-### writing
+### [writing](skills/writing)
 
 | skill                                                               | Description                                                              |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -61,7 +61,7 @@ The `cognitive-rhythm-writing` skill is adapted from [k16shikano's original gist
 
 The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d). The original is released under the Unlicense.
 
-### docs
+### [docs](skills/docs)
 
 | skill                              | Description                                                                                                                   |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -70,7 +70,7 @@ The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](h
 | [exhtml](skills/docs/exhtml)       | Explain a concept or system as a single self-contained HTML page with a glossary, figures, and a dark/light theme             |
 | [exmd](skills/docs/exmd)           | Explain a concept or system as a single GitHub-flavored Markdown page with a glossary, table of contents, and Mermaid figures |
 
-### tools
+### [tools](skills/tools)
 
 | skill                                           | Description                                                |
 | ----------------------------------------------- | ---------------------------------------------------------- |
