@@ -4,7 +4,7 @@
 
 ## Related Issues
 
-<!-- Use "Closes #xxx" for Issues resolved by this PR and "Related to #xxx" for referenced Issues. Write "None" when there are no related Issues. -->
+<!-- Use "Closes #xxx" for Issues resolved by this PR and "Related to #xxx" for referenced Issues. Write "N/A" when there are no related Issues. -->
 
 ## Implementation Approach
 

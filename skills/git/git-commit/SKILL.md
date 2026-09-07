@@ -33,7 +33,11 @@ allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git branch:*), Bash(git
 2. Conventional Commits 形式に従ったコミットメッセージを生成する:
    - 1行目: `<type>: <description>`（スコープなし）
    - 2行目: 空行
-   - 3行目以降: 変更内容を箇条書きで記述
+   - 3行目以降: 変更内容を箇条書きで記述。1行1変更とし、指定言語に応じて以下の文体で書く
+     - 日本語: 体言止めで終える。ですます調は使わない
+       - GOOD: `- ログイン失敗時のリトライ処理を追加`
+       - BAD: `- ログイン失敗時のリトライ処理を追加しました`
+     - 英語: descriptionと同じ命令形の断片で書く（例: `- Add retry on login failure`）
 3. コミットメッセージは `language` で指定された言語（デフォルト: 英語）で記述する。
 4. `git commit -m "<メッセージ>"` でコミットを実行する。
 5. コミット完了後、生成したコミットメッセージのみを出力する。
