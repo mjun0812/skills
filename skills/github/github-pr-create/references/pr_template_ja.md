@@ -4,7 +4,7 @@
 
 ## 関連Issue
 
-<!-- 解決するIssueは「Closes #xxx」、参照するIssueは「Related to #xxx」と記載してください。関連Issueがない場合は「なし」と記載してください。 -->
+<!-- 解決するIssueは「Closes #xxx」、参照するIssueは「Related to #xxx」と記載してください。関連Issueがない場合は「該当なし」と記載してください。 -->
 
 ## 実装方針
 
