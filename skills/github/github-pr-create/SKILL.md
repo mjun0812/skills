@@ -23,13 +23,16 @@ base branchは引数ではなく「0. 事前チェック」の2で決定する�
 ## 0. 事前チェック
 
 1. **branchとcommitの準備**:
-   - 現在のbranchがdefault branch (`main`, `master` 等) の場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得る
+   - 現在のbranchがdefault branch (`main`, `master` 等) の場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得る。ここで中止すると、ユーザーは同じ変更を自分でcommitし直してから再度依頼することになるため
    - 承認後、branch作成とcommitはgit-commit skillへ委譲する
    - 承認が得られない場合はここで中止する
 2. **base branchの決定**:
    - ユーザーが会話でbase branchを明示した場合は、それを最優先で使用する
    - 明示が無い場合は、repositoryのdefault branch (`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`) を使う
-   - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざっている場合のみ、open PRのhead branch (`gh pr list --json headRefName`) を候補に加え、`git merge-base HEAD origin/<候補>` からHEADまでのcommit数が最小の候補へbaseを選び直す。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
+   - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざっている場合のみ、baseを選び直す:
+     1. open PRのhead branch (`gh pr list --json headRefName`) を候補に加える
+     2. 各候補について `git merge-base HEAD origin/<候補>` からHEADまでのcommit数を数える
+     3. commit数が最小の候補をbaseにする。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
    - 決定後、選定したbaseとその理由、`git log --oneline origin/<base>..HEAD` の一覧を必ず報告する (選定が誤っていればユーザーがここで気付ける)
    - tracking branch (`@{upstream}`) はpush先の判定にだけ使い、PRのbase branchとして扱わない。feature branchのupstreamは通常 `origin/<current-branch>` であり、baseに使うと `origin/<base>..HEAD` が空になるため
 3. **既存PRの確認**:
@@ -50,7 +53,7 @@ base branchは引数ではなく「0. 事前チェック」の2で決定する�
    - repositoryにPR templateが存在しない場合、指定言語に応じて以下を使用:
      - English: [`references/pr_template.md`](references/pr_template.md)
      - Japanese: [`references/pr_template_ja.md`](references/pr_template_ja.md)
-   - repositoryにtemplateがある場合は、その見出しと順序をそのまま使う。「4. 説明文の生成」の6項目に足りない見出しがあっても補わない
+   - repositoryにtemplateがある場合は、その見出しと順序をそのまま使う。「4. 説明文の生成」の6項目に足りない見出しがあっても補わない。そのrepositoryのreviewerが何を読みたいかは、skillの既定よりrepositoryのtemplateのほうが正確に表すため
 7. Conventional Commits規約 [`references/conventional_commits.md`](references/conventional_commits.md)
 
 ## 1. リモートへのpush
@@ -61,7 +64,7 @@ base branchは引数ではなく「0. 事前チェック」の2で決定する�
 
 ## 2. 変更内容の取得
 
-次の2つを**必ず**実行し、この出力を本文の根拠にする。同じ会話で実装した場合でも省略しない。
+次の2つを**必ず**実行し、この出力を本文の根拠にする。同じ会話で実装した場合でも省略しない。記憶から書くと、途中で捨てた変更や別branchの作業が本文に混ざり、「4. 説明文の生成」末尾のdiffとの照合が空振りするため。
 
 ```bash
 git log --oneline origin/<base-branch>..HEAD
@@ -98,13 +101,16 @@ git diff --stat origin/<base-branch>..HEAD
 
 - **PR template**: 「0. 事前チェック」で選択したtemplateの見出し・順序・言語に従う (repositoryのtemplateは指定言語では翻訳しない)
 - 「2. 変更内容の取得」で取得したcommit一覧と差分を根拠にして本文を生成する
-- skill同梱のtemplateを使う場合は、以下の6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする。repositoryのtemplateを使う場合は、その見出しに対応する項目だけを以下の説明に沿って書く
+- 使用するtemplateによって、以下の6項目の扱いを変える
+  - skill同梱のtemplateを使う場合: 6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする
+  - repositoryのtemplateを使う場合: そのtemplateの見出しに対応する項目だけを、以下の説明に沿って書く
   1. **概要・背景 / Overview and Background**: 最初にこのPRで実現する結果を述べ、続けて変更前の挙動、発生条件、原因、利用者や運用への影響を説明する。同じ内容を概要と背景として繰り返さない
   2. **関連Issue / Related Issues**: 解決するIssueには `Closes #xxx`、参照のみのIssueには `Related to #xxx` を使う
   3. **実装方針 / Implementation Approach**: 解決方法を概念的に説明し、その方法を選んだ理由を記載する。非自明な設計判断がある場合は、制約や採用しなかった案の理由も記載する
   4. **変更内容 / Changes**: diffをファイル単位で言い換えるだけではなく、変わる挙動や責務ごとに主な変更をまとめる。formatterの一括適用やlockfile更新のような機械的な変更は、個別に列挙せず1つの箇条書きにまとめる
   5. **影響範囲 / Impact**: user-facing change、互換性、performance、security、deployment、既知の制約から該当するものを記載し、影響しない範囲も明確にする
   6. **検証結果 / Validation Results**: 何をどの方法で検証し、どの結果になったかを記載する。bug修正やperformance変更では、可能な限り変更前後を比較できる再現結果、log、数値を示す
+
 - 該当する内容がない項目は、削除したり埋め草で埋めたりせず、指定言語で該当なし (英語は `N/A`) と明記する
 - 箇条書きは1行1変更とし、指定言語に応じて以下の文体で書く
   - 日本語: 体言止めで終える。ですます調は使わない
