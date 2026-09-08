@@ -3,7 +3,7 @@ name: github-pr-create
 description: >-
   Pull Requestを作成するSkill。現在のbranchからpull requestを作成する。言語指定可能。
   ユーザーが「PR作って」「pull request作成して」のように依頼したら使うこと。
-allowed-tools: Read, Write, Task, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(mktemp:*)
+allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(mktemp:*)
 ---
 
 # Create Pull Request
@@ -12,27 +12,25 @@ allowed-tools: Read, Write, Task, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 
 ## Arguments
 
-- `language`: PRのタイトルと説明文の言語（例: "ja", "en"）。デフォルト: "English"
+引数は自由文でよい。次の項目を読み取る。
+
+- `language`: PRのタイトルと説明文の言語（例: "ja", "en"）。明示が無い場合は、repositoryのPR templateの言語を使う。templateが無ければ会話の言語に従う
 - `spec`: 解決するGitHub Issue番号 (任意。呼び出し元のskillから渡される)。関連Issue (`Closes`) の最優先候補として扱う
 - `--dry-run`: 生成したPRタイトル・本文・base/head branchのみを提示し、pushや `gh pr create` を実行せず終了する
 
-base branchは引数ではなく自動推定で決定する（「0. 事前チェック」の2を参照）。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
+base branchは引数ではなく「0. 事前チェック」の2で決定する。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
 
 ## 0. 事前チェック
 
-1. **default branch上での実行を防止**:
-   - 現在のbranchがdefault branch（`main`, `master` 等）の場合、PRを作成せずエラーメッセージを出して中止
-2. **base branchの自動推定**:
-   - ユーザーが会話でbase branchを明示した場合は、それを推定より優先して使用する
-   - 明示が無い場合は、HEADの分岐元をmerge-baseの距離で推定する:
-     1. base候補を列挙する: repositoryのdefault branch（`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`）、open PRのhead branch（`gh pr list --json headRefName`）、リポジトリに存在する長命branch（`develop`, `release/*` など）。現在のbranch自身は除く
-     2. 各候補Bについて `git merge-base HEAD origin/B` を取り、`<merge-base>..HEAD` のcommit数（= PRに入るcommit数）を数える
-     3. commit数が最小（かつ1以上）の候補をbaseに選ぶ。同数の場合は「open PRを持つbranch > default branch」の優先順位で決める
-   - 以下のいずれかに該当する場合は推定を打ち切り、AskUserQuestionで候補branchを選択肢として提示してユーザーに確認する:
-     - 最小commit数の候補が複数残り、優先順位でも1つに決まらない
-     - base候補が1つも見つからない
-     - 選定したbaseの `origin/<base>..HEAD` に、今回の作業と無関係なcommitが混ざっている
-   - 決定後、選定したbaseとその理由、`git log --oneline origin/<base>..HEAD` の一覧を必ず報告する（推定が誤っていればユーザーがここで気付ける）
+1. **branchとcommitの準備**:
+   - 現在のbranchがdefault branch（`main`, `master` 等）の場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得る
+   - 承認後、branch作成とcommitはgit-commit skillへ委譲する
+   - 承認が得られない場合はここで中止する
+2. **base branchの決定**:
+   - ユーザーが会話でbase branchを明示した場合は、それを最優先で使用する
+   - 明示が無い場合は、repositoryのdefault branch（`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`）を使う
+   - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざっている場合のみ、open PRのhead branch（`gh pr list --json headRefName`）を候補に加え、`git merge-base HEAD origin/<候補>` からHEADまでのcommit数が最小の候補へbaseを選び直す。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
+   - 決定後、選定したbaseとその理由、`git log --oneline origin/<base>..HEAD` の一覧を必ず報告する（選定が誤っていればユーザーがここで気付ける）
    - tracking branch（`@{upstream}`）はpush先の判定にだけ使い、PRのbase branchとして扱わない。feature branchのupstreamは通常 `origin/<current-branch>` であり、baseに使うと `origin/<base>..HEAD` が空になるため
 3. **既存PRの確認**:
    - `gh pr view --json url,state` で既存のPRを確認
@@ -42,7 +40,6 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
    - 以降のcommit確認と差分取得では、最新化した `origin/<base-branch>` を基準にする
 5. **commitの存在確認**:
    - `git log origin/<base-branch>..HEAD` が空でないことを確認
-   - 未commitの変更は無視してcommit済みの変更のみを対象とする
    - commitがない場合は中止
 6. **PR templateの確認**:
    - 以下のパスを順に確認し、最初に見つかったものを使用:
@@ -53,8 +50,7 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
    - repositoryにPR templateが存在しない場合、指定言語に応じて以下を使用:
      - English: [`references/pr_template.md`](references/pr_template.md)
      - Japanese: [`references/pr_template_ja.md`](references/pr_template_ja.md)
-   - repositoryのtemplateに「4. 説明文の生成」で定める6項目と同義の見出しがある場合は、その見出しを原文のまま使用する
-   - 同義の見出しがない項目は指定言語の見出しを補い、6項目を所定の順序で記載する。repository固有の追加項目は削除しない
+   - repositoryにtemplateがある場合は、その見出しと順序をそのまま使う。「4. 説明文の生成」の6項目に足りない見出しがあっても補わない
 7. Conventional Commits規約 [`references/conventional_commits.md`](references/conventional_commits.md)
 
 ## 1. リモートへのpush
@@ -65,10 +61,15 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
 
 ## 2. 変更内容の取得
 
-- 差分の概要: `git diff --stat origin/<base-branch>..HEAD`
-- commitの一覧: `git log --oneline origin/<base-branch>..HEAD`
-- 詳細な差分: `git log -p origin/<base-branch>..HEAD`
-- **注意**: 差分が大きい場合（目安: 500行超）は `git diff --stat` の結果を中心に使い、個別ファイルの差分は必要に応じて `git diff origin/<base-branch>..HEAD -- <file>` で確認する
+次の2つを**必ず**実行し、この出力を本文の根拠にする。同じ会話で実装した場合でも省略しない。
+
+```bash
+git log --oneline origin/<base-branch>..HEAD
+git diff --stat origin/<base-branch>..HEAD
+```
+
+- statで変更行数が大きいファイルと、振る舞いが変わるファイルは `git diff origin/<base-branch>..HEAD -- <file>` で個別に確認する
+- lockfileの更新やformatterの一括適用のような機械的な差分は、statだけで済ませてよい
 
 ## 3. PRタイトル、関連Issue、Labelの生成
 
@@ -95,9 +96,9 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
 
 ## 4. 説明文の生成
 
-- **PR template**: 「0. 事前チェック」で選択したtemplateの言語とrepository固有の追加項目に従う（repositoryのtemplateは指定言語では翻訳しない）
-- 「2. 変更内容の取得」で取得した差分概要、commit一覧、詳細差分を根拠にして本文を生成する
-- 本文には、以下の6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする
+- **PR template**: 「0. 事前チェック」で選択したtemplateの見出し・順序・言語に従う（repositoryのtemplateは指定言語では翻訳しない）
+- 「2. 変更内容の取得」で取得したcommit一覧と差分を根拠にして本文を生成する
+- skill同梱のtemplateを使う場合は、以下の6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする。repositoryのtemplateを使う場合は、その見出しに対応する項目だけを以下の説明に沿って書く
   1. **概要・背景 / Overview and Background**: 最初にこのPRで実現する結果を述べ、続けて変更前の挙動、発生条件、原因、利用者や運用への影響を説明する。同じ内容を概要と背景として繰り返さない
   2. **関連Issue / Related Issues**: 解決するIssueには `Closes #xxx`、参照のみのIssueには `Related to #xxx` を使う
   3. **実装方針 / Implementation Approach**: 解決方法を概念的に説明し、その方法を選んだ理由を記載する。非自明な設計判断がある場合は、制約や採用しなかった案の理由も記載する
@@ -114,7 +115,7 @@ base branchは引数ではなく自動推定で決定する（「0. 事前チェ
 - CIで自動実行されるlint・format・型チェックは記載しない（そのチェック設定自体を変更したPRを除く）。記載するのはCIが検証しない動作確認の手順と結果
 - テストを実行していない場合は、未実行であることと理由を明記する
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
-- PR作成前に、6項目が所定の順序で存在し、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
+- PR作成前に、使用したtemplateの見出しがすべて埋まり、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
 - PR作成前に、変更内容の各箇条書きをdiffと照合し、diffに無い変更と文体規則違反（日本語のですます調など）が残っていないことを確認する
 
 ## 5. Pull Requestの作成
