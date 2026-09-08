@@ -14,24 +14,24 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 引数は自由文でよい。次の項目を読み取る。
 
-- `language`: PRのタイトルと説明文の言語（例: "ja", "en"）。明示が無い場合は、repositoryのPR templateの言語を使う。templateが無ければ会話の言語に従う
+- `language`: PRのタイトルと説明文の言語 (例: "ja", "en")。明示が無い場合は、repositoryのPR templateの言語を使う。templateが無ければ会話の言語に従う
 - `spec`: 解決するGitHub Issue番号 (任意。呼び出し元のskillから渡される)。関連Issue (`Closes`) の最優先候補として扱う
 - `--dry-run`: 生成したPRタイトル・本文・base/head branchのみを提示し、pushや `gh pr create` を実行せず終了する
 
-base branchは引数ではなく「0. 事前チェック」の2で決定する。ユーザーが会話で明示した場合（「developに向けてPRを作って」等）はそれを最優先する。
+base branchは引数ではなく「0. 事前チェック」の2で決定する。ユーザーが会話で明示した場合 (「developに向けてPRを作って」等) はそれを最優先する。
 
 ## 0. 事前チェック
 
 1. **branchとcommitの準備**:
-   - 現在のbranchがdefault branch（`main`, `master` 等）の場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得る
+   - 現在のbranchがdefault branch (`main`, `master` 等) の場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得る
    - 承認後、branch作成とcommitはgit-commit skillへ委譲する
    - 承認が得られない場合はここで中止する
 2. **base branchの決定**:
    - ユーザーが会話でbase branchを明示した場合は、それを最優先で使用する
-   - 明示が無い場合は、repositoryのdefault branch（`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`）を使う
-   - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざっている場合のみ、open PRのhead branch（`gh pr list --json headRefName`）を候補に加え、`git merge-base HEAD origin/<候補>` からHEADまでのcommit数が最小の候補へbaseを選び直す。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
-   - 決定後、選定したbaseとその理由、`git log --oneline origin/<base>..HEAD` の一覧を必ず報告する（選定が誤っていればユーザーがここで気付ける）
-   - tracking branch（`@{upstream}`）はpush先の判定にだけ使い、PRのbase branchとして扱わない。feature branchのupstreamは通常 `origin/<current-branch>` であり、baseに使うと `origin/<base>..HEAD` が空になるため
+   - 明示が無い場合は、repositoryのdefault branch (`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`) を使う
+   - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざっている場合のみ、open PRのhead branch (`gh pr list --json headRefName`) を候補に加え、`git merge-base HEAD origin/<候補>` からHEADまでのcommit数が最小の候補へbaseを選び直す。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
+   - 決定後、選定したbaseとその理由、`git log --oneline origin/<base>..HEAD` の一覧を必ず報告する (選定が誤っていればユーザーがここで気付ける)
+   - tracking branch (`@{upstream}`) はpush先の判定にだけ使い、PRのbase branchとして扱わない。feature branchのupstreamは通常 `origin/<current-branch>` であり、baseに使うと `origin/<base>..HEAD` が空になるため
 3. **既存PRの確認**:
    - `gh pr view --json url,state` で既存のPRを確認
    - PRが既に存在する場合は、そのURLと状態を表示して中止
@@ -83,7 +83,7 @@ git diff --stat origin/<base-branch>..HEAD
 ### 関連Issue
 
 - `spec` としてIssue番号が渡された場合は、それを解決するIssue (`Closes`) の最優先候補にする
-- branch名からIssue番号を抽出する（例: `feature/123-add-something` → `#123`）
+- branch名からIssue番号を抽出する (例: `feature/123-add-something` → `#123`)
 - commitメッセージから `fix #456`, `closes #789`, `refs #101` 等のキーワードを検出する
 - `gh issue list --state open --json number,title` のタイトルを変更内容と突き合わせ、関連するIssueを探す
 - 検出したIssueはタイトルだけで判断せず、本文を読んで問題、背景、受け入れ条件を確認する
@@ -96,7 +96,7 @@ git diff --stat origin/<base-branch>..HEAD
 
 ## 4. 説明文の生成
 
-- **PR template**: 「0. 事前チェック」で選択したtemplateの見出し・順序・言語に従う（repositoryのtemplateは指定言語では翻訳しない）
+- **PR template**: 「0. 事前チェック」で選択したtemplateの見出し・順序・言語に従う (repositoryのtemplateは指定言語では翻訳しない)
 - 「2. 変更内容の取得」で取得したcommit一覧と差分を根拠にして本文を生成する
 - skill同梱のtemplateを使う場合は、以下の6項目を必ずこの順序で記載する。小さいPRでも項目を省略せず、内容を簡潔にする。repositoryのtemplateを使う場合は、その見出しに対応する項目だけを以下の説明に沿って書く
   1. **概要・背景 / Overview and Background**: 最初にこのPRで実現する結果を述べ、続けて変更前の挙動、発生条件、原因、利用者や運用への影響を説明する。同じ内容を概要と背景として繰り返さない
@@ -105,18 +105,18 @@ git diff --stat origin/<base-branch>..HEAD
   4. **変更内容 / Changes**: diffをファイル単位で言い換えるだけではなく、変わる挙動や責務ごとに主な変更をまとめる。formatterの一括適用やlockfile更新のような機械的な変更は、個別に列挙せず1つの箇条書きにまとめる
   5. **影響範囲 / Impact**: user-facing change、互換性、performance、security、deployment、既知の制約から該当するものを記載し、影響しない範囲も明確にする
   6. **検証結果 / Validation Results**: 何をどの方法で検証し、どの結果になったかを記載する。bug修正やperformance変更では、可能な限り変更前後を比較できる再現結果、log、数値を示す
-- 該当する内容がない項目は、削除したり埋め草で埋めたりせず、指定言語で該当なし（英語は `N/A`）と明記する
+- 該当する内容がない項目は、削除したり埋め草で埋めたりせず、指定言語で該当なし (英語は `N/A`) と明記する
 - 箇条書きは1行1変更とし、指定言語に応じて以下の文体で書く
   - 日本語: 体言止めで終える。ですます調は使わない
     - GOOD: `- ログイン失敗時のリトライ処理を追加`
     - BAD: `- ログイン失敗時のリトライ処理を追加しました`
-  - 英語: Conventional Commitsのdescriptionと同じ命令形の断片で書く（例: `- Add retry on login failure`）
+  - 英語: Conventional Commitsのdescriptionと同じ命令形の断片で書く (例: `- Add retry on login failure`)
 - 検証で実行したコマンドと結果は、コピペ可能な形式で記載する
-- CIで自動実行されるlint・format・型チェックは記載しない（そのチェック設定自体を変更したPRを除く）。記載するのはCIが検証しない動作確認の手順と結果
+- CIで自動実行されるlint・format・型チェックは記載しない (そのチェック設定自体を変更したPRを除く)。記載するのはCIが検証しない動作確認の手順と結果
 - テストを実行していない場合は、未実行であることと理由を明記する
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
 - PR作成前に、使用したtemplateの見出しがすべて埋まり、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
-- PR作成前に、変更内容の各箇条書きをdiffと照合し、diffに無い変更と文体規則違反（日本語のですます調など）が残っていないことを確認する
+- PR作成前に、変更内容の各箇条書きをdiffと照合し、diffに無い変更と文体規則違反 (日本語のですます調など) が残っていないことを確認する
 
 ## 5. Pull Requestの作成
 
@@ -126,7 +126,7 @@ git diff --stat origin/<base-branch>..HEAD
    - 例: `/tmp/YYYYMMDD-HHMMSS-pr-body.md`
    - 本文は `--body-file` で渡す。複数行本文、Markdown、引用符、バッククォート、絵文字を `--body "<PR Description>"` のようにコマンド引数へ直接埋め込むとエスケープが崩れるため
 2. PRを作成する:
-   `--assignee @me` を**必ず**付与し、PRの担当者を自分（PR作成者）に設定する
+   `--assignee @me` を**必ず**付与し、PRの担当者を自分 (PR作成者) に設定する
 
    ```bash
    gh pr create \
@@ -137,7 +137,7 @@ git diff --stat origin/<base-branch>..HEAD
      [--label <name> ...]
    ```
 
-   labelは「3. PRタイトル、関連Issue、Labelの生成」で決定した自動判定の結果を付与する（該当labelが無い場合は付与しない）
+   labelは「3. PRタイトル、関連Issue、Labelの生成」で決定した自動判定の結果を付与する (該当labelが無い場合は付与しない)
 
 ## 6. 結果の表示
 
@@ -145,8 +145,8 @@ git diff --stat origin/<base-branch>..HEAD
 
 - 作成したPRのURL
 - タイトル
-- base branch → head branch（baseを推定で決めた場合はその理由）
-- 関連Issue（検出された場合）
-- assignee（`@me`）
-- label（自動付与された場合）
-- 変更の概要（ファイル数、追加行数、削除行数）
+- base branch → head branch (baseを推定で決めた場合はその理由)
+- 関連Issue (検出された場合)
+- assignee (`@me`)
+- label (自動付与された場合)
+- 変更の概要 (ファイル数、追加行数、削除行数)
