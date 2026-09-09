@@ -3,7 +3,7 @@ name: github-issue-create
 description: >-
   Todo・メモ・バグ報告を、素材に含まれる主張を裏取りしてからGitHub Issueとして1件起票するSkill。
   ユーザーが「issue作って」「これIssueにしといて」「調べてからissueにして」「バグ報告を起票して」「Todoを起票して」のように依頼したら使うこと。
-allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Read, Glob, Grep, WebSearch, WebFetch
+allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Bash(mktemp:*), Read, Write, Glob, Grep, WebSearch, WebFetch
 ---
 
 # Create GitHub Issue
@@ -97,6 +97,12 @@ allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Read,
    - 下書き素材から情報が不足しているセクションは、コメントプレースホルダーを残すのではなく **セクション自体を省略** する
    - 最終的なIssue本文からはフロントマターを除去する
 
+   **表現の選択**: 単純な手順は番号付きリスト、短い比較はMarkdown表、小さなコード・構造の変更は `diff` コードブロックにする。関係や差異が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読んでMermaid・SVG・PNGを選ぶ。図専用の必須セクションは増やさず、既存の対応するセクションへ置く。
+   - バグ報告は症状や確認済みの発生経路、機能要望は現在とユーザーが求める体験を示す
+   - 図のノード・矢印・数値にもステップ4の裏取り結果を適用し、推測・未確認の関係には図中でも「(要確認)」を指定言語で付ける
+   - 未決定の実装方式を確定した構成として描かない。図のために調査や再現の範囲を広げない
+   - 本文と添付を一意な一時ディレクトリに用意し、画像はローカルで表示確認する。画像の生成・表示手段が無い場合は、未確認の画像を添付せず不足を報告する
+
 8. **ラベルの自動判定**: ステップ6「テンプレートの読み込み」で抽出したテンプレートのデフォルトラベルを起点に、ステップ1「前提情報の取得」で取得した既存ラベル一覧とそのdescriptionを参照し、下書き素材の内容に合うラベルを付与する。既存ラベル一覧に存在しないラベルは付与しない。最終的なラベルリストは重複排除する。
 
 9. **作成前の確認**: 生成したタイトル・本文・種別・ラベルをユーザーに提示し、作成の承認を得る。承認されるまでIssueを作成しない。修正の指摘があれば反映し、再提示して承認を得る。下書きと一緒に次を短く提示する:
@@ -105,14 +111,19 @@ allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Read,
    - 検索した関連Issueとその扱い
    - 下書き素材に無くて省略したセクション
    - 依頼と会話の矛盾 (あれば)
+   - 図・画像があれば完成した内容と本文内の配置。添付のアップロードは承認後のステップ10でのみ行う
 
    下書き素材が乏しく、タイトルすら意味のある形で生成できない場合は、下書きを提示せず、不足している点をユーザーに質問する。回答を反映してから、ステップ3「関連Issueの検索」以降をやり直す。
 
 10. **Issueの作成**:
 
+    本文をMarkdownファイルへ書き出し、`--body-file` で渡す。画像があれば [添付手順](references/visuals.md#添付と確認) に従い、同じコマンドに画像ごとの `--attach` を付ける。
+
     ```
-    gh issue create --title "<title>" --body "<body>" [--label <name> ...]
+    gh issue create --title "<title>" --body-file <body.md> [--label <name> ...] [--attach <image> ...]
     ```
+
+    作成されたIssueを `gh issue view <url> --json body,url` で再取得し、本文と照合する。画像参照がアップロード先URLへ置換され、Mermaidブロックが保持されていることも確認する。投稿結果が不明な場合は同じIssueを再作成せず、対象の作成状況を確認してから報告する。
 
 11. **結果の報告**:
     - 作成されたIssueのURLを表示

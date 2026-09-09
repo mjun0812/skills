@@ -16,7 +16,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 - `language`: PRのタイトルと説明文の言語 (例: "ja", "en")。明示が無い場合は、repositoryのPR templateの言語を使う。templateが無ければ会話の言語に従う
 - `spec`: 解決するGitHub Issue番号 (任意。呼び出し元のskillから渡される)。関連Issue (`Closes`) の最優先候補として扱う
-- `--dry-run`: 生成したPRタイトル・本文・base/head branchのみを提示し、pushや `gh pr create` を実行せず終了する
+- `--dry-run`: 生成したPRタイトル・本文・base/head branchと、図・画像があればローカル成果物を提示する。push、添付のアップロード、`gh pr create` は実行せず終了する
 
 base branchは引数ではなく「0. 事前チェック」の2で決定する。ユーザーが会話で明示した場合 (「developに向けてPRを作って」等) はそれを最優先する。
 
@@ -124,15 +124,25 @@ git diff --stat origin/<base-branch>..HEAD
 - PR作成前に、使用したtemplateの見出しがすべて埋まり、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
 - PR作成前に、変更内容の各箇条書きをdiffと照合し、diffに無い変更と文体規則違反 (日本語のですます調など) が残っていないことを確認する
 
+### 表現の選択
+
+単純な手順は番号付きリスト、短い比較や測定値はMarkdown表、小さなコード・構造の変更は `diff` コードブロックにする。関係や差異が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読んでMermaid・SVG・PNGを選ぶ。図専用の必須セクションは増やさず、実装方針・変更内容・検証結果など既存の対応するセクションへ置く。
+
+- UI変更は同じ画面・操作条件のbefore/after、処理変更は分岐や通信順序、責務の移動は変更前後の構成を示す
+- 性能のグラフは実測データから生成し、測定条件と値を併記する。未実行の測定結果は補わない
+- 図のノード・矢印・数値もdiffや検証結果と照合する。概念図は実装の説明、スクリーンショットは実際の表示結果として区別する
+- 画像は一意な一時ディレクトリに用意し、ローカルで表示確認する。画像の生成・表示手段が無い場合は、未確認の画像を添付せず不足を報告する
+
 ## 5. Pull Requestの作成
 
-`--dry-run` が指定された場合は、生成したPRタイトル・本文・base/head branchのみを提示し、`gh pr create` を実行せずに終了する。
+`--dry-run` が指定された場合は、生成したPRタイトル・本文・base/head branchと、図・画像があればローカル成果物と本文内の配置を提示する。添付はアップロードせず、`gh pr create` を実行せずに終了する。
 
 1. 生成したPR説明文は、先にMarkdownファイルへ書き出す:
    - 例: `/tmp/YYYYMMDD-HHMMSS-pr-body.md`
    - 本文は `--body-file` で渡す。複数行本文、Markdown、引用符、バッククォート、絵文字を `--body "<PR Description>"` のようにコマンド引数へ直接埋め込むとエスケープが崩れるため
 2. PRを作成する:
    `--assignee @me` を**必ず**付与し、PRの担当者を自分 (PR作成者) に設定する
+   画像があれば [添付手順](references/visuals.md#添付と確認) に従い、同じコマンドに画像ごとの `--attach` を付ける。
 
    ```bash
    gh pr create \
@@ -140,10 +150,13 @@ git diff --stat origin/<base-branch>..HEAD
      --title "<PR Title>" \
      --body-file /tmp/YYYYMMDD-HHMMSS-pr-body.md \
      --assignee @me \
-     [--label <name> ...]
+     [--label <name> ...] \
+     [--attach <image> ...]
    ```
 
    labelは「3. PRタイトル、関連Issue、Labelの生成」で決定した自動判定の結果を付与する (該当labelが無い場合は付与しない)
+
+3. 作成されたPRを `gh pr view <url> --json body,url` で再取得し、本文と照合する。画像参照がアップロード先URLへ置換され、Mermaidブロックが保持されていることも確認する。投稿結果が不明な場合は同じPRを再作成せず、対象の作成状況を確認してから報告する。
 
 ## 6. 結果の表示
 
