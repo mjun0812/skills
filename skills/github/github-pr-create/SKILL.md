@@ -121,8 +121,10 @@ git diff --stat origin/<base-branch>..HEAD
 - CIで自動実行されるlint・format・型チェックは記載しない (そのチェック設定自体を変更したPRを除く)。記載するのはCIが検証しない動作確認の手順と結果
 - テストを実行していない場合は、未実行であることと理由を明記する
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
+- 投稿先以外のrepositoryを識別子で参照する場合は、[外部repositoryの参照](references/external_repos.md) の判定に従い、参照できないものは匿名化する
 - PR作成前に、使用したtemplateの見出しがすべて埋まり、templateの説明コメントや未記入のplaceholderが残っていないことを確認する
 - PR作成前に、変更内容の各箇条書きをdiffと照合し、diffに無い変更と文体規則違反 (日本語のですます調など) が残っていないことを確認する
+- PR作成前に、本文中の `owner/repo`、`owner/repo#N`、GitHub URLを列挙し、それぞれが [外部repositoryの参照](references/external_repos.md) の条件を満たすことを確認する
 
 ### 表現の選択
 
