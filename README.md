@@ -42,6 +42,9 @@ My [Agent Skills](https://agentskills.io).
 | skill                                      | Description                                                                             |
 | ------------------------------------------ | --------------------------------------------------------------------------------------- |
 | [skill-review](skills/review/skill-review) | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes |
+| [test-prune](skills/review/test-prune)     | Examine every test in the codebase and list the ones that can be deleted or merged      |
+
+The `test-prune` skill is based on [catnose's post](https://x.com/catnose99/status/2098238001403113924).
 
 ### [research](skills/research)
 
