@@ -67,7 +67,7 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 #### Phase 2.1: FinderとStandardsとContract SubAgentの実行
 
 `code-reviewer-finder` と `code-reviewer-standards` を並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
-Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロックすべき規約違反・コードスメルの指摘候補を、Contractはspec contractとの不整合 (逸脱・未充足・boundary違反・scope creep) の指摘候補を収集する。
+Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロックすべき規約違反・コードスメルの指摘候補を、Contractはspec contractとの食い違い (未充足・boundary違反・scope creep) の指摘候補を収集する。specとコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
 レビュー方法、実行制約、出力形式はそれぞれのagent定義に従う。
 次のprompt templateを使用する。
 
