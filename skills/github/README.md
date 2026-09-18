@@ -98,7 +98,7 @@ Adversarial review of a PR. Finder, Standards, and (when a spec is available) Co
 | `--spec <issue>` | Issue whose body is the spec for the Contract axis. Overrides the PR's `Closes` issue. |
 | `--dry-run`      | Print the report only. Nothing is posted, dismissed, or resolved.                      |
 
-Posting goes through `github-pr-review/scripts/post_review.sh`, which also drops inline comments whose `(path, line, side)` is not in the diff. Reports use `github-pr-review/references/report-en.md` or `report-ja.md`. The reviewer agents are defined in the repository's `agents/` directory; on install methods that cannot ship agents, generic subagents receive the same prompts.
+Posting goes through `github-pr-review/scripts/post_review.sh`, which also drops inline comments whose `(path, line, side)` is not in the diff. The review body and inline comments are rendered by `github-pr-review/scripts/render_review.py` from a findings JSON described in `github-pr-review/references/findings.md`. The reviewer agents are defined in the repository's `agents/` directory; on install methods that cannot ship agents, generic subagents receive the same prompts.
 
 - Trigger phrases: "このPRをレビューして".
 
