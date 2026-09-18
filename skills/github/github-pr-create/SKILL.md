@@ -58,8 +58,8 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 - 検証で実行したコマンドと結果は、コピペ可能な形式で記載する
 - CIで自動実行されるlint・format・型チェックは記載しない (そのチェック設定自体を変更したPRを除く)。記載するのはCIが検証しない動作確認の手順と結果
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
-- 投稿先以外のrepositoryを識別子で参照する場合は、[外部repositoryの参照](references/external_repos.md) の判定に従い、参照できないものは匿名化する
-- 投稿前に本文を見直す: templateの見出しがすべて埋まりコメントやplaceholderが残っていないこと、各箇条書きがdiffにあり文体規則に沿うこと、外部repositoryの参照が上の判定条件を満たすこと
+- public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
+- 投稿前に本文を見直す: templateの見出しがすべて埋まりコメントやplaceholderが残っていないこと、各箇条書きがdiffにあり文体規則に沿うこと、private repositoryの情報が残っていないこと
 
 ### 表現の選択
 
