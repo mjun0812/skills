@@ -3,7 +3,7 @@ name: github-pr-review
 description: >-
   GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿するSkill。`--spec` またはPRに紐づくIssueからspecを解決できる場合は、specとの整合も検査する。self reviewにも対応する。
   ユーザーが「このPRをレビューして」のように依頼したら使うこと。
-allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash(jq:*), Bash(mkdir:*), Bash(mktemp:*), Bash(rm:*), Bash(bash:*)
+allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash(jq:*), Bash(mkdir:*), Bash(mktemp:*), Bash(rm:*), Bash(bash:*), Bash(python:*)
 ---
 
 # Pull Request Review
@@ -18,7 +18,7 @@ spec sourceを解決できる場合は、Contract SubAgent がspecとの不整�
 
 - `PR number`: レビューするPR番号 (optional, defaults to PR for current branch)
 - `--spec <issue-number>`: Contract reviewに使うspecのGitHub Issue番号。指定時は関連Issueより優先する
-- `--dry-run`: レビューレポートをチャットに提示するのみで、`post_review.sh` 等の投稿スクリプト・dismiss・resolve操作を一切呼ばない(worktreeの後片付けは通常どおり行う)
+- `--dry-run`: 生成したレポート本文をチャットに提示するのみで、`post_review.sh` 等の投稿スクリプト・dismiss・resolve操作を一切呼ばない(worktreeの後片付けは通常どおり行う)
 
 ## Task
 
@@ -135,15 +135,22 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Standards / Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
-#### Phase 2.3: レビューレポートの作成
+#### Phase 2.3: 確定指摘の校正とレポートの生成
 
-1. PRのタイトルと本文から出力言語を決める。主に日本語の場合は日本語、それ以外または判定が曖昧な場合は英語
-2. 出力言語のtemplate (日本語は `references/report-ja.md`、英語は `references/report-en.md`) を読み、その記述ルールに従って確定指摘を校正する。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
+1. PRのタイトルと本文から出力言語を決める。主に日本語の場合は `ja`、それ以外または判定が曖昧な場合は `en`
+2. [確定指摘の書き方と findings.json](references/findings.md) に従い、確定指摘を校正して `findings.json` に書き出す。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
 3. public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
-4. Verdictを決める。校正済み指摘が1件以上の場合は `REQUEST_CHANGES`、0件の場合は `APPROVE`。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
-5. templateを埋めてレポート本文を生成する。`<reviewer-name>` は実行中のレビュワー名 (Claude Codeでは `Claude`)、`<short-sha>` は `<latest-commit-sha>` の先頭7文字
+4. レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成し、`findings.json` をそこに置いてレポート本文とinline commentsを生成する。並び順、連番、項目名、Verdict、フッターはscriptが決める。検証エラーが出た場合は `findings.json` を直して再実行する
 
-確定指摘の内部レコードは校正後も保持し、レポート本文とinline commentの指摘部分は校正済み指摘だけから生成する。
+   ```bash
+   python "<skill-dir>/scripts/render_review.py" \
+     --findings "<review-temp-dir>/findings.json" \
+     --out-dir "<review-temp-dir>"
+   ```
+
+   `<review-temp-dir>/body.md` と `<review-temp-dir>/comments.json` が生成され、標準出力にVerdict (`APPROVE` または `REQUEST_CHANGES`) が出力される。指摘が1件以上なら `REQUEST_CHANGES`、0件なら `APPROVE` になる。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
+
+確定指摘の内部レコードは校正後も保持する。
 
 ### Phase 3: レビューの投稿と置き換え
 
@@ -153,36 +160,11 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 #### Phase 3.1: event種別の決定
 
 - self review モードでは `--event COMMENT` を渡すが、body 内の Verdict 表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHub の仕様で自分の PR に `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
-- self review 以外の通常レビューでは、レビューレポートのVerdictが `APPROVE` → `--event APPROVE`、`REQUEST_CHANGES` → `--event REQUEST_CHANGES` を渡す
+- self review 以外の通常レビューでは、Phase 2.3のVerdictをそのまま `--event` に渡す
 
-#### Phase 3.2: inline commentの作成と投稿
+#### Phase 3.2: レビューの投稿
 
-校正済み指摘のうち `(path, line, side)` がPRのdiffに含まれるものからinline comments JSONを生成する。レポート本文を解析してinline commentsを作らず、レポートと同じ校正済み指摘から生成する。
-inline commentはレポート本文の要約版とし、由来にかかわらず`カテゴリ` / `要約` / `問題` / `完了条件`だけを含める。`発生経路`、`根拠`、`他の該当箇所`、`補足`は本文にだけ書く。
-
-- 番号と`カテゴリ` / `要約` / `問題`はレポート本文に一致させる
-- `完了条件`は本文の各条件の1文だけを箇条書きにし、補足の行は含めない
-- 項目名はPhase 2.3で決めた出力言語に合わせ、太字にして1行に置き、内容を次の行から書く
-
-inline comments JSONは以下の形式とし、由来にかかわらず`🔴 N:`で始める。
-
-```json
-[
-  {
-    "path": "src/auth.ts",
-    "line": 42,
-    "side": "RIGHT",
-    "body": "🔴 1: **[Category] <Issue summary>**\n\n**問題**:\n...\n\n**完了条件**:\n\n- ...\n- ...\n\n---\n\nCommented by <reviewer-name>"
-  }
-]
-```
-
-`path` / `line` / `body` は必須。`side` は既定 `RIGHT` とし、削除行など変更前ファイル側にコメントする場合のみ `LEFT` を明示する。
-`N:` はレポート本文の番号と一致させ、inline対象外の指摘があっても再採番しない。
-
-レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成する。
-レポート本文を `<review-temp-dir>/body.md`、inline comments JSONを `<review-temp-dir>/comments.json` に保存し、`scripts/post_review.sh` に渡してGitHub API経由でレビューを投稿する。
-inline commentsがない場合は `--comments-file` を省略する。
+Phase 2.3で生成した `body.md` と `comments.json` を `scripts/post_review.sh` に渡してGitHub API経由でレビューを投稿する。
 
 ```bash
 bash "<skill-dir>/scripts/post_review.sh" \
