@@ -60,19 +60,15 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 1. `<repo-root>/.tmp/<repo-name>-worktrees/pr-<number>-review` を専用 worktree path とする。
 2. 同じ path の worktree が存在し、未commit変更がある場合は中止する。clean な場合のみ作り直してよい。
 3. PRの最新head commitとbase branchを取得し、head commitをdetached状態で専用worktreeにcheckoutする。
-4. worktreeの `HEAD` が `<latest-commit-sha>` と一致することを確認する。一致しない場合はレビューを中止する。
-5. 専用worktreeをレビュー対象のsnapshotとし、Phase 2以降では対象ファイルをすべてこのsnapshot内から参照する。
-6. worktreeの準備に失敗した場合は、エラーを報告して中止する。
+4. 専用worktreeをレビュー対象のsnapshotとし、Phase 2以降では対象ファイルをすべてこのsnapshot内から参照する。
 
 ### Phase 2: レビュー
 
-Finder SubAgentが変更全体から候補を収集し、Verifier SubAgentがfalse positiveを落とす。並行してStandards SubAgentが規約・品質の指摘候補を、spec解決時はContract SubAgentがspecとの不整合の指摘候補を収集し、確定指摘・確定規約指摘・確定契約指摘からレビューレポートを作成する。
-
 #### Phase 2.1: FinderとStandardsとContract SubAgentの実行
 
-`code-reviewer-finder` と `code-reviewer-standards` を1つずつ並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
+`code-reviewer-finder` と `code-reviewer-standards` を並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
 Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロックすべき規約違反・コードスメルの指摘候補を、Contractはspec contractとの不整合 (逸脱・未充足・boundary違反・scope creep) の指摘候補を収集する。
-レビュー方法と出力形式はそれぞれのagent定義に従う。
+レビュー方法、実行制約、出力形式はそれぞれのagent定義に従う。
 次のprompt templateを使用する。
 
 ```text
@@ -98,24 +94,13 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 `<change-summary>` にはchangedFiles / additions / deletionsを、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
 
-いずれのSubAgentにも、Gitの差分と履歴の参照、ファイルの検索と読み取りだけを許可する。
-worktree内のコード、テスト、ビルド、lint、型チェック、package script、再現コードは実行させない。
+#### Phase 2.2: 候補の選別と検証
 
-#### Phase 2.2: Finder候補の選別と敵対的検証
+各SubAgentの出力から候補を選別し、候補ごとに独立した `code-reviewer-verifier` を並列に起動して反証を試みる。verdictが `confirmed` の候補だけを確定指摘とし、`refuted` / `uncertain` は破棄する。候補が0件ならこのステップをスキップする。
 
-Finderが発見した指摘から候補を確定する。
-
-- Finderが出力したカテゴリラベル付きの指摘をすべて候補とする
-- 候補は以下をすべて満たすこと: PRのdiffが導入・露出した問題である / `問題` に発生条件・原因・具体的な実害がある / `完了条件` が実装方法ではなく満たすべき状態を示している / `証拠` の実行パスがある
-- verifier の起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる
-- カテゴリは表示用情報として扱い、候補の重複統合やverifierの判定に使用しない
-- 各候補と自分の既存未resolve threadを照合し、同じ根本原因の会話だけをVerifierの反証材料とする
-
-**敵対的検証**: 候補1件ごとに `code-reviewer-verifier` を1つずつ起動して反証を試みる。
-
-- 選別の結果、候補が0件ならこのステップをスキップする
-- verifierには、worktree内で検証に必要なコマンドと、関連する最小のテストや再現コードの実行を許可する
-- verifierがコードを実行した場合は、コマンドと結果を内部の根拠に残す
+- 各SubAgentが出力した指摘をすべて候補とする。verifierの起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる。重複統合はこの1回だけとする
+- Finder候補は、自分の既存未resolve threadと照合し、同じ根本原因の会話をverifierの反証材料にする
+- Standards候補とContract候補は、先に確定した指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Standards → Contract の順に確定する)
 
 次のprompt templateを使用する。
 
@@ -140,86 +125,25 @@ Finderが発見した指摘から候補を確定する。
   - spec contract: <spec-contract>
 ```
 
-Finder候補では `<candidate-type>` を `Finder`、`<candidate>` を候補1件の全文、`<related-thread>` を同じ根本原因の既存threadと会話にする。
-該当するthreadがなければ `なし` とする。FinderとStandardsの検証では `<spec-contract>` を `なし` とする。
-その他のplaceholderにはPhase 2.1と同じ値を指定する。
+`<candidate>` には候補1件の全文を指定し、由来ごとに次の値を指定する。その他のplaceholderにはPhase 2.1と同じ値を指定する。
 
-最終verdictが`confirmed`の候補のみ通過させる。`refuted` / `uncertain`は破棄する。
+| 由来      | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`         |
+| --------- | ------------------ | ----------------------------------------------- | ------------------------- |
+| Finder    | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                    |
+| Standards | `Standards`        | `なし`                                          | `なし`                    |
+| Contract  | `Contract`         | `なし`                                          | 解決済みspec contract全文 |
 
-**確定指摘の正規化**: verifier が `confirmed` と判定した候補だけを、以下の内部レコードへ正規化する。
+確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Standards / Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
-- `path` / `line` / `side`
-- `カテゴリ`
-- `要約`
-- `問題`
-- `完了条件`
-- `証拠` (問題へ実際に到達する実行パス)
-- `検証結果` (verifierの根拠と実行結果)
+#### Phase 2.3: レビューレポートの作成
 
-`証拠`は、Phase 2.5で`発生経路`へ校正するための入力として保持する。
-`検証結果`は内部確認用として保持し、レビュー本文とinline commentには含めない。
-verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を`完了条件`に残す。
-候補の重複統合はverifier前の1回だけとする。
+1. PRのタイトルと本文から出力言語を決める。主に日本語の場合は日本語、それ以外または判定が曖昧な場合は英語
+2. 出力言語のtemplate (日本語は `references/report-ja.md`、英語は `references/report-en.md`) を読み、その記述ルールに従って確定指摘を校正する。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
+3. public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
+4. Verdictを決める。校正済み指摘が1件以上の場合は `REQUEST_CHANGES`、0件の場合は `APPROVE`。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
+5. templateを埋めてレポート本文を生成する。`<reviewer-name>` は実行中のレビュワー名 (Claude Codeでは `Claude`)、`<short-sha>` は `<latest-commit-sha>` の先頭7文字
 
-#### Phase 2.3: Standards指摘の選別と検証
-
-Standardsが出力した指摘について以下を行う。確定指摘との重複破棄があるため、Phase 2.2の完了後に実行する。
-
-- agent定義の出力形式(`問題` / `根拠` / `完了条件`)を満たす指摘だけを採用する
-- 確定指摘と同じ行または同じ根本原因の指摘は破棄する(要修正事項を優先する)
-
-**事実検証**: 採用した指摘は、1件ごとに `code-reviewer-verifier` を起動して検証する。
-
-- Phase 2.2のprompt templateを使用し、`<candidate-type>` を `Standards`、`<candidate>` を指摘1件の全文、`<related-thread>` を `なし` とする。その他の入力と実行許可はPhase 2.2の敵対的検証と同じとする
-- verdictが`confirmed`の指摘は、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`根拠`、`完了条件`、`検証結果`(verifierの根拠と実行結果)の内部レコードへ正規化し、確定規約指摘一覧とする
-- verdictが`refuted` / `uncertain`の指摘は破棄する
-
-Phase 2.5では、確定指摘一覧・確定規約指摘一覧・確定契約指摘一覧だけを指摘内容の入力として扱う。
-
-#### Phase 2.4: Contract指摘の選別と検証
-
-Contract SubAgentを起動した場合のみ実行する。確定指摘・確定規約指摘との重複破棄があるため、Phase 2.3の完了後に実行する。
-
-- agent定義の出力形式(`問題` / `根拠` / `完了条件`)を満たす指摘だけを採用する
-- 確定指摘・確定規約指摘と同じ行または同じ根本原因の指摘は破棄する
-- 採用した指摘は1件ごとに `code-reviewer-verifier` で検証する。Phase 2.2のprompt templateを使用し、`<candidate-type>` を `Contract`、`<candidate>` を指摘1件の全文、`<related-thread>` を `なし`、`<spec-contract>` を解決済みspec contract全文とする
-- verdictが`confirmed`の指摘は、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`根拠`(specの該当記述の引用)、`完了条件`、`検証結果`の内部レコードへ正規化し、確定契約指摘一覧とする。`refuted` / `uncertain`は破棄する
-
-#### Phase 2.5: 指摘の校正とレビューレポートの作成
-
-Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.4の確定契約指摘一覧から、次の順でレビューレポートを作成する。
-
-1. PRのタイトルと本文から出力言語を決める。
-   - 主に日本語の場合は日本語
-   - それ以外または判定が曖昧な場合は英語
-2. 各一覧を、件数、順序、採否、技術的な意味、対象範囲、`path`、`line`、`side`を変えずに校正する。
-   - 人間が一読で問題を理解できる平易で自然な表現にし、必要な技術概念だけを一般的な言葉で説明する
-   - `カテゴリ`は出力言語に合わせ、問題の主な実害を表す1〜3語にする。処理状態、広すぎる観点、原因や仕組み、重要度、確度は使わない
-   - `要約`は実害だけを1文で書き、原因は`問題`に書く
-   - `完了条件`は実装方法ではなく、解消を判断できる状態を1条件1文の箇条書きにする。補足が必要な場合だけ次の行に1文添える
-   - 推測、修正案、実装方法を追加せず、検証過程は出力しない
-   - public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
-   - 確定指摘一覧では、`問題`を発生条件、原因、具体的な実害の順に3文以内の1段落へ整え、必要な前提とコード上の名称を残して、検証過程、証拠の列挙、重複を除く。`証拠`は起点を`path:line`、終点を実害が現れる場所とする最大3ホップの`発生経路`へ変換し、1ホップ1行の番号付きリストにして各`file:line`に短い説明を添える
-   - 同じ問題を持つ他の`file:line`は`他の該当箇所`の箇条書きへ、変更前や踏襲元との比較など核心ではないが判断に役立つ事実は`補足`の箇条書きへ分離し、`問題`には残さない。どちらも該当がなければ省く
-   - 確定規約指摘一覧では、`問題`をdiffで観察できる事実、merge後への先送りが安全でない理由の順に整え、事実にない不利益を補わない。`根拠`は箇条書きにし、規約違反なら規約文書の`file:line`と該当記述を、コードスメルなら該当コードの`file:line`を残し、スメル名・原則名・設計用語を観察できる事実に置き換える
-   - 確定契約指摘一覧では、`問題`を実装の現状、contractの約束との食い違いの順に整え、`根拠`を箇条書きにしてspecの該当記述の引用と実装の`file:line`を残す
-   - 校正済み指摘一覧は`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`発生経路`、`完了条件`と、該当があれば`他の該当箇所`、`補足`を含める。校正済み規約指摘一覧と校正済み契約指摘一覧は`発生経路`の代わりに`根拠`を含める
-3. Verdictを決める。
-   - 校正済み指摘、校正済み規約指摘、校正済み契約指摘のいずれかが1件以上の場合は`REQUEST_CHANGES`
-   - すべて0件の場合は`APPROVE`
-   - self reviewを含め、レポート内では`COMMENT`を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
-4. 出力言語に対応するテンプレートを読み込む。
-   - 日本語の場合は`references/report-ja.md`
-   - 英語の場合は`references/report-en.md`
-5. テンプレートを埋めてレポート本文を生成する。
-   - `<reviewer-name>`: 実行中のレビュワー名。Claude Codeでは`Claude`
-   - `<short-sha>`: `<latest-commit-sha>`の先頭7文字
-   - 概要にはPRの変更内容だけを1〜2文で書き、レビュー結果や指摘件数は書かない
-   - CIが失敗している場合は概要に1行記載する
-   - 校正済み指摘、校正済み規約指摘、校正済み契約指摘の順に同じ`指摘事項`または`Findings`セクションへ、1件ずつ`### N. [カテゴリ] 要約`の見出しで記載し、全体を1から連番にする
-
-確定指摘一覧、`証拠`、`検証結果`は、校正後も内部確認用として保持する。
-レポート本文とinline commentの指摘部分は、校正済み指摘一覧・校正済み規約指摘一覧・校正済み契約指摘一覧だけから生成する。
+確定指摘の内部レコードは校正後も保持し、レポート本文とinline commentの指摘部分は校正済み指摘だけから生成する。
 
 ### Phase 3: レビューの投稿と置き換え
 
@@ -233,13 +157,12 @@ Phase 2.2の確定指摘一覧、Phase 2.3の確定規約指摘一覧、Phase 2.
 
 #### Phase 3.2: inline commentの作成と投稿
 
-Phase 2.5の校正済み各一覧について、`(path, line, side)`がPRのdiffに含まれるか検証し、diff内の指摘からinline comments JSONを生成する。
-レポート本文を解析してinline commentsを作らず、レポートと同じ校正済み一覧から生成する。
+校正済み指摘のうち `(path, line, side)` がPRのdiffに含まれるものからinline comments JSONを生成する。レポート本文を解析してinline commentsを作らず、レポートと同じ校正済み指摘から生成する。
 inline commentはレポート本文の要約版とし、由来にかかわらず`カテゴリ` / `要約` / `問題` / `完了条件`だけを含める。`発生経路`、`根拠`、`他の該当箇所`、`補足`は本文にだけ書く。
 
 - 番号と`カテゴリ` / `要約` / `問題`はレポート本文に一致させる
 - `完了条件`は本文の各条件の1文だけを箇条書きにし、補足の行は含めない
-- 項目名はPhase 2.5で決めた出力言語に合わせ、太字にして1行に置き、内容を次の行から書く
+- 項目名はPhase 2.3で決めた出力言語に合わせ、太字にして1行に置き、内容を次の行から書く
 
 inline comments JSONは以下の形式とし、由来にかかわらず`🔴 N:`で始める。
 
@@ -273,9 +196,7 @@ bash "<skill-dir>/scripts/post_review.sh" \
 
 - 成功時は PR レビューの URL が標準出力に出力される
 - レビュー本文とinline commentはファイルで渡す。`gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てたJSON文字列の直接渡しは、引用符やJSONのエスケープが崩れるため使わない
-- Inline Coments のルール:
-  - 行番号は、`side` が `RIGHT`(既定)の場合は変更後ファイル(diff の右側)の行に、`LEFT` の場合は変更前ファイル(diff の左側)の行に対応していなければならない
-  - `post_review.sh` は防御的な再確認として、投稿前に PR の files API から各ファイルの patch を取得し、`(path, line, side)` が diff に含まれているかを検証する。invalid なエントリはinline対象から除外し、レポート本文は変更しない。残りのinline投稿は継続し、除外件数を標準エラーに `Warning:` として出力する
+- diffに含まれない `(path, line, side)` のentryは `post_review.sh` がinline対象から除外して標準エラーに `Warning:` を出力する。レポート本文は変わらない
 
 #### Phase 3.3: 以前のレビューの後始末
 
@@ -283,13 +204,13 @@ Phase 3.2の投稿が成功した後にのみ実行し、最新レビューだ�
 
 **既存レビューのdismiss**
 
-**重要**: 必ず Phase 1.2 で取得した `<existing-review-ids>`(投稿前のスナップショット)を `--review-id` で明示的に渡す。スクリプトはIDの自動検索を行わず、`--review-id` がない場合は失敗する。
+Phase 1.2 で取得した `<existing-review-ids>` (投稿前のsnapshot) を `--review-id` で渡す。
 
 ```bash
 bash "<skill-dir>/scripts/dismiss_my_reviews.sh" \
   --repo "<owner/repo>" \
   --pr "<number>" \
-  --review-id "<id1>" --review-id "<id2>"  # Phase 1.2 で取得したスナップショットを全て指定
+  --review-id "<id1>" --review-id "<id2>"
 ```
 
 `<existing-review-ids>` が空の場合は dismiss スクリプトを呼び出さない。
@@ -308,10 +229,7 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 ### Phase 4: 終了処理
 
-まず、レビュー用に作成したworktreeと一時Git refを削除する。投稿用の `<review-temp-dir>` を作成している場合は、それも削除する。
-処理が中断した場合も、作成済みのworktreeと一時Git ref、`<review-temp-dir>` を必ず削除する。
-
-クリーンアップの成否にかかわらず、続けて結果を報告する。失敗した場合は、その内容も含める。
+レビュー用に作成したworktree、一時Git ref、投稿用の `<review-temp-dir>` を削除する。処理が中断した場合も同様に削除する。
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
