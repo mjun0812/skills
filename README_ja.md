@@ -39,9 +39,12 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                      | 説明                                                        |
-| ------------------------------------------ | ----------------------------------------------------------- |
-| [skill-review](skills/review/skill-review) | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする |
+| skill                                      | 説明                                                                       |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| [skill-review](skills/review/skill-review) | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする                |
+| [test-prune](skills/review/test-prune)     | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする |
+
+`test-prune` skillは、[catnose氏の投稿](https://x.com/catnose99/status/2098238001403113924)を元に作成。
 
 ### [research](skills/research)
 

@@ -33,6 +33,7 @@
     "./skills/planning/grill-self",
     "./skills/research/deep-research",
     "./skills/review/skill-review",
+    "./skills/review/test-prune",
     "./skills/tools/wezterm-control",
     "./skills/writing/cognitive-rhythm-writing",
     "./skills/writing/japanese-tech-writing",
