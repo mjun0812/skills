@@ -90,7 +90,7 @@ allowed-tools: Bash(gh:*), Bash(git log:*), Bash(git blame:*), Bash(ls:*), Bash(
        - BAD: `- S3取得を共通ライブラリへ切り出します`
      - 英語: 命令形の断片で書く (例: `- Extract S3 fetch into a shared library`)
    - 確認済みの主張には参照 (commit hash、出典URL) を添える
-   - 投稿先以外のrepositoryを識別子で参照する場合は、[外部repositoryの参照](references/external_repos.md) の判定に従い、参照できないものは匿名化する
+   - public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
    - Issue 本文でコードを参照するときは、ファイルパスと役割 (関数名、設定キー、「設定ファイルの読み込み」のような処理の名前) までを書き、行番号は書かない。行番号は開発中にずれて本文が腐るため。行番号を使うのは、PR の inline comment や検証レポートのように、その時点の diff に紐づく文書だけ
    - 推測・未確認の主張は断定文にせず、文末に「(要確認)」を付ける。ユーザーの言葉をそのまま書く場合も、裏が取れていなければ同様に扱う
    - 解決策が複数考えられる場合は決めずに、考慮・調査事項に相当するセクション (skill同梱テンプレートでは「📌 考慮・調査事項」) へ未決事項として列挙する

@@ -12,7 +12,7 @@
 
 ## Changes
 
-<!-- Summarize the main changes by behavior or responsibility rather than restating the diff file by file. -->
+<!-- Summarize the main changes by behavior or responsibility rather than restating the diff file by file. Fold mechanical changes such as formatter runs or lockfile updates into a single bullet. -->
 
 ## Impact
 
