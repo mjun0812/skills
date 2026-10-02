@@ -1,4 +1,5 @@
 [tools]
+"aqua:anthropics/claude-code" = "latest"
 "npm:oxfmt" = "latest"
 "pipx:ruff" = "latest"
 prek = "latest"
