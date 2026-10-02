@@ -60,7 +60,7 @@ mise exec -- python scripts/check_layout.py
 mise exec -- python scripts/check_plugin_manifest.py
 ```
 
-plugin検証用CLIが利用できる環境では、CIと同じstrict validationを実行する。
+Claude Codeのstrict validationは全hookに含まれる。個別に実行する場合は次を使う。
 
 ```bash
 mise exec -- claude plugin validate . --strict

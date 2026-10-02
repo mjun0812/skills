@@ -30,8 +30,5 @@ jobs:
         with:
           cache: true
 
-      - name: Install Claude Code
-        run: mise use -g claude
-
       - name: Validate plugin and marketplace
-        run: mise exec -- claude plugin validate . --strict
+        run: prek run validate-plugin --all-files --show-diff-on-failure
