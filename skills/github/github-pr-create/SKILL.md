@@ -63,7 +63,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 ### 表現の選択
 
-単純な手順は番号付きリスト、短い比較や測定値はMarkdown表、小さなコード・構造の変更は `diff` コードブロックにする。関係や差異が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読んでMermaid・SVG・PNGを選ぶ。図専用の必須セクションは増やさず、実装方針・変更内容・検証結果など既存の対応するセクションへ置く。
+単純な手順は番号付きリスト、短い比較や測定値はMarkdown表、小さなコードの変更は `diff` コードブロックにする。ファイル・ディレクトリの整理(追加・削除・移動・改名)を伴う場合は、取得したdiffを根拠に、[ファイル構成の差分](references/visuals.md#ファイル構成の差分) に従いtree形式の `diff` コードブロックを入れる。関係や差異が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読んでMermaid・SVG・PNGを選ぶ。図専用の必須セクションは増やさず、実装方針・変更内容・検証結果など既存の対応するセクションへ置く。
 
 ## 5. Pull Requestの作成
 
