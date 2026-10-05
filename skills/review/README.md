@@ -22,3 +22,11 @@ The per-criterion rules and the report format live in `SKILL.md` and `references
 Examine every test in the codebase and list the ones that can be deleted or merged. Targets are copies of the implementation, mocks verifying themselves, re-checks of what types or libraries already guarantee, duplicates of other tests, over-reliance on internals, and excessive case splitting. The criterion is "if this test were deleted, what realistic bug would go unnoticed?"; neither test count nor coverage is a goal.
 
 - Trigger phrases: "テストを減らして", "不要なテストを洗い出して", "テストを整理して".
+
+## writing-skills
+
+Create or edit an agent skill test-first. Run a pressure scenario with a subagent before the skill exists and record how it fails, write the skill against those failures, then rerun until the subagent complies and close the loopholes it found. `skill-review` scores a finished skill against fixed criteria; `writing-skills` checks whether agents actually follow it.
+
+The test-driven development background it requires is bundled in `references/test-driven-development.md`, so it is read only from this skill and is not triggered on its own for regular implementation work.
+
+- Use when creating a new skill, editing an existing one, or verifying a skill before deployment.
