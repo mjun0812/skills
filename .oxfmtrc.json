@@ -1,3 +1,6 @@
 {
-  "ignorePatterns": ["skills/docs/exmd/assets/template.md"]
+  "ignorePatterns": [
+    "skills/docs/exmd/assets/template.md",
+    "skills/agent-skill/writing-skills/references/anthropic-best-practices.md"
+  ]
 }
