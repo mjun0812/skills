@@ -1,4 +1,4 @@
-# skill
+# agent-skill
 
 Skills for building agent skills: writing a skill test-first and scoring a finished one.
 

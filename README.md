@@ -45,14 +45,14 @@ My [Agent Skills](https://agentskills.io).
 
 The `test-prune` skill is based on [catnose's post](https://x.com/catnose99/status/2098238001403113924).
 
-### [skill](skills/skill)
+### [agent-skill](skills/agent-skill)
 
-| skill                                         | Description                                                                                         |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [skill-review](skills/skill/skill-review)     | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes             |
-| [writing-skills](skills/skill/writing-skills) | Create or edit a skill test-first: watch subagents fail without it, then write it until they comply |
+| skill                                               | Description                                                                                         |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [skill-review](skills/agent-skill/skill-review)     | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes             |
+| [writing-skills](skills/agent-skill/writing-skills) | Create or edit a skill test-first: watch subagents fail without it, then write it until they comply |
 
-The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/superpowers v6.4.2](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills). Its `test-driven-development` skill is bundled under `references/` instead of being installed as a separate skill. The original is released under the MIT License, kept in `skills/skill/writing-skills/LICENSE`.
+The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/superpowers v6.4.2](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills). Its `test-driven-development` skill is bundled under `references/` instead of being installed as a separate skill. The original is released under the MIT License, kept in `skills/agent-skill/writing-skills/LICENSE`.
 
 ### [research](skills/research)
 

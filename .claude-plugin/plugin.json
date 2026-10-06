@@ -9,6 +9,8 @@
   "license": "MIT",
   "keywords": ["skills", "github", "git", "review", "writing"],
   "skills": [
+    "./skills/agent-skill/skill-review",
+    "./skills/agent-skill/writing-skills",
     "./skills/delegation/claude",
     "./skills/delegation/codex",
     "./skills/delegation/resume-other-agent",
@@ -33,8 +35,6 @@
     "./skills/planning/grill-self",
     "./skills/research/deep-research",
     "./skills/review/test-prune",
-    "./skills/skill/skill-review",
-    "./skills/skill/writing-skills",
     "./skills/tools/wezterm-control",
     "./skills/writing/cognitive-rhythm-writing",
     "./skills/writing/japanese-tech-writing",
