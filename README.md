@@ -39,15 +39,20 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                          | Description                                                                                         |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [skill-review](skills/review/skill-review)     | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes             |
-| [test-prune](skills/review/test-prune)         | Examine every test in the codebase and list the ones that can be deleted or merged                  |
-| [writing-skills](skills/review/writing-skills) | Create or edit a skill test-first: watch subagents fail without it, then write it until they comply |
+| skill                                  | Description                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------------- |
+| [test-prune](skills/review/test-prune) | Examine every test in the codebase and list the ones that can be deleted or merged |
 
 The `test-prune` skill is based on [catnose's post](https://x.com/catnose99/status/2098238001403113924).
 
-The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/superpowers v6.4.2](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills). Its `test-driven-development` skill is bundled under `references/` instead of being installed as a separate skill. The original is released under the MIT License, kept in `skills/review/writing-skills/LICENSE`.
+### [skill](skills/skill)
+
+| skill                                         | Description                                                                                         |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [skill-review](skills/skill/skill-review)     | Score the quality of an agent skill (SKILL.md) and report findings with suggested fixes             |
+| [writing-skills](skills/skill/writing-skills) | Create or edit a skill test-first: watch subagents fail without it, then write it until they comply |
+
+The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/superpowers v6.4.2](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills). Its `test-driven-development` skill is bundled under `references/` instead of being installed as a separate skill. The original is released under the MIT License, kept in `skills/skill/writing-skills/LICENSE`.
 
 ### [research](skills/research)
 

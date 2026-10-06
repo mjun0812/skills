@@ -1,6 +1,6 @@
 {
   "ignorePatterns": [
     "skills/docs/exmd/assets/template.md",
-    "skills/review/writing-skills/references/anthropic-best-practices.md"
+    "skills/skill/writing-skills/references/anthropic-best-practices.md"
   ]
 }

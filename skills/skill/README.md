@@ -1,0 +1,35 @@
+# skill
+
+Skills for building agent skills: writing a skill test-first and scoring a finished one.
+
+## Which skill to use
+
+| Situation                                                                  | Skill            |
+| -------------------------------------------------------------------------- | ---------------- |
+| Create or edit a skill and check that agents actually follow it            | `writing-skills` |
+| Score an existing skill against fixed criteria and get per-criterion fixes | `skill-review`   |
+
+## skill-review
+
+Score an agent skill (its `SKILL.md` and bundled files) against a fixed set of criteria and report, per criterion, a verdict with evidence and a suggested fix. The skill evaluates only; applying fixes waits for a separate request.
+
+| Argument    | Effect                                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `<path>`    | Skill directory or `SKILL.md` to evaluate. Several may be given. Without it, the repository is scanned and the user chooses. |
+| `--propose` | Skip evaluation and only confirm criteria candidates noted earlier in the conversation.                                      |
+
+Evaluation starts with a specification gate (Agent Skills frontmatter and structure), then eleven criteria: goal and boundaries, description quality, amount of command examples, completion criteria, early return, self-containment, conciseness, splitting into references, readability, freshness, and client compatibility. Each is judged pass, needs improvement, not applicable, or undetermined; "needs improvement" always quotes the offending lines. Freshness includes running `shellcheck`, `shfmt`, and `ruff` on bundled scripts and executing them with side-effect-free arguments.
+
+The criteria live in `skill-review/references/criteria.md` with a change history in `references/CHANGELOG.md`. Before each run, `scripts/check_criteria.sh` compares the criteria against a recorded baseline and asks the user to log any change. After a review, decisions made while fixing skills can be promoted into new criteria through a single confirmation, which updates the criteria, the changelog, and the baseline together.
+
+- Trigger phrases: "このskillを評価して", "skillをレビューして", "SKILL.mdの品質を見て".
+
+The per-criterion rules and the report format live in `SKILL.md` and `references/criteria.md`.
+
+## writing-skills
+
+Create or edit an agent skill test-first. Run a pressure scenario with a subagent before the skill exists and record how it fails, write the skill against those failures, then rerun until the subagent complies and close the loopholes it found. `skill-review` scores a finished skill against fixed criteria; `writing-skills` checks whether agents actually follow it.
+
+The test-driven development background it requires is bundled in `references/test-driven-development.md`, so it is read only from this skill and is not triggered on its own for regular implementation work.
+
+- Use when creating a new skill, editing an existing one, or verifying a skill before deployment.

@@ -39,15 +39,20 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                          | 説明                                                                                   |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [skill-review](skills/review/skill-review)     | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする                            |
-| [test-prune](skills/review/test-prune)         | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする             |
-| [writing-skills](skills/review/writing-skills) | skillなしでsubagentが失敗する様子を先に観察し、従うようになるまでskillを作成・修正する |
+| skill                                  | 説明                                                                       |
+| -------------------------------------- | -------------------------------------------------------------------------- |
+| [test-prune](skills/review/test-prune) | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする |
 
 `test-prune` skillは、[catnose氏の投稿](https://x.com/catnose99/status/2098238001403113924)を元に作成。
 
-`writing-skills` skillは、[obra/superpowers v6.4.2の`writing-skills` skill](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills)をもとに改変した。同じrepoの`test-driven-development` skillは、独立したskillとしてinstallせず`references/`へ同梱している。原文はMIT Licenseで公開されており、ライセンス文は`skills/review/writing-skills/LICENSE`に置いている。
+### [skill](skills/skill)
+
+| skill                                         | 説明                                                                                   |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [skill-review](skills/skill/skill-review)     | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする                            |
+| [writing-skills](skills/skill/writing-skills) | skillなしでsubagentが失敗する様子を先に観察し、従うようになるまでskillを作成・修正する |
+
+`writing-skills` skillは、[obra/superpowers v6.4.2の`writing-skills` skill](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills)をもとに改変した。同じrepoの`test-driven-development` skillは、独立したskillとしてinstallせず`references/`へ同梱している。原文はMIT Licenseで公開されており、ライセンス文は`skills/skill/writing-skills/LICENSE`に置いている。
 
 ### [research](skills/research)
 
