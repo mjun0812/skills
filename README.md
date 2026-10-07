@@ -21,6 +21,8 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Review a PR with Finder/Verifier subagents and post a report and inline comments                       |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | Check PR review comments, address them, and reply                                                      |
 
+The visual menu in `github-pr-create` (`references/visuals.md`: pseudocode, call trees, component trees, file trees, and diffs of them) is adapted from the [`pr` skill in mattpocock/skills v1.3.1](https://github.com/mattpocock/skills/tree/v1.3.1/skills/engineering/pr), which in turn adapts Dex Horthy's [`show-me` skill](https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md). Both are released under the MIT License.
+
 ### [delegation](skills/delegation)
 
 | skill                                                      | Description                                                                     |

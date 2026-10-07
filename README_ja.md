@@ -21,6 +21,8 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Finder/Verifier SubAgentでPRのコードレビューを行い、レポートとインラインコメントを投稿する |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | PRのレビューコメントを確認し、対応・返信する                                               |
 
+`github-pr-create` の表現の選択 (`references/visuals.md` の疑似コード、call tree、component tree、file tree、それらの `diff`) は、[mattpocock/skills v1.3.1の`pr` skill](https://github.com/mattpocock/skills/tree/v1.3.1/skills/engineering/pr)をもとに改変した。同skillはDex Horthyの[`show-me` skill](https://github.com/humanlayer/skills/blob/main/plugins/show-me/skills/show-me/SKILL.md)をもとにしている。どちらもMIT Licenseで公開されている。
+
 ### [delegation](skills/delegation)
 
 | skill                                                      | 説明                                                                    |
