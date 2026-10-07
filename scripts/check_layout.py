@@ -6,6 +6,7 @@
 - the frontmatter name is required, must match the directory name, and must follow the naming rules
 - the frontmatter description is required and must not be empty
 - allowed-tools must be a string, not an array (gh skill validation requirement)
+- a skill must not call a user-invoked skill (disable-model-invocation: true) through the Skill tool
 """
 
 import re
@@ -14,6 +15,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+SKILL_CALL_RE = re.compile(
+    r"Skill\(([a-z0-9-]+)\)|Skill tool(?:で| with) [`\"]([a-z0-9-]+)[`\"]"
+)
 
 errors: list[str] = []
 
@@ -57,6 +61,28 @@ def check_frontmatter(skill_md: Path) -> None:
         errors.append(f"{rel}: allowed-tools must be a string, not an array")
 
 
+def check_skill_calls(skill_mds: list[Path]) -> None:
+    """Report Skill tool calls to user-invoked skills, which the tool cannot load.
+
+    Args:
+        skill_mds: Paths to every SKILL.md in the repository.
+    """
+    user_invoked = {
+        md.parent.name
+        for md in skill_mds
+        if re.search(
+            r"^disable-model-invocation:[ \t]*true[ \t]*$", md.read_text(), re.MULTILINE
+        )
+    }
+    for md in skill_mds:
+        for m in SKILL_CALL_RE.finditer(md.read_text()):
+            name = m.group(1) or m.group(2)
+            if name in user_invoked:
+                errors.append(
+                    f"{md.relative_to(ROOT)}: calls user-invoked skill '{name}' through the Skill tool; ask the user to run it instead"
+                )
+
+
 def main() -> None:
     """Run all layout checks and exit with 1 if any violation is found."""
     if (ROOT / "SKILL.md").exists():
@@ -76,6 +102,8 @@ def main() -> None:
                 check_frontmatter(skill_dir / "SKILL.md")
             else:
                 errors.append(f"{skill_dir.relative_to(ROOT)}: missing SKILL.md")
+
+    check_skill_calls(sorted(ROOT.glob("skills/*/*/SKILL.md")))
 
     if errors:
         print("\n".join(errors))

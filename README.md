@@ -21,6 +21,8 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Review a PR with Finder/Verifier subagents and post a report and inline comments                       |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | Check PR review comments, address them, and reply                                                      |
 
+`github-pr-create` is inspired by the [`pr` skill in mattpocock/skills](https://github.com/mattpocock/skills/tree/main/skills/engineering/pr).
+
 ### [delegation](skills/delegation)
 
 | skill                                                      | Description                                                                     |

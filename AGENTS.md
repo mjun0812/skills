@@ -27,6 +27,7 @@ skill本体、配布用manifest、英日READMEの一覧を常に一致させる�
 - `SKILL.md`は`skills/<category>/<name>/`の深さにだけ配置し、リポジトリ直下には置かない。
 - frontmatterの`name`はdirectory名と一致させ、空でない`description`を記載する。
 - `allowed-tools`を指定する場合は文字列で記載し、YAMLの配列にしない。
+- 手順の中で他のskillを読み込ませる場合は「Skill toolで`<name>`を呼ぶ」と明示する。`disable-model-invocation: true`のskillは呼べないため、ユーザーに実行を依頼させる。
 - skillを追加、削除、改名した場合は`.claude-plugin/plugin.json`の`skills`一覧を更新する。
 - `.codex-plugin/plugin.json`は`./skills`全体を参照するため、個別skillの追加だけでは変更しない。
 - skill一覧を変更した場合は`README.md`と`README_ja.md`を同時に更新する。categoryに`README.md`がある場合はそれも更新する。

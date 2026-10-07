@@ -18,7 +18,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 ## 0. 事前チェック
 
-1. **branchとcommitの準備**: 現在のbranchがdefault branchの場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得てから、branch作成とcommitをgit-commit skillへ委譲する。ここで中止すると、ユーザーは同じ変更を自分でcommitし直してから再度依頼することになるため
+1. **branchとcommitの準備**: 現在のbranchがdefault branchの場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得てから、Skill toolで `git-commit` を呼び、branch作成とcommitを委譲する。ここで中止すると、ユーザーは同じ変更を自分でcommitし直してから再度依頼することになるため
 2. **base branchの決定**:
    - ユーザーが会話で明示したbase branchを使う。明示が無ければrepositoryのdefault branchを使う
    - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざる場合は、open PRのhead branchのうちHEADが直接積み上がっているものをbaseにする。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
@@ -63,7 +63,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 ### 表現の選択
 
-単純な手順は番号付きリスト、短い比較や測定値はMarkdown表、小さなコードの変更は `diff` コードブロックにする。ファイル・ディレクトリの整理(追加・削除・移動・改名)を伴う場合は、取得したdiffを根拠に、[ファイル構成の差分](references/visuals.md#ファイル構成の差分) に従いtree形式の `diff` コードブロックを入れる。関係や差異が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読んでMermaid・SVG・PNGを選ぶ。図専用の必須セクションは増やさず、実装方針・変更内容・検証結果など既存の対応するセクションへ置く。
+単純な手順は番号付きリスト、短い比較や測定値はMarkdown表、小さなコードの変更は `diff` コードブロックにする。ファイル・ディレクトリの整理(追加・削除・移動・改名)を伴う場合は、取得したdiffを根拠に、[ファイル構成の差分](references/visuals.md#ファイル構成の差分) に従いtree形式の `diff` コードブロックを入れる。ロジック・制御フロー・構造の変化が文章だけでは掴みにくい場合は、[図と画像の規則](references/visuals.md) を読み、疑似コード・tree・`diff`・Mermaid・画像から要点が伝わる最小の表現を選ぶ。図専用の必須セクションは増やさず、実装方針・変更内容・検証結果など既存の対応するセクションへ置く。
 
 ## 5. Pull Requestの作成
 

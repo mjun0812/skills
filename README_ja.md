@@ -21,6 +21,8 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-review](skills/github/github-pr-review)                   | Finder/Verifier SubAgentでPRのコードレビューを行い、レポートとインラインコメントを投稿する |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | PRのレビューコメントを確認し、対応・返信する                                               |
 
+`github-pr-create` は[mattpocock/skillsの`pr` skill](https://github.com/mattpocock/skills/tree/main/skills/engineering/pr)を参考にした。
+
 ### [delegation](skills/delegation)
 
 | skill                                                      | 説明                                                                    |

@@ -20,4 +20,4 @@
 
 ## Validation Results
 
-<!-- Describe what was validated, how it was validated, and the observed results. Include before/after evidence for bug fixes or performance changes when possible. If tests were not run, state that explicitly and explain why. -->
+<!-- Describe what was validated, how it was validated, and the observed results. For evidence, prefer screenshots when the change is visual and the environment can capture them; otherwise prefer test results or command output. Include before/after evidence for bug fixes or performance changes when possible, and when a test shows it, add pseudocode of the test that fails before the change and passes after it. If tests were not run, state that explicitly and explain why. -->
