@@ -74,7 +74,7 @@ allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat
 
 Phase 3でコンフリクト (`CONFLICTING`) が検出された場合のみ:
 
-- `git-fix-conflict` Skill を `<worktree-path>` 内で実行
+- `<worktree-path>` 内でSkill toolで `git-fix-conflict` を呼ぶ
 - 完了を待ってから、再度 `gh pr view --json mergeable --jq '.mergeable'` でコンフリクトが解消されたことを確認する
 - 検出された言語でステータスを報告する
 
@@ -82,7 +82,7 @@ Phase 3でコンフリクト (`CONFLICTING`) が検出された場合のみ:
 
 Phase 3で失敗チェックが検出された場合のみ:
 
-- `github-fix-ci` Skill を `<worktree-path>` 内で実行
+- `<worktree-path>` 内でSkill toolで `github-fix-ci` を呼ぶ
 - 完了を待つ。プッシュ後にCIが再実行されることに注意する
 - 検出された言語でステータスを報告する
 
@@ -90,7 +90,7 @@ Phase 3で失敗チェックが検出された場合のみ:
 
 Phase 3で未解決スレッドが検出された場合のみ:
 
-- `github-resolve-pr-comment` Skill を `<worktree-path>` 内で実行 (同Skillにはレビューコメントへのリプライを常に投稿させる)
+- `<worktree-path>` 内でSkill toolで `github-resolve-pr-comment` を呼ぶ (同Skillにはレビューコメントへのリプライを常に投稿させる)
 - 完了後、再度 [`scripts/fetch_review_threads.sh`](scripts/fetch_review_threads.sh) の `--only-unresolved` で unresolved 数の差分を取って報告する
 - 検出された言語でステータスを報告する
 

@@ -316,6 +316,15 @@ Use skill name only, with explicit requirement markers:
 
 **Why no @ links:** `@` syntax force-loads files immediately, consuming 200k+ context before you need them.
 
+**When a step must load another skill, name the tool call:**
+
+- ✅ Good: `Call the Skill tool with "git-commit"`
+- ✅ Good: `Call the Skill tool twice, for "grill-me" and "japanese-tech-writing"` (one call per skill)
+- ❌ Bad: `Delegate the commit to the git-commit skill` (prose mention does not reliably load the skill)
+- ❌ Bad: `Run /git-commit` (assumes Claude Code's slash syntax)
+
+A user-invoked skill (`disable-model-invocation: true`) cannot be called through the Skill tool. Tell the agent to ask the human to run it instead.
+
 ## Flowchart Usage
 
 ```dot

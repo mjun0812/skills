@@ -106,12 +106,12 @@ Phase 3の間は以下の制約を守る。
 
 ### Phase 4: commitとPR作成 (git-commit / github-pr-create に連結)
 
-メイン会話が、作業ディレクトリをworktreeの絶対パスに切り替えた上で、以下の順に連結先skillを起動する。
+メイン会話が、作業ディレクトリをworktreeの絶対パスに切り替えた上で、以下の順にSkill toolで連結先skillを呼ぶ。
 
-1. **`git-commit` skillでcommitを作成する**:
+1. **Skill toolで `git-commit` を呼び、commitを作成する**:
    - 対象はPhase 3でworktree内に作られたすべての変更
    - Phase 1で決めた出力言語を `language` として渡す
-2. **`github-pr-create` skillでPRを作成する**:
+2. **Skill toolで `github-pr-create` を呼び、PRを作成する**:
    - Phase 1で決めた出力言語を `language` として渡し、`--draft` の指定有無を転送する
    - push・PRタイトルと本文の生成・PR作成の実行はすべて連結先skillが行う。手順をこちらで再実装しない
 3. **メイン会話で結果を検証する**:

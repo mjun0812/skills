@@ -18,7 +18,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 ## 0. 事前チェック
 
-1. **branchとcommitの準備**: 現在のbranchがdefault branchの場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得てから、branch作成とcommitをgit-commit skillへ委譲する。ここで中止すると、ユーザーは同じ変更を自分でcommitし直してから再度依頼することになるため
+1. **branchとcommitの準備**: 現在のbranchがdefault branchの場合、または未commitの変更がある場合は、branch名とcommitの分割案を提示して承認を得てから、Skill toolで `git-commit` を呼び、branch作成とcommitを委譲する。ここで中止すると、ユーザーは同じ変更を自分でcommitし直してから再度依頼することになるため
 2. **base branchの決定**:
    - ユーザーが会話で明示したbase branchを使う。明示が無ければrepositoryのdefault branchを使う
    - `git log --oneline origin/<base>..HEAD` に今回の作業と無関係なcommitが混ざる場合は、open PRのhead branchのうちHEADが直接積み上がっているものをbaseにする。1つに決まらなければ、AskUserQuestionで候補branchを提示してユーザーに確認する
