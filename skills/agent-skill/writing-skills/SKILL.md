@@ -1,6 +1,6 @@
 ---
 name: writing-skills
-description: skillの新規作成、既存skillの編集、deploy前のskillの動作検証を行うときに使う。既存のskillを固定の基準で採点する場合には使わない(skill-reviewを使う)
+description: agent skillを作成・編集し、agentが実際に従うかを検証するSkill。ユーザーが「skillを作って」「このskillを直して」と依頼したときや、deploy前にskillの動作を確かめるときに使うこと。既存のskillを固定の基準で採点する場合は使わない(skill-reviewを使う)
 ---
 
 # Writing Skills
@@ -103,16 +103,17 @@ skills/
 - 必須フィールドは `name` と `description` の2つ (対応するすべてのフィールドは [agentskills.io/specification](https://agentskills.io/specification) を参照)
 - 合計で最大1024文字
 - `name`: 英字、数字、ハイフンだけを使う(括弧や特殊文字は不可)
-- `description`: 三人称で、いつ使うかだけを書く(何をするかは書かない)
-  - 「Use when...」で始め、発動条件に焦点を当てる
-  - 具体的な症状、状況、文脈を含める
+- `description`: 何をするskillかを1文目で示し、続けていつ使うかを書く
+  - 発動条件として、典型的な依頼フレーズ (「〜して」と依頼したら使うこと) や具体的な症状、状況を含める
+  - 誤発動しやすい隣接ケースがあれば「〜の場合は使わない」と書く
+  - 「私が」「あなたは」を主語にせず、「お手伝いします」のような語りかけをしない
   - **skillのプロセスやワークフローを決して要約しない** (理由はSDOの節を参照)
   - できれば500文字未満にする
 
 ```markdown
 ---
 name: Skill-Name-With-Hyphens
-description: Use when [specific triggering conditions and symptoms]
+description: [何をするskillかを1文で]。[典型的な依頼フレーズや症状]のときに使うこと。
 ---
 
 # Skill Name
@@ -158,30 +159,30 @@ description: Use when [specific triggering conditions and symptoms]
 
 **目的:** agentはdescriptionを読んで、与えられたタスクでどのskillを読み込むかを決める。「今このskillを読むべきか」に答えられるようにする。
 
-**形式:** 「Use when...」で始め、発動条件に焦点を当てる
+**形式:** 1文目で何をするskillかを示し、続けて発動条件を書く (「〜と依頼したら使うこと」)
 
-**重要: description = いつ使うか。skillが何をするかではない**
+**重要: description = 何をするかの1文といつ使うか。どう進めるかではない**
 
-descriptionには発動条件だけを書く。skillのプロセスやワークフローをdescriptionで要約してはならない。
+descriptionには、何をするskillかの短い1文と発動条件だけを書く。skillのプロセスやワークフローをdescriptionで要約してはならない。
 
 **これが重要な理由:** テストの結果、descriptionがskillのワークフローを要約していると、agentがskill本文を読まずにdescriptionに従うことがあると分かった。「タスクの間にcode review」というdescriptionのせいで、agentはreviewを1回しか行わなかった。skillのflowchartには2回(spec適合性、次にコード品質)と明記されていたにもかかわらずだ。
 
-descriptionを「Use when executing implementation plans with independent tasks」だけ(ワークフローの要約なし)に変えると、agentはflowchartを正しく読み、2段階のreviewに従った。
+descriptionを発動条件だけ(ワークフローの要約なし)に変えると、agentはflowchartを正しく読み、2段階のreviewに従った。
 
 **罠:** ワークフローを要約したdescriptionは、agentが取る近道になる。skill本文が、agentに飛ばされる文書になってしまう。
 
 ```yaml
 # ❌ BAD: ワークフローを要約している - agentがskillを読まずにこれに従うことがある
-description: Use when executing plans - dispatches subagent per task with code review between tasks
+description: 実装計画を実行するSkill。taskごとにsubagentを起動し、task間でcode reviewを行う。
 
 # ❌ BAD: プロセスの詳細が多すぎる
-description: Use for TDD - write test first, watch it fail, write minimal code, refactor
+description: TDDを行うSkill。最初にテストを書き、失敗を確認し、最小限のコードを書き、refactorする。
 
-# ✅ GOOD: 発動条件だけで、ワークフローの要約がない
-description: Use when executing implementation plans with independent tasks in the current session
+# ✅ GOOD: 何をするかの1文と発動条件だけで、ワークフローの要約がない
+description: 独立したtaskからなる実装計画を、現在のsessionで実行するSkill。ユーザーが「この計画を実装して」と依頼したら使うこと。
 
-# ✅ GOOD: 発動条件だけ
-description: Use when implementing any feature or bugfix, before writing implementation code
+# ✅ GOOD: 何をするかの1文と発動条件だけ
+description: 機能追加やbug修正をテストから進めるSkill。実装コードを書く前に使うこと。
 ```
 
 **内容:**
@@ -190,24 +191,24 @@ description: Use when implementing any feature or bugfix, before writing impleme
 - 問題(race condition、一貫しない挙動)を書き、_言語固有の症状_ (setTimeout、sleep)は書かない
 - skill自体が特定の技術に固有でない限り、発動条件は技術に依存しない形にする
 - skillが特定の技術に固有なら、発動条件でそれを明示する
-- 三人称で書く(system promptに注入されるため)
+- 「私が」「あなたは」を主語にせず、語りかけない (system promptに注入されるため)
 - **skillのプロセスやワークフローを決して要約しない**
 
 ```yaml
 # ❌ BAD: 抽象的で曖昧で、いつ使うかが含まれていない
-description: For async testing
+description: 非同期テスト用のSkill。
 
-# ❌ BAD: 一人称
-description: I can help you with async tests when they're flaky
+# ❌ BAD: 語りかけている
+description: flakyな非同期テストでお困りなら、私がお手伝いします。
 
 # ❌ BAD: 技術に言及しているが、skillはその技術に固有ではない
-description: Use when tests use setTimeout/sleep and are flaky
+description: setTimeoutやsleepを使うflakyなテストを直すSkill。テストがflakyなときに使うこと。
 
-# ✅ GOOD: 「Use when」で始まり、問題を述べ、ワークフローがない
-description: Use when tests have race conditions, timing dependencies, or pass/fail inconsistently
+# ✅ GOOD: 何をするかを1文で示し、問題を述べ、ワークフローがない
+description: タイミングに依存して不安定なテストを安定させるSkill。テストにrace conditionがあるときや、実行ごとに成否が変わるときに使うこと。
 
 # ✅ GOOD: 技術固有のskillで、発動条件が明示されている
-description: Use when using React Router and handling authentication redirects
+description: React Routerの認証リダイレクトを扱うSkill。React Routerで認証後のリダイレクトを実装・修正するときに使うこと。
 ```
 
 ### 2. キーワードの網羅
@@ -218,6 +219,7 @@ agentが検索しそうな語を使う。
 - 症状: "flaky"、"hanging"、"zombie"、"pollution"
 - 同義語: "timeout/hang/freeze"、"cleanup/teardown/afterEach"
 - ツール: 実際のコマンド、ライブラリ名、ファイルの種類
+- 依頼フレーズ: 「テストが不安定なので直して」のように、ユーザーが実際に書く言い回し
 
 ### 3. 説明的な命名
 
@@ -230,11 +232,11 @@ agentが検索しそうな語を使う。
 
 **問題:** getting-startedや頻繁に参照されるskillは、すべての会話に読み込まれる。tokenはすべて重要だ。
 
-**目標の語数:**
+**目標の文字数:**
 
-- getting-startedのワークフロー: 各150語未満
-- 頻繁に読み込まれるskill: 合計200語未満
-- その他のskill: 500語未満(それでも簡潔にする)
+- getting-startedのワークフロー: 各400文字未満
+- 頻繁に読み込まれるskill: 合計500文字未満
+- その他のskill: 1,300文字未満(それでも簡潔にする)
 
 **技法:**
 
@@ -242,10 +244,10 @@ agentが検索しそうな語を使う。
 
 ```bash
 # ❌ BAD: すべてのフラグをSKILL.mdに書く
-search-conversations supports --text, --both, --after DATE, --before DATE, --limit N
+search-conversationsは --text、--both、--after DATE、--before DATE、--limit N に対応する
 
 # ✅ GOOD: --helpを参照させる
-search-conversations supports multiple modes and filters. Run --help for details.
+search-conversationsは複数のモードと絞り込みに対応する。詳細は --help を実行する。
 ```
 
 **相互参照を使う:**
@@ -253,28 +255,28 @@ search-conversations supports multiple modes and filters. Run --help for details
 ```markdown
 # ❌ BAD: ワークフローの詳細を繰り返す
 
-When searching, dispatch subagent with template...
-[20 lines of repeated instructions]
+検索するときは、templateを使ってsubagentを起動し...
+[繰り返された20行の指示]
 
 # ✅ GOOD: 他のskillを参照する
 
-Always use subagents (50-100x context savings). REQUIRED: Use [other-skill-name] for workflow.
+常にsubagentを使う (contextを50〜100倍節約できる)。ワークフローは必ずSkill toolで `other-skill-name` を呼んで従う。
 ```
 
 **例を圧縮する:**
 
 ```markdown
-# ❌ BAD: 冗長な例 (42語)
+# ❌ BAD: 冗長な例 (134文字)
 
-your human partner: "How did we handle authentication errors in React Router before?"
-You: I'll search past conversations for React Router authentication patterns.
-[Dispatch subagent with search query: "React Router authentication error handling 401"]
+人間のパートナー: 「以前、React Routerの認証エラーをどのように扱ったか覚えている?」
+あなた: 過去の会話から、React Routerの認証パターンを検索します。
+[検索クエリ「React Router 認証エラー 処理 401」でsubagentを起動]
 
-# ✅ GOOD: 最小限の例 (20語)
+# ✅ GOOD: 最小限の例 (63文字)
 
-Partner: "How did we handle auth errors in React Router?"
-You: Searching...
-[Dispatch subagent → synthesis]
+パートナー: 「React Routerの認証エラー、どう扱った?」
+あなた: 検索中...
+[subagentを起動 → 統合]
 ```
 
 **冗長さをなくす:**
@@ -286,9 +288,9 @@ You: Searching...
 **検証:**
 
 ```bash
-wc -w skills/path/SKILL.md
-# getting-started workflows: aim for <150 each
-# Other frequently-loaded: aim for <200 total
+wc -m skills/path/SKILL.md
+# getting-startedのワークフロー: 各400文字未満を目安にする
+# 頻繁に読み込まれるskill: 合計500文字未満を目安にする
 ```
 
 **自分が何をするか、または中心となる洞察で名付ける:**
@@ -309,8 +311,8 @@ wc -w skills/path/SKILL.md
 
 skill名だけを使い、必須であることを示す明示的なマーカーを付ける。
 
-- ✅ Good: `**REQUIRED SUB-SKILL:** Use test-driven-development`
-- ✅ Good: `**REQUIRED BACKGROUND:** You MUST understand systematic-debugging`
+- ✅ Good: `**必須のサブskill:** test-driven-developmentを使う`
+- ✅ Good: `**必須の前提知識:** systematic-debuggingを必ず理解しておく`
 - ❌ Bad: `See skills/testing/test-driven-development` (必須かどうか不明)
 - ❌ Bad: `@skills/testing/test-driven-development/SKILL.md` (強制的に読み込まれ、contextを消費する)
 
@@ -706,8 +708,8 @@ helper1、helper2、step3、pattern4
 
 - [ ] 名前に英字、数字、ハイフンだけを使う (括弧や特殊文字は不可)
 - [ ] 必須の `name` と `description` を持つYAML frontmatter (最大1024文字。[仕様](https://agentskills.io/specification)を参照)
-- [ ] descriptionが「Use when...」で始まり、具体的な発動条件や症状を含む
-- [ ] descriptionを三人称で書く
+- [ ] descriptionの1文目で何をするskillかを示し、具体的な発動条件や依頼フレーズを含む
+- [ ] descriptionで「私が」「あなたは」を主語にせず、語りかけない
 - [ ] 検索のためのキーワードを全体に入れる (エラー、症状、ツール)
 - [ ] 中心原則を含む明確な概要
 - [ ] REDで特定した具体的なbaselineの失敗に対処する
