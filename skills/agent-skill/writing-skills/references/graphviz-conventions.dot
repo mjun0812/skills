@@ -1,169 +1,169 @@
 digraph STYLE_GUIDE {
-    // The style guide for our process DSL, written in the DSL itself
+    // このプロセスDSLのスタイルガイド。DSL自身で記述している
 
-    // Node type examples with their shapes
+    // ノード種別と形状の例
     subgraph cluster_node_types {
-        label="NODE TYPES AND SHAPES";
+        label="ノード種別と形状";
 
-        // Questions are diamonds
-        "Is this a question?" [shape=diamond];
+        // 質問はひし形
+        "これは質問か?" [shape=diamond];
 
-        // Actions are boxes (default)
-        "Take an action" [shape=box];
+        // アクションはボックス(デフォルト)
+        "アクションを実行する" [shape=box];
 
-        // Commands are plaintext
+        // コマンドはplaintext
         "git commit -m 'msg'" [shape=plaintext];
 
-        // States are ellipses
-        "Current state" [shape=ellipse];
+        // 状態は楕円
+        "現在の状態" [shape=ellipse];
 
-        // Warnings are octagons
-        "STOP: Critical warning" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
+        // 警告は八角形
+        "STOP: 重大な警告" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
 
-        // Entry/exit are double circles
-        "Process starts" [shape=doublecircle];
-        "Process complete" [shape=doublecircle];
+        // 開始・終了は二重丸
+        "プロセス開始" [shape=doublecircle];
+        "プロセス完了" [shape=doublecircle];
 
-        // Examples of each
-        "Is test passing?" [shape=diamond];
-        "Write test first" [shape=box];
+        // それぞれの例
+        "テストは通っているか?" [shape=diamond];
+        "先にテストを書く" [shape=box];
         "npm test" [shape=plaintext];
-        "I am stuck" [shape=ellipse];
-        "NEVER use git add -A" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
+        "行き詰まった" [shape=ellipse];
+        "git add -A は絶対に使わない" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
     }
 
-    // Edge naming conventions
+    // エッジの命名規則
     subgraph cluster_edge_types {
-        label="EDGE LABELS";
+        label="エッジのラベル";
 
-        "Binary decision?" [shape=diamond];
-        "Yes path" [shape=box];
-        "No path" [shape=box];
+        "二択の判断か?" [shape=diamond];
+        "Yesの経路" [shape=box];
+        "Noの経路" [shape=box];
 
-        "Binary decision?" -> "Yes path" [label="yes"];
-        "Binary decision?" -> "No path" [label="no"];
+        "二択の判断か?" -> "Yesの経路" [label="yes"];
+        "二択の判断か?" -> "Noの経路" [label="no"];
 
-        "Multiple choice?" [shape=diamond];
-        "Option A" [shape=box];
-        "Option B" [shape=box];
-        "Option C" [shape=box];
+        "複数の選択肢か?" [shape=diamond];
+        "選択肢A" [shape=box];
+        "選択肢B" [shape=box];
+        "選択肢C" [shape=box];
 
-        "Multiple choice?" -> "Option A" [label="condition A"];
-        "Multiple choice?" -> "Option B" [label="condition B"];
-        "Multiple choice?" -> "Option C" [label="otherwise"];
+        "複数の選択肢か?" -> "選択肢A" [label="条件A"];
+        "複数の選択肢か?" -> "選択肢B" [label="条件B"];
+        "複数の選択肢か?" -> "選択肢C" [label="それ以外"];
 
-        "Process A done" [shape=doublecircle];
-        "Process B starts" [shape=doublecircle];
+        "プロセスA完了" [shape=doublecircle];
+        "プロセスB開始" [shape=doublecircle];
 
-        "Process A done" -> "Process B starts" [label="triggers", style=dotted];
+        "プロセスA完了" -> "プロセスB開始" [label="トリガーする", style=dotted];
     }
 
-    // Naming patterns
+    // 命名パターン
     subgraph cluster_naming_patterns {
-        label="NAMING PATTERNS";
+        label="命名パターン";
 
-        // Questions end with ?
-        "Should I do X?";
-        "Can this be Y?";
-        "Is Z true?";
-        "Have I done W?";
+        // 質問は?で終わる
+        "Xをすべきか?";
+        "これはYになりうるか?";
+        "Zは真か?";
+        "Wは済んだか?";
 
-        // Actions start with verb
-        "Write the test";
-        "Search for patterns";
-        "Commit changes";
-        "Ask for help";
+        // アクションは動詞で始まる
+        "テストを書く";
+        "パターンを検索する";
+        "変更をコミットする";
+        "助けを求める";
 
-        // Commands are literal
+        // コマンドはそのまま書く
         "grep -r 'pattern' .";
         "git status";
         "npm run build";
 
-        // States describe situation
-        "Test is failing";
-        "Build complete";
-        "Stuck on error";
+        // 状態は状況を表す
+        "テストが失敗している";
+        "ビルド完了";
+        "エラーで行き詰まっている";
     }
 
-    // Process structure template
+    // プロセス構造のテンプレート
     subgraph cluster_structure {
-        label="PROCESS STRUCTURE TEMPLATE";
+        label="プロセス構造のテンプレート";
 
-        "Trigger: Something happens" [shape=ellipse];
-        "Initial check?" [shape=diamond];
-        "Main action" [shape=box];
+        "トリガー: 何かが起きる" [shape=ellipse];
+        "最初の確認?" [shape=diamond];
+        "メインのアクション" [shape=box];
         "git status" [shape=plaintext];
-        "Another check?" [shape=diamond];
-        "Alternative action" [shape=box];
-        "STOP: Don't do this" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
-        "Process complete" [shape=doublecircle];
+        "別の確認?" [shape=diamond];
+        "代替のアクション" [shape=box];
+        "STOP: これはやらない" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
+        "プロセス完了" [shape=doublecircle];
 
-        "Trigger: Something happens" -> "Initial check?";
-        "Initial check?" -> "Main action" [label="yes"];
-        "Initial check?" -> "Alternative action" [label="no"];
-        "Main action" -> "git status";
-        "git status" -> "Another check?";
-        "Another check?" -> "Process complete" [label="ok"];
-        "Another check?" -> "STOP: Don't do this" [label="problem"];
-        "Alternative action" -> "Process complete";
+        "トリガー: 何かが起きる" -> "最初の確認?";
+        "最初の確認?" -> "メインのアクション" [label="yes"];
+        "最初の確認?" -> "代替のアクション" [label="no"];
+        "メインのアクション" -> "git status";
+        "git status" -> "別の確認?";
+        "別の確認?" -> "プロセス完了" [label="ok"];
+        "別の確認?" -> "STOP: これはやらない" [label="問題あり"];
+        "代替のアクション" -> "プロセス完了";
     }
 
-    // When to use which shape
+    // どの形状をいつ使うか
     subgraph cluster_shape_rules {
-        label="WHEN TO USE EACH SHAPE";
+        label="各形状を使う場面";
 
-        "Choosing a shape" [shape=ellipse];
+        "形状を選ぶ" [shape=ellipse];
 
-        "Is it a decision?" [shape=diamond];
-        "Use diamond" [shape=diamond, style=filled, fillcolor=lightblue];
+        "判断か?" [shape=diamond];
+        "ひし形を使う" [shape=diamond, style=filled, fillcolor=lightblue];
 
-        "Is it a command?" [shape=diamond];
-        "Use plaintext" [shape=plaintext, style=filled, fillcolor=lightgray];
+        "コマンドか?" [shape=diamond];
+        "plaintextを使う" [shape=plaintext, style=filled, fillcolor=lightgray];
 
-        "Is it a warning?" [shape=diamond];
-        "Use octagon" [shape=octagon, style=filled, fillcolor=pink];
+        "警告か?" [shape=diamond];
+        "八角形を使う" [shape=octagon, style=filled, fillcolor=pink];
 
-        "Is it entry/exit?" [shape=diamond];
-        "Use doublecircle" [shape=doublecircle, style=filled, fillcolor=lightgreen];
+        "開始・終了か?" [shape=diamond];
+        "二重丸を使う" [shape=doublecircle, style=filled, fillcolor=lightgreen];
 
-        "Is it a state?" [shape=diamond];
-        "Use ellipse" [shape=ellipse, style=filled, fillcolor=lightyellow];
+        "状態か?" [shape=diamond];
+        "楕円を使う" [shape=ellipse, style=filled, fillcolor=lightyellow];
 
-        "Default: use box" [shape=box, style=filled, fillcolor=lightcyan];
+        "デフォルト: ボックスを使う" [shape=box, style=filled, fillcolor=lightcyan];
 
-        "Choosing a shape" -> "Is it a decision?";
-        "Is it a decision?" -> "Use diamond" [label="yes"];
-        "Is it a decision?" -> "Is it a command?" [label="no"];
-        "Is it a command?" -> "Use plaintext" [label="yes"];
-        "Is it a command?" -> "Is it a warning?" [label="no"];
-        "Is it a warning?" -> "Use octagon" [label="yes"];
-        "Is it a warning?" -> "Is it entry/exit?" [label="no"];
-        "Is it entry/exit?" -> "Use doublecircle" [label="yes"];
-        "Is it entry/exit?" -> "Is it a state?" [label="no"];
-        "Is it a state?" -> "Use ellipse" [label="yes"];
-        "Is it a state?" -> "Default: use box" [label="no"];
+        "形状を選ぶ" -> "判断か?";
+        "判断か?" -> "ひし形を使う" [label="yes"];
+        "判断か?" -> "コマンドか?" [label="no"];
+        "コマンドか?" -> "plaintextを使う" [label="yes"];
+        "コマンドか?" -> "警告か?" [label="no"];
+        "警告か?" -> "八角形を使う" [label="yes"];
+        "警告か?" -> "開始・終了か?" [label="no"];
+        "開始・終了か?" -> "二重丸を使う" [label="yes"];
+        "開始・終了か?" -> "状態か?" [label="no"];
+        "状態か?" -> "楕円を使う" [label="yes"];
+        "状態か?" -> "デフォルト: ボックスを使う" [label="no"];
     }
 
-    // Good vs bad examples
+    // 良い例と悪い例
     subgraph cluster_examples {
-        label="GOOD VS BAD EXAMPLES";
+        label="良い例と悪い例";
 
-        // Good: specific and shaped correctly
-        "Test failed" [shape=ellipse];
-        "Read error message" [shape=box];
-        "Can reproduce?" [shape=diamond];
+        // 良い例: 具体的で、形状が正しい
+        "テストが失敗した" [shape=ellipse];
+        "エラーメッセージを読む" [shape=box];
+        "再現できるか?" [shape=diamond];
         "git diff HEAD~1" [shape=plaintext];
-        "NEVER ignore errors" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
+        "エラーを絶対に無視しない" [shape=octagon, style=filled, fillcolor=red, fontcolor=white];
 
-        "Test failed" -> "Read error message";
-        "Read error message" -> "Can reproduce?";
-        "Can reproduce?" -> "git diff HEAD~1" [label="yes"];
+        "テストが失敗した" -> "エラーメッセージを読む";
+        "エラーメッセージを読む" -> "再現できるか?";
+        "再現できるか?" -> "git diff HEAD~1" [label="yes"];
 
-        // Bad: vague and wrong shapes
-        bad_1 [label="Something wrong", shape=box];  // Should be ellipse (state)
-        bad_2 [label="Fix it", shape=box];  // Too vague
-        bad_3 [label="Check", shape=box];  // Should be diamond
-        bad_4 [label="Run command", shape=box];  // Should be plaintext with actual command
+        // 悪い例: 曖昧で、形状が誤っている
+        bad_1 [label="何かがおかしい", shape=box];  // 楕円(状態)にすべき
+        bad_2 [label="直す", shape=box];  // 曖昧すぎる
+        bad_3 [label="確認する", shape=box];  // ひし形にすべき
+        bad_4 [label="コマンドを実行する", shape=box];  // 実際のコマンドを書いたplaintextにすべき
 
         bad_1 -> bad_2;
         bad_2 -> bad_3;
