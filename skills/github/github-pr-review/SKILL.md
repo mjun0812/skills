@@ -8,7 +8,7 @@ allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash
 
 # Pull Request Review
 
-PRのhead commitを worktree にチェックアウトし、Finder SubAgentが指摘候補を探す。
+PRのhead commitを worktree にチェックアウトし、重点の異なる2つのFinder SubAgentが指摘候補を探す。
 Finder SubAgentが出した指摘候補は、1件ずつ Verifier SubAgent が反証を試み、
 検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する。
 並行して Standards SubAgent がmergeをブロックすべき規約違反・コードスメルの指摘候補を探し、1件ずつ Verifier の検証を経たものだけを同じレビューに含める。
@@ -21,6 +21,8 @@ spec sourceを解決できる場合は、Contract SubAgent がspecとの不整�
 - `--dry-run`: 生成したレポート本文をチャットに提示するのみで、`post_review.sh` 等の投稿スクリプト・dismiss・resolve操作を一切呼ばない(worktreeの後片付けは通常どおり行う)
 
 ## Task
+
+1回の実行で扱うPRは1件だけとする。複数のPRのレビューを依頼された場合は、同じcontextで並行させず、1件のPhase 4が終わってから次のPRを始める。並行させると、別のPRのdiffやcontractが入力に混ざる。
 
 ### Phase 1: 準備
 
@@ -66,7 +68,7 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 
 #### Phase 2.1: FinderとStandardsとContract SubAgentの実行
 
-`code-reviewer-finder` と `code-reviewer-standards` を並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
+`code-reviewer-finder` を2つ、`code-reviewer-standards` を1つ並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
 Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロックすべき規約違反・コードスメルの指摘候補を、Contractはspec contractとの食い違い (未充足・boundary違反・scope creep) の指摘候補を収集する。specとコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
 レビュー方法、実行制約、出力形式はそれぞれのagent定義に従う。
 次のprompt templateを使用する。
@@ -74,6 +76,9 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 ```text
 以下の対象変更を、agent定義の責務・判定基準・出力形式に従ってレビューする。
 あなたの役割: <role>
+重点視点: <focus>
+
+重点視点に限定せず、対象変更の全変更単位を確認する。
 
 対象変更:
 - 対象種別: GitHub PR
@@ -90,9 +95,18 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 - spec contract: <spec-contract>
 ```
 
-`<role>` には `Finder`、`Standards`、`Contract` のいずれかを指定する。`<spec-contract>` にはContract起動時のみ解決済みspec contract全文を指定し、FinderとStandardsでは `なし` とする。
+`<role>` と `<focus>` は次の組み合わせを使用する。
+
+- Finder 1: `Finder` / 期待される振る舞い、契約、不変条件、呼び出し経路、状態・データの流れ、同時に更新すべきdiff外の箇所
+- Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
+- Standards: `Standards` / 文書化された必須規約、機械的に未検出の違反、merge後への先送りが安全でないコードスメル
+- Contract: `Contract` / spec contractとの整合 (逸脱、未充足、boundary違反、scope creep)
+
+`<spec-contract>` にはContract起動時のみ解決済みspec contract全文を指定し、FinderとStandardsでは `なし` とする。
 `<change-summary>` にはchangedFiles / additions / deletionsを、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
+
+起動したSubAgent (専用agentを使えない環境では、同じpromptを渡した汎用SubAgent) のいずれかが、同時実行数の上限などで起動できない、または結果を返さない場合は、diffを自分で読んで代わりにレビューしない。投稿、dismiss、resolveをせずにPhase 4へ進み、レビューできなかったことと原因を報告する。Phase 2.2のverifierも同じとする。
 
 #### Phase 2.2: 候補の選別と検証
 
@@ -137,13 +151,20 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 #### Phase 2.3: 確定指摘の校正とレポートの生成
 
-1. PRのタイトルと本文から出力言語を決める。主に日本語の場合は `ja`、それ以外または判定が曖昧な場合は `en`
-2. [確定指摘の書き方と findings.json](references/findings.md) に従い、確定指摘を校正して `findings.json` に書き出す。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
-3. public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
-4. レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成し、`findings.json` をそこに置いてレポート本文とinline commentsを生成する。並び順、連番、項目名、Verdict、フッターはscriptが決める。検証エラーが出た場合は `findings.json` を直して再実行する
+1. レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成し、PRのタイトルと本文を `<review-temp-dir>/pr.md` に書き出す
+2. 出力言語をscriptで決める。標準出力の `ja` または `en` を、ユーザーとの会話言語やグローバル指示に関係なく使う
+
+   ```bash
+   python "<skill-dir>/scripts/render_review.py" --pr-text "<review-temp-dir>/pr.md"
+   ```
+
+3. [確定指摘の書き方と findings.json](references/findings.md) に従い、確定指摘を出力言語で校正して `<review-temp-dir>/findings.json` に書き出す。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
+4. public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
+5. レポート本文とinline commentsを生成する。並び順、連番、項目名、Verdict、フッターはscriptが決める。検証エラーが出た場合は `findings.json` を直して再実行する
 
    ```bash
    python "<skill-dir>/scripts/render_review.py" \
+     --pr-text "<review-temp-dir>/pr.md" \
      --findings "<review-temp-dir>/findings.json" \
      --out-dir "<review-temp-dir>"
    ```
@@ -155,12 +176,16 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 ### Phase 3: レビューの投稿と置き換え
 
 `--dry-run` が指定されていない場合のみ実行する。
-最初にPRの現在のhead commit SHAを再取得し、Phase 1で保持した`<latest-commit-sha>`と比較する。一致しない場合は投稿、dismiss、resolveをすべてスキップしてPhase 4に進む。
+最初にPRの現在のhead commit SHAを再取得し、Phase 1で保持した`<latest-commit-sha>`と比較する。一致しない場合は次のとおりにしてPhase 4に進む。
+
+- 確定指摘が1件以上: Phase 3.2の手順で `<latest-commit-sha>` に対して `--event COMMENT` で投稿する。古いcommitに対するVerdictで現在のPRを承認・差し戻ししないためにCOMMENTを使い、確定した指摘はPR上に残す。Phase 3.3は実行しない
+- 確定指摘が0件: 投稿、dismiss、resolveをすべてスキップする
 
 #### Phase 3.1: event種別の決定
 
 - self review モードでは `--event COMMENT` を渡すが、body 内の Verdict 表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHub の仕様で自分の PR に `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
 - self review 以外の通常レビューでは、Phase 2.3のVerdictをそのまま `--event` に渡す
+- head commitが進んでいた場合は、self reviewかどうかに関係なく `--event COMMENT` を渡す
 
 #### Phase 3.2: レビューの投稿
 
@@ -216,5 +241,5 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
 - Verdict、Finder由来・Standards由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、レポート本文
-- レビューURL(`post_review.sh` の標準出力)。`--dry-run`、head commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
+- レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。`--dry-run`、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)

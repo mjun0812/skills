@@ -2,11 +2,14 @@
 """Render a review body and inline comments from a findings JSON file.
 
 Usage:
-    render_review.py --findings <findings.json> --out-dir <dir>
+    render_review.py --pr-text <pr.md>
+    render_review.py --pr-text <pr.md> --findings <findings.json> --out-dir <dir>
 
-Writes <dir>/body.md and <dir>/comments.json, then prints the verdict
-(APPROVE or REQUEST_CHANGES) to stdout. Validation errors are printed to
-stderr, one per line, with exit code 2.
+<pr.md> holds the PR title and body. Without --findings, prints the output
+language (ja or en) decided from it. With --findings, writes <dir>/body.md
+and <dir>/comments.json, then prints the verdict (APPROVE or REQUEST_CHANGES)
+to stdout. Validation errors, including a language that does not match the
+PR text, are printed to stderr, one per line, with exit code 2.
 
 The findings JSON is documented in references/findings.md. Every layout
 decision (ordering, numbering, field labels, footers) lives here so the
@@ -15,12 +18,18 @@ review body and the inline comments cannot disagree.
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import NotRequired, TypedDict, cast
 
 ORIGINS = ("finder", "standards", "contract")
 SIDES = ("RIGHT", "LEFT")
+
+# Code and URLs are English in both languages, so they do not count as prose.
+_NON_PROSE = re.compile(r"```.*?```|`[^`\n]*`|https?://\S+", re.DOTALL)
+_JAPANESE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]")
+_LATIN = re.compile(r"[A-Za-z]")
 
 
 class Condition(TypedDict):
@@ -90,6 +99,24 @@ LABELS = {
 }
 
 
+def detect_language(pr_text: str) -> str:
+    """Decide the report language from the PR title and body.
+
+    Japanese prose mixes in English identifiers, so the text counts as
+    Japanese once Japanese characters make up a third of its letters.
+
+    Args:
+        pr_text: The PR title and body.
+
+    Returns:
+        ``ja`` when the prose is mainly Japanese, otherwise ``en``.
+    """
+    prose = _NON_PROSE.sub(" ", pr_text)
+    japanese = len(_JAPANESE.findall(prose))
+    latin = len(_LATIN.findall(prose))
+    return "ja" if japanese and japanese * 2 >= latin else "en"
+
+
 def _is_str_list(value: object) -> bool:
     """Return whether value is a list of non-empty strings.
 
@@ -123,11 +150,12 @@ def _condition(value: object) -> tuple[str, str | None] | None:
     return None
 
 
-def validate(data: object) -> list[str]:
+def validate(data: object, language: str) -> list[str]:
     """Check the findings document and return every violation found.
 
     Args:
         data: The parsed findings JSON.
+        language: The language decided from the PR text.
 
     Returns:
         Human-readable violations, empty when the document is valid.
@@ -135,8 +163,11 @@ def validate(data: object) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ["document: must be a JSON object"]
-    if data.get("language") not in LABELS:
-        errors.append(f"language: must be one of {sorted(LABELS)}")
+    if data.get("language") != language:
+        errors.append(
+            f"language: must be {language!r}, decided from the PR title and body; "
+            "rewrite every text field in that language"
+        )
     for key in ("reviewer", "commit", "summary"):
         if not (isinstance(data.get(key), str) and data[key].strip()):
             errors.append(f"{key}: must be a non-empty string")
@@ -314,22 +345,31 @@ def main() -> int:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--findings", required=True, type=Path, help="findings JSON file"
+        "--pr-text", required=True, type=Path, help="file with the PR title and body"
     )
+    parser.add_argument("--findings", type=Path, help="findings JSON file")
     parser.add_argument(
-        "--out-dir",
-        required=True,
-        type=Path,
-        help="directory for body.md and comments.json",
+        "--out-dir", type=Path, help="directory for body.md and comments.json"
     )
     args = parser.parse_args()
+    if (args.findings is None) != (args.out_dir is None):
+        parser.error("--findings and --out-dir must be given together")
+
+    try:
+        language = detect_language(args.pr_text.read_text(encoding="utf-8"))
+    except OSError as exc:
+        print(f"{args.pr_text}: {exc}", file=sys.stderr)
+        return 2
+    if args.findings is None:
+        print(language)
+        return 0
 
     try:
         raw: object = json.loads(args.findings.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         print(f"{args.findings}: {exc}", file=sys.stderr)
         return 2
-    errors = validate(raw)
+    errors = validate(raw, language)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 2
