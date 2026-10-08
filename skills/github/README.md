@@ -90,7 +90,7 @@ The repository's PR template is used when present, otherwise `github-pr-create/r
 
 ### github-pr-review
 
-Adversarial review of a PR. Finder, Standards, and (when a spec is available) Contract subagents propose findings from a snapshot worktree; every candidate is challenged by a Verifier subagent, and only confirmed findings reach the report and inline comments. Earlier reviews by the same reviewer are dismissed and their threads resolved once the new review is posted.
+Adversarial review of a PR, one PR per run. Two Finders with different focuses, Standards, and (when a spec is available) Contract subagents propose findings from a snapshot worktree; every candidate is challenged by a Verifier subagent, and only confirmed findings reach the report and inline comments. If a subagent cannot start, the review stops without posting. Earlier reviews by the same reviewer are dismissed and their threads resolved once the new review is posted. If the PR head moves during the review, confirmed findings are posted as a `COMMENT` on the reviewed commit and earlier reviews are left as they are.
 
 | Argument         | Effect                                                                                 |
 | ---------------- | -------------------------------------------------------------------------------------- |
@@ -98,7 +98,7 @@ Adversarial review of a PR. Finder, Standards, and (when a spec is available) Co
 | `--spec <issue>` | Issue whose body is the spec for the Contract axis. Overrides the PR's `Closes` issue. |
 | `--dry-run`      | Print the report only. Nothing is posted, dismissed, or resolved.                      |
 
-Posting goes through `github-pr-review/scripts/post_review.sh`, which also drops inline comments whose `(path, line, side)` is not in the diff. The review body and inline comments are rendered by `github-pr-review/scripts/render_review.py` from a findings JSON described in `github-pr-review/references/findings.md`. The reviewer agents are defined in the repository's `agents/` directory; on install methods that cannot ship agents, generic subagents receive the same prompts.
+Posting goes through `github-pr-review/scripts/post_review.sh`, which also drops inline comments whose `(path, line, side)` is not in the diff. The review body and inline comments are rendered by `github-pr-review/scripts/render_review.py` from a findings JSON described in `github-pr-review/references/findings.md`; the same script decides the report language from the PR title and body. The reviewer agents are defined in the repository's `agents/` directory; on install methods that cannot ship agents, generic subagents receive the same prompts.
 
 - Trigger phrases: "このPRをレビューして".
 
