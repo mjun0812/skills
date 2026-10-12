@@ -105,6 +105,7 @@ class Page(HTMLParser):
 
     # -- parser hooks ----------------------------------------------------
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        """開始タグごとに、検査に使う属性と要素の位置を記録する。"""
         a = dict(attrs)
         classes = self._classes(a)
         if tag == "html":
@@ -145,6 +146,7 @@ class Page(HTMLParser):
             self.stack.append((tag, a))
 
     def handle_endtag(self, tag: str) -> None:
+        """終了タグに対応する要素を stack から外し、ex-meta の本文を確定する。"""
         while self.stack:
             name, attrs = self.stack.pop()
             classes = self._classes(attrs)
@@ -159,6 +161,7 @@ class Page(HTMLParser):
                 break
 
     def handle_data(self, data: str) -> None:
+        """テキストを、捕捉中の要素とコード外の本文へ振り分ける。"""
         if self._capture:
             self._capture[-1][1].append(data)
         if (
