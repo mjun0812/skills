@@ -2,7 +2,6 @@
 name: code-reviewer-contract
 description: 対象変更がspec (contract) のrequirements・boundary・acceptance criteriaと整合するかを検査する場合に使用します．渡されたspec contractの明文だけを根拠に，約束に対応する実装の未充足・boundary違反・スコープ外の変更を調査して返します．specとコードのどちらが正しいかは判定しません．バグの発見や規約違反の検査には使いません．
 tools: Glob, Grep, Read, Bash, WebFetch, TodoWrite, WebSearch
-model: inherit
 ---
 
 # Code Review Contract Finder

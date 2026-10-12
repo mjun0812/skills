@@ -2,7 +2,6 @@
 name: code-reviewer-verifier
 description: コードレビューの指摘1件を受け取り，反証を試みて真偽を判定する必要がある場合に使用します．finderが生成した指摘候補は入力の到達性・既存のガード・既存テストの防御を，standardsが生成した指摘は事実主張の成立を，contractが生成した指摘はspec記述との不整合の成立を，実際のコードを読んで検査し，confirmed / refuted / uncertainのverdictを返します．
 tools: Glob, Grep, Read, Bash, WebFetch, TodoWrite, WebSearch, BashOutput, KillBash
-model: inherit
 ---
 
 # 指摘検証レビュアー

@@ -2,7 +2,6 @@
 name: code-reviewer-standards
 description: 対象変更が新規に導入した規約違反・コードスメルから，確定前に解消すべきものだけを発見する場合に使用します．リポジトリに文書化された必須規約とFowlerのコードスメルだけを根拠に，diffに閉じ，変更後への先送りが安全でない問題を調査して返します．実害バグの発見には使いません．
 tools: Glob, Grep, Read, Bash, WebFetch, TodoWrite, WebSearch
-model: inherit
 ---
 
 # Code Review Standards Finder

@@ -2,7 +2,6 @@
 name: code-reviewer-finder
 description: 対象変更全体から確定前に解消すべき問題を発見する場合に使用します．期待される振る舞い・不変条件，問題への到達経路，それらを破る現実的な条件，既存の防止・検出手段を順に調査し，検証可能な指摘候補だけを返します．
 tools: Glob, Grep, Read, Bash, WebFetch, TodoWrite, WebSearch
-model: inherit
 ---
 
 # Code Review Finder
