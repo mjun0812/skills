@@ -8,11 +8,11 @@ allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash
 
 # Pull Request Review
 
-PRのhead commitを worktree にチェックアウトし、重点の異なる2つのFinder SubAgentが指摘候補を探す。
-Finder SubAgentが出した指摘候補は、1件ずつ Verifier SubAgent が反証を試み、
+PRのhead commitをworktreeにチェックアウトし、重点の異なる2つのFinder SubAgentが指摘候補を探す。
+Finder SubAgentが出した指摘候補は、1件ずつVerifier SubAgentが反証を試み、
 検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する。
-並行して Standards SubAgent がmergeをブロックすべき規約違反・コードスメルの指摘候補を探し、1件ずつ Verifier の検証を経たものだけを同じレビューに含める。
-spec sourceを解決できる場合は、Contract SubAgent がspecとの不整合の指摘候補を第3の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
+並行してStandards SubAgentがmergeをブロックすべき規約違反・コードスメルの指摘候補を探し、1件ずつVerifierの検証を経たものだけを同じレビューに含める。
+spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合の指摘候補を第3の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
 
 ## Arguments
 
@@ -59,8 +59,8 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 
 #### Phase 1.3: worktreeとレビュー環境の準備
 
-1. `<repo-root>/.tmp/<repo-name>-worktrees/pr-<number>-review` を専用 worktree path とする。
-2. 同じ path の worktree が存在し、未commit変更がある場合は中止する。clean な場合のみ作り直してよい。
+1. `<repo-root>/.tmp/<repo-name>-worktrees/pr-<number>-review` を専用worktree pathとする。
+2. 同じpathのworktreeが存在し、未commit変更がある場合は中止する。cleanな場合のみ作り直してよい。
 3. PRの最新head commitとbase branchを取得し、head commitをdetached状態で専用worktreeにcheckoutする。
 4. 専用worktreeをレビュー対象のsnapshotとし、Phase 2以降では対象ファイルをすべてこのsnapshot内から参照する。
 
@@ -114,7 +114,7 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 - 各SubAgentが出力した指摘をすべて候補とする。verifierの起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる。重複統合はこの1回だけとする
 - Finder候補は、自分の既存未resolve threadと照合し、同じ根本原因の会話をverifierの反証材料にする
-- Standards候補とContract候補は、先に確定した指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Standards → Contract の順に確定する)
+- Standards候補とContract候補は、先に確定した指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Standards → Contractの順に確定する)
 
 次のprompt templateを使用する。
 
@@ -183,8 +183,8 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 #### Phase 3.1: event種別の決定
 
-- self review モードでは `--event COMMENT` を渡すが、body 内の Verdict 表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHub の仕様で自分の PR に `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
-- self review 以外の通常レビューでは、Phase 2.3のVerdictをそのまま `--event` に渡す
+- self reviewモードでは `--event COMMENT` を渡すが、body内のVerdict表記は元のまま(`APPROVE` または `REQUEST_CHANGES`)にする(GitHubの仕様で自分のPRに `APPROVE` / `REQUEST_CHANGES` は投稿できないため)。
+- self review以外の通常レビューでは、Phase 2.3のVerdictをそのまま `--event` に渡す
 - head commitが進んでいた場合は、self reviewかどうかに関係なく `--event COMMENT` を渡す
 
 #### Phase 3.2: レビューの投稿
@@ -201,7 +201,7 @@ bash "<skill-dir>/scripts/post_review.sh" \
   --comments-file "<review-temp-dir>/comments.json"
 ```
 
-- 成功時は PR レビューの URL が標準出力に出力される
+- 成功時はPRレビューのURLが標準出力に出力される
 - レビュー本文とinline commentはファイルで渡す。`gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てたJSON文字列の直接渡しは、引用符やJSONのエスケープが崩れるため使わない
 - diffに含まれない `(path, line, side)` のentryは `post_review.sh` がinline対象から除外して標準エラーに `Warning:` を出力する。レポート本文は変わらない
 
@@ -211,7 +211,7 @@ Phase 3.2の投稿が成功した後にのみ実行し、最新レビューだ�
 
 **既存レビューのdismiss**
 
-Phase 1.2 で取得した `<existing-review-ids>` (投稿前のsnapshot) を `--review-id` で渡す。
+Phase 1.2で取得した `<existing-review-ids>` (投稿前のsnapshot) を `--review-id` で渡す。
 
 ```bash
 bash "<skill-dir>/scripts/dismiss_my_reviews.sh" \
@@ -220,11 +220,11 @@ bash "<skill-dir>/scripts/dismiss_my_reviews.sh" \
   --review-id "<id1>" --review-id "<id2>"
 ```
 
-`<existing-review-ids>` が空の場合は dismiss スクリプトを呼び出さない。
+`<existing-review-ids>` が空の場合はdismissスクリプトを呼び出さない。
 
 **以前のinline commentのresolve**
 
-Phase 1.2 で取得した `<existing-thread-ids>` のthreadを、outdatedかどうかに関係なくすべてresolveする。最新headへの新しいレビューが投稿済みのため、以後は新しいレビューだけを対応対象とする。
+Phase 1.2で取得した `<existing-thread-ids>` のthreadを、outdatedかどうかに関係なくすべてresolveする。最新headへの新しいレビューが投稿済みのため、以後は新しいレビューだけを対応対象とする。
 
 ```bash
 bash "<skill-dir>/scripts/resolve_review_threads.sh" \

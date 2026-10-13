@@ -102,7 +102,7 @@ graph LR
 
 ### Agents
 
-github-pr-review skillは、[agents/](agents/) に定義された4つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-standards`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の経路でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+github-pr-review skillは、[agents/](agents/) に定義された4つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-standards`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
 ## Installation
 
@@ -191,9 +191,9 @@ apm update
 
 ### 廃止されたskillの扱い
 
-このrepoから削除されたskillの扱いは、install経路によって異なる。
+このrepoから削除されたskillの扱いは、install方法によって異なる。
 
-| 経路                       | 挙動                                                                |
+| 方法                       | 挙動                                                                |
 | -------------------------- | ------------------------------------------------------------------- |
 | Claude Code / Codex plugin | 更新時に自動で削除される (バンドル全体が置き換わるため)             |
 | apm                        | 更新時に自動で削除される (lockfileを基にstale fileとして掃除される) |

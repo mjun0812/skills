@@ -47,14 +47,14 @@
 ## 実装
 
 「どのような実装が必要か」を **簡潔な箇条書き** で列挙する.
-詳細な手順・コマンド・コードスニペットなどの how は **Issue / PR で扱う** ので書かない.
+詳細な手順・コマンド・コードスニペットなどのhowは **Issue / PR で扱う** ので書かない.
 
 - Issue:
   - [#1](https://github.com/...): Issue #1のタイトル
   - [#2](https://github.com/...): Issue #2のタイトル
-- <必要な実装 1 (例: "新規スクリプト `scripts/foo.py` を追加")>
-- <必要な実装 2 (例: "`src/bar.py` に X 関数を追加")>
-- <必要な実装 N>
+- <必要な実装1 (例: "新規スクリプト `scripts/foo.py` を追加")>
+- <必要な実装2 (例: "`src/bar.py` にX関数を追加")>
+- <必要な実装N>
 
 ## 実験結果
 
@@ -63,7 +63,7 @@
 ### 実施概要
 
 - 対象: <対象モデル / データ / 設定>
-- 環境: <GPU, batch_size, dtype 等>
+- 環境: <GPU, batch_size, dtype等>
 - 出力: [`results/<path>/`](../../results/<path>/)
 - PR:
   - [#<NN>](https://github.com/<org>/<repo>/pull/<NN>): title

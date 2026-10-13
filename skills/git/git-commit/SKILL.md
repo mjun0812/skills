@@ -8,11 +8,11 @@ allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git branch:*), Bash(git
 
 変更内容を読み取り、内容を要約したメッセージでcommitするSkill。stagingが無ければ現在の変更をstageし、pushは行わない。
 コミットメッセージはConventional Commitsの形式に従って生成するが、
-実際のメッセージはユーザーが指定した言語（デフォルトは英語）で記述する。
+実際のメッセージはユーザーが指定した言語(デフォルトは英語)で記述する。
 
 ## Arguments
 
-- `language`: コミットメッセージの言語（例: "ja", "en"）。デフォルト: "English"
+- `language`: コミットメッセージの言語(例: "ja", "en")。デフォルト: "English"
 
 ## Context
 
@@ -20,7 +20,7 @@ allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git branch:*), Bash(git
 
 - ステージングされた変更: `git diff --cached`
 - 未ステージングの変更: `git diff`
-- Git ステータス: `git status`
+- Gitステータス: `git status`
 - 現在のブランチ: `git branch --show-current`
 - [Conventional Commits規則](references/conventional_commits.md)
 
@@ -30,14 +30,14 @@ allowed-tools: Bash(git status:*), Bash(git add:*), Bash(git branch:*), Bash(git
    - ステージング済み・未ステージングの変更がどちらも無い場合は、コミット対象が無い旨を報告して終了する。
    - ステージングされた変更がある場合は、追加でステージングを行わないこと。
    - ステージングされた変更がない場合は、現在の変更を確認してステージングする。
-2. Conventional Commits 形式に従ったコミットメッセージを生成する:
-   - 1行目: `<type>: <description>`（スコープなし）
+2. Conventional Commits形式に従ったコミットメッセージを生成する:
+   - 1行目: `<type>: <description>`(スコープなし)
    - 2行目: 空行
    - 3行目以降: 変更内容を箇条書きで記述。1行1変更とし、指定言語に応じて以下の文体で書く
      - 日本語: 体言止めで終える。ですます調は使わない
        - GOOD: `- ログイン失敗時のリトライ処理を追加`
        - BAD: `- ログイン失敗時のリトライ処理を追加しました`
-     - 英語: descriptionと同じ命令形の断片で書く（例: `- Add retry on login failure`）
-3. コミットメッセージは `language` で指定された言語（デフォルト: 英語）で記述する。
+     - 英語: descriptionと同じ命令形の断片で書く(例: `- Add retry on login failure`)
+3. コミットメッセージは `language` で指定された言語(デフォルト: 英語)で記述する。
 4. `git commit -m "<メッセージ>"` でコミットを実行する。
 5. コミット完了後、生成したコミットメッセージのみを出力する。

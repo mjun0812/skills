@@ -51,7 +51,7 @@ globalにinstallされたtoolへ依存せず、最初に次を実行する。
 mise install
 ```
 
-MarkdownとJSONは`oxfmt`、Pythonは`ruff`、shell scriptは`shellcheck`と`shfmt`で検査する。
+MarkdownとJSONは`oxfmt`、Pythonは`ruff`、shell scriptは`shellcheck`と`shfmt`でチェックする。
 
 Issue, PRは英語で記述する。
 

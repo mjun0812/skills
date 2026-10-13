@@ -11,10 +11,10 @@ allowed-tools: Bash(git:*), Bash(gh:*), Bash(jq:*), Bash(cat:*), Bash(grep:*), B
 
 ## Arguments
 
-- `language`: commitメッセージと報告の言語（例: "ja", "en"）。デフォルト: English
+- `language`: commitメッセージと報告の言語(例: "ja", "en")。デフォルト: English
 - `--one` / `-1`: 対象commitを1つにsquashする
 - `--no-push`: squash後にpushしない
-- `--dry-run`: squash計画（グルーピング案と新しいcommitメッセージ案）のみを提示し、reset・commit・pushを一切行わない
+- `--dry-run`: squash計画(グルーピング案と新しいcommitメッセージ案)のみを提示し、reset・commit・pushを一切行わない
 
 ## タスク
 

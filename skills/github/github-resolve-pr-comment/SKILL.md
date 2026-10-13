@@ -12,26 +12,26 @@ PRに付いた3種類のレビューコメント (inline review thread、review 
 
 ## 引数
 
-- `PR number`: 対応するPR番号（任意、デフォルトは現在のブランチのPR）
-- `--dry-run`: コメントの分類結果（Must Fix/Should Fix/質問/情報共有）と対応方針のみを提示し、ファイル編集・commit・push・リプライ投稿を一切行わない
+- `PR number`: 対応するPR番号(任意、デフォルトは現在のブランチのPR)
+- `--dry-run`: コメントの分類結果(Must Fix/Should Fix/質問/情報共有)と対応方針のみを提示し、ファイル編集・commit・push・リプライ投稿を一切行わない
 
-inline review thread / conversation は `isResolved` を基準にし、すべての unresolved thread を対応対象にする。
-review 全体の state や `isOutdated` だけで対応対象から除外しない。
+inline review thread / conversationは `isResolved` を基準にし、すべてのunresolved threadを対応対象にする。
+review全体のstateや `isOutdated` だけで対応対象から除外しない。
 
 ## コメントの種類と扱い
 
-PR には性質の異なる3種類のコメントがある。**それぞれ取得方法もリプライ方法も違う**ので混同しないこと。
+PRには性質の異なる3種類のコメントがある。**それぞれ取得方法もリプライ方法も違う**ので混同しないこと。
 
 - **Review thread (inline)**: コードの行に紐づくスレッド。最も一般的なレビューコメント。
   - 取得方法: GraphQL `reviewThreads` ([fetch_review_threads.sh](scripts/fetch_review_threads.sh))
-  - リプライ先: `repos/{owner/repo}/pulls/{pr}/comments/{root-comment-id}/replies` に thread 内コメントとして追記
-  - **重要**: inline スレッドへのリプライには **スレッドの先頭コメントの `databaseId`**（root comment id）を使うこと。スレッド内の途中コメントのIDだと 404 になる。`fetch_review_threads.sh` は `root_comment_id` フィールドにこのIDを入れて返す。
-- **Review summary body**: レビュー全体に付く本文。`COMMENTED` / `CHANGES_REQUESTED` などの state を持つ。
+  - リプライ先: `repos/{owner/repo}/pulls/{pr}/comments/{root-comment-id}/replies` にthread内コメントとして追記
+  - **重要**: inlineスレッドへのリプライには **スレッドの先頭コメントの `databaseId`**(root comment id)を使うこと。スレッド内の途中コメントのIDだと404になる。`fetch_review_threads.sh` は `root_comment_id` フィールドにこのIDを入れて返す。
+- **Review summary body**: レビュー全体に付く本文。`COMMENTED` / `CHANGES_REQUESTED` などのstateを持つ。
   - 取得方法: `gh pr view <pr> --json reviews`
-  - リプライ先: ネイティブなスレッド機構はないため、引用形式の issue comment として投稿
-- **Issue comment (PR-level)**: コード行に紐づかない PR 全体への一般コメント。
+  - リプライ先: ネイティブなスレッド機構はないため、引用形式のissue commentとして投稿
+- **Issue comment (PR-level)**: コード行に紐づかないPR全体への一般コメント。
   - 取得方法: `gh pr view <pr> --json comments` または `gh api /issues/{pr}/comments`
-  - リプライ先: `repos/{owner/repo}/issues/{pr}/comments` に新規 issue comment として投稿
+  - リプライ先: `repos/{owner/repo}/issues/{pr}/comments` に新規issue commentとして投稿
 
 ## タスク
 
@@ -45,7 +45,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 - リポジトリ情報:
   - `owner/repo` を取得する: `gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'`
 - 言語検出:
-  - PRのタイトルと本文を分析して言語を検出する（例: 日本語、英語）
+  - PRのタイトルと本文を分析して言語を検出する(例: 日本語、英語)
   - すべてのコミットメッセージとリプライコメントは検出された言語で記述する
   - 言語が曖昧な場合は英語をデフォルトとする
 
@@ -53,7 +53,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 以下を**並列に**実行する。
 
-- **全 unresolved review thread を取得**（inline コメント）:
+- **全 unresolved review thread を取得**(inlineコメント):
 
   ```bash
   bash <skill-dir>/scripts/fetch_review_threads.sh \
@@ -62,7 +62,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
     --only-unresolved > /tmp/pr-<number>-respond-threads.json
   ```
 
-  - `--only-unresolved` は `isResolved=false` の thread を返す。`isOutdated=true` でも unresolved なら対象に含める
+  - `--only-unresolved` は `isResolved=false` のthreadを返す。`isOutdated=true` でもunresolvedなら対象に含める
   - 各スレッドは `thread_id` / `path` / `line` / `root_comment_id` / `comments[]` を持つ
 
 - **Review summary body を取得**:
@@ -73,7 +73,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
     > /tmp/pr-<number>-respond-reviews.json
   ```
 
-  - 自分のレビューは除外する（自分自身に返信しない）
+  - 自分のレビューは除外する(自分自身に返信しない)
   - `state == "APPROVED"` で本文が空のものは「LGTM」相当なので除外する
 
 - **PR-level issue comments を取得**:
@@ -83,7 +83,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
     --jq '.comments' > /tmp/pr-<number>-respond-issue-comments.json
   ```
 
-  - すでに対応済みかどうかは内容と時系列で判断する（issue comment にはネイティブな解決機構がない）
+  - すでに対応済みかどうかは内容と時系列で判断する(issue commentにはネイティブな解決機構がない)
 
 ### Phase 2: コメントの分類と集約
 
@@ -91,11 +91,11 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 **集約ルール**:
 
-- 同一の話題が複数箇所に存在する場合は1件にまとめ、対応先は inline review thread を優先する
-- 同一レビュアーの後続発言で **明示的に撤回** された指摘は除外する（撤回が不明確な場合は対象に残す）
-- 既に他 thread や過去コミットで対応済みの内容は、対応済みとしてマークし、リプライのみ準備する
+- 同一の話題が複数箇所に存在する場合は1件にまとめ、対応先はinline review threadを優先する
+- 同一レビュアーの後続発言で **明示的に撤回** された指摘は除外する(撤回が不明確な場合は対象に残す)
+- 既に他threadや過去コミットで対応済みの内容は、対応済みとしてマークし、リプライのみ準備する
 
-集約後、次のように分類する（inline review thread は全 unresolved thread を対象にし、review 全体の state では除外しない）。
+集約後、次のように分類する(inline review threadは全unresolved threadを対象にし、review全体のstateでは除外しない)。
 
 - **Must Fix候補**: このPRの正しさや安全性に関わり、必ず対応すべき可能性があるコメント
 - **Should Fix候補**: 改善提案や任意対応の可能性があるコメント
@@ -104,7 +104,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 ### Phase 3: Must Fix / Should Fix の判断
 
-レビューコメントの重要度を Must Fix / Should Fix に分け、対応方針を決定する。
+レビューコメントの重要度をMust Fix / Should Fixに分け、対応方針を決定する。
 
 - **Must Fix**:
   - このPRの正しさ、仕様、テスト、CI、型安全性、セキュリティ、重大な保守性に関わる指摘
@@ -127,7 +127,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 ### Phase 4: コメントへの対応
 
-`--dry-run` が指定された場合は、Phase 3 で確定したコメントの分類結果（Must Fix/Should Fix/質問/情報共有）と対応方針のみを提示し、以降のファイル編集・commit・push・リプライ投稿は行わずに終了する。
+`--dry-run` が指定された場合は、Phase 3で確定したコメントの分類結果(Must Fix/Should Fix/質問/情報共有)と対応方針のみを提示し、以降のファイル編集・commit・push・リプライ投稿は行わずに終了する。
 
 - **Must Fix**:
   - 対象ファイルと行に移動し、指摘された問題を必ず修正する
@@ -143,7 +143,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 ### Phase 5: コミットとプッシュ
 
 検出された言語でコミットメッセージを記述してコミット・プッシュする。
-コード変更が一切ない場合（質問への回答のみ等）はこのフェーズをスキップする。
+コード変更が一切ない場合(質問への回答のみ等)はこのフェーズをスキップする。
 
 ### Phase 6: リプライの投稿
 
@@ -152,13 +152,13 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 #### 6-A. Inline review thread へのリプライ
 
-コード行に紐づく review thread に対するリプライ。**全 unresolved thread にリプライする**。
+コード行に紐づくreview threadに対するリプライ。**全 unresolved thread にリプライする**。
 
 スレッド内コメントとして追記される。使用するスクリプトは [post_review_reply.sh](scripts/post_review_reply.sh)。
 
 リプライ本文はアクションに応じて内容を変える:
 
-- **採用・実装済み**: 変更内容 + コミット参照（短い SHA）
+- **採用・実装済み**: 変更内容 + コミット参照(短いSHA)
   - 英語: `Fixed in abc1234. Changed X to Y as suggested.`
   - 日本語: `abc1234 で修正しました。ご指摘の通り X を Y に変更しました。`
 - **議論が必要**: 自分の見解 + 根拠 + 質問
@@ -170,7 +170,7 @@ PR には性質の異なる3種類のコメントがある。**それぞれ取�
 
 手順:
 
-1. リプライ本文を Markdown ファイルに書き出す（Write tool 使用）
+1. リプライ本文をMarkdownファイルに書き出す(Write tool使用)
    - 出力先: `/tmp/pr-reply-<root-comment-id>.md`
 2. `post_review_reply.sh` で投稿する
    - `<root-comment-id>` は `fetch_review_threads.sh` の出力の `root_comment_id` を使う
@@ -185,14 +185,14 @@ bash <skill-dir>/scripts/post_review_reply.sh \
 
 #### 6-B. PR-level コメントの投稿
 
-PR 全体への対応サマリーを**1つの issue comment として投稿する**。使用するスクリプトは [post_issue_comment.sh](scripts/post_issue_comment.sh)。
+PR全体への対応サマリーを**1つの issue comment として投稿する**。使用するスクリプトは [post_issue_comment.sh](scripts/post_issue_comment.sh)。
 
 本文の構成:
 
 - **概要**: 対応した未解決スレッド総数、修正件数、不採用件数、結果状態を1〜2文で記述
-- **対応した内容の箇条書き**: Must Fix / Should Fix / 質問 / 情報共有 ごとに、対応した inline review thread を1件ずつ列挙する
-  - 各項目は対応した inline review comment への URL リンク（`[filename:line](review-comment-url)` 形式）で参照する
-  - 採用・不採用・修正コミット SHA・理由などの事実を客観的に記述する
+- **対応した内容の箇条書き**: Must Fix / Should Fix / 質問 / 情報共有 ごとに、対応したinline review threadを1件ずつ列挙する
+  - 各項目は対応したinline review commentへのURLリンク(`[filename:line](review-comment-url)` 形式)で参照する
+  - 採用・不採用・修正コミットSHA・理由などの事実を客観的に記述する
 
 template:
 
@@ -202,11 +202,11 @@ template:
 記述ルール:
 
 - **人間との対話を意識しない**。「ご指摘の通り」「ありがとうございます」などの対話的な表現は使わず、事実と内容のみを客観的に書く
-- Review summary body / PR-level issue comment への個別リプライ（引用＋回答）はこのコメントには含めない。サマリーのみを投稿する
+- Review summary body / PR-level issue commentへの個別リプライ(引用＋回答)はこのコメントには含めない。サマリーのみを投稿する
 
 手順:
 
-1. 上記内容を1つの Markdown ファイルに書き出す
+1. 上記内容を1つのMarkdownファイルに書き出す
    - 出力先: `/tmp/pr-summary-<number>.md`
 2. `post_issue_comment.sh` で投稿する
 
@@ -219,7 +219,7 @@ bash <skill-dir>/scripts/post_issue_comment.sh \
 
 ### Phase 7: 結果を返す
 
-Phase 6-B で投稿した PR-level コメント（コメントサマリー）の本文をそのまま出力する。
+Phase 6-Bで投稿したPR-levelコメント(コメントサマリー)の本文をそのまま出力する。
 
 ## 注意事項
 
@@ -227,5 +227,5 @@ Phase 6-B で投稿した PR-level コメント（コメントサマリー）の
 - 大きな設計変更の場合は、実装前にユーザーと相談する
 - 関連する変更は論理的なコミットにグループ化する
 - レビュアーと意見が異なる場合は、敬意を持って具体的な技術的根拠を提示する
-- 解決済みのスレッド (`isResolved=true`) はスキップする。`isOutdated=true` は単独では除外条件にせず、unresolved なら対応対象に含める
+- 解決済みのスレッド (`isResolved=true`) はスキップする。`isOutdated=true` は単独では除外条件にせず、unresolvedなら対応対象に含める
 - リプライ本文は**必ずファイル経由**で渡す。`-f body=...` や `--body "..."` でのシェル引数渡しは禁止
