@@ -2,7 +2,7 @@
 """Check the layout of skills/.
 
 - SKILL.md may only live at the skills/<category>/<name>/SKILL.md depth
-- every skills/<category>/<name>/ directory must contain a SKILL.md
+- every skills/<category>/<name>/ directory must contain a SKILL.md, README.md, and README_ja.md
 - the frontmatter name is required, must match the directory name, and must follow the naming rules
 - the frontmatter description is required and must not be empty
 - allowed-tools must be a string, not an array (gh skill validation requirement)
@@ -102,6 +102,9 @@ def main() -> None:
                 check_frontmatter(skill_dir / "SKILL.md")
             else:
                 errors.append(f"{skill_dir.relative_to(ROOT)}: missing SKILL.md")
+            for readme in ("README.md", "README_ja.md"):
+                if not (skill_dir / readme).exists():
+                    errors.append(f"{skill_dir.relative_to(ROOT)}: missing {readme}")
 
     check_skill_calls(sorted(ROOT.glob("skills/*/*/SKILL.md")))
 
