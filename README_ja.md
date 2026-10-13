@@ -6,69 +6,69 @@ My [Agent Skills](https://agentskills.io).
 
 ### [git](skills/git) / [github](skills/github)
 
-| skill                                                                | 説明                                                                                       |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| [git-commit](skills/git/git-commit)                                  | 現在の変更を確認してConventional Commits形式でコミットする                                 |
-| [git-fix-conflict](skills/git/git-fix-conflict)                      | merge・rebase・cherry-pickなどで発生したコンフリクトを検出して解消する                     |
-| [git-squash](skills/git/git-squash)                                  | 現在のbranchのcommitをsquash・整理し、必要に応じてforce-with-leaseでpushする               |
-| [github-fix-ci](skills/github/github-fix-ci)                         | CIの失敗を分析して自動修正する                                                             |
-| [github-issue-create](skills/github/github-issue-create)             | 素材の主張を裏取りし、関連Issueを検索してからGitHub Issueを1件作成する                     |
-| [github-issue-polish](skills/github/github-issue-polish)             | GitHub issueを「issueだけで実装できる」状態まで磨き上げる                                  |
-| [github-issue-resolve](skills/github/github-issue-resolve)           | issueを起点に「調査 → worktree作成 → 実装 → PR作成」を一気通貫で実行する                   |
-| [github-issue-update](skills/github/github-issue-update)             | open issueを横断的に点検し、close・追記・ラベル変更を承認の上で一括反映する                |
-| [github-pr-create](skills/github/github-pr-create)                   | 現在のbranchからPull Requestを作成する                                                     |
-| [github-pr-fix](skills/github/github-pr-fix)                         | PRの全問題 (コンフリクト、CI失敗、レビューコメント) を検出してworktree内で修正する         |
-| [github-pr-review](skills/github/github-pr-review)                   | Finder/Verifier SubAgentでPRのコードレビューを行い、レポートとインラインコメントを投稿する |
-| [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | PRのレビューコメントを確認し、対応・返信する                                               |
+| skill                                                                             | 説明                                                                                       |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [git-commit](skills/git/git-commit/README_ja.md)                                  | 現在の変更を確認してConventional Commits形式でコミットする                                 |
+| [git-fix-conflict](skills/git/git-fix-conflict/README_ja.md)                      | merge・rebase・cherry-pickなどで発生したコンフリクトを検出して解消する                     |
+| [git-squash](skills/git/git-squash/README_ja.md)                                  | 現在のbranchのcommitをsquash・整理し、必要に応じてforce-with-leaseでpushする               |
+| [github-fix-ci](skills/github/github-fix-ci/README_ja.md)                         | CIの失敗を分析して自動修正する                                                             |
+| [github-issue-create](skills/github/github-issue-create/README_ja.md)             | 素材の主張を裏取りし、関連Issueを検索してからGitHub Issueを1件作成する                     |
+| [github-issue-polish](skills/github/github-issue-polish/README_ja.md)             | GitHub issueを「issueだけで実装できる」状態まで磨き上げる                                  |
+| [github-issue-resolve](skills/github/github-issue-resolve/README_ja.md)           | issueを起点に「調査 → worktree作成 → 実装 → PR作成」を一気通貫で実行する                   |
+| [github-issue-update](skills/github/github-issue-update/README_ja.md)             | open issueを横断的に点検し、close・追記・ラベル変更を承認の上で一括反映する                |
+| [github-pr-create](skills/github/github-pr-create/README_ja.md)                   | 現在のbranchからPull Requestを作成する                                                     |
+| [github-pr-fix](skills/github/github-pr-fix/README_ja.md)                         | PRの全問題 (コンフリクト、CI失敗、レビューコメント) を検出してworktree内で修正する         |
+| [github-pr-review](skills/github/github-pr-review/README_ja.md)                   | Finder/Verifier SubAgentでPRのコードレビューを行い、レポートとインラインコメントを投稿する |
+| [github-resolve-pr-comment](skills/github/github-resolve-pr-comment/README_ja.md) | PRのレビューコメントを確認し、対応・返信する                                               |
 
 `github-pr-create` は[mattpocock/skillsの`pr` skill](https://github.com/mattpocock/skills/tree/main/skills/engineering/pr)を参考にした。
 
 ### [delegation](skills/delegation)
 
-| skill                                                      | 説明                                                                    |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [claude](skills/delegation/claude)                         | Claude Code CLIを非対話モードで呼び出し、相談または作業委譲の結果を得る |
-| [codex](skills/delegation/codex)                           | Codex CLIを非対話モードで呼び出し、相談または作業委譲の結果を得る       |
-| [resume-other-agent](skills/delegation/resume-other-agent) | 別のcoding agentのsession logから直前作業を復元してresumeする           |
+| skill                                                                   | 説明                                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [claude](skills/delegation/claude/README_ja.md)                         | Claude Code CLIを非対話モードで呼び出し、相談または作業委譲の結果を得る |
+| [codex](skills/delegation/codex/README_ja.md)                           | Codex CLIを非対話モードで呼び出し、相談または作業委譲の結果を得る       |
+| [resume-other-agent](skills/delegation/resume-other-agent/README_ja.md) | 別のcoding agentのsession logから直前作業を復元してresumeする           |
 
 ### [planning](skills/planning)
 
-| skill                                              | 説明                                                                      |
-| -------------------------------------------------- | ------------------------------------------------------------------------- |
-| [experiment-plan](skills/planning/experiment-plan) | 機械学習の実験計画を対話で詰めて保存する                                  |
-| [grill-me](skills/planning/grill-me)               | 計画・設計の分岐点が解消されるまでユーザーへ質問を繰り返す                |
-| [grill-self](skills/planning/grill-self)           | 計画・設計の分岐点をagentが調査と自己問答で解消し、意思決定ログを提示する |
+| skill                                                           | 説明                                                                      |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [experiment-plan](skills/planning/experiment-plan/README_ja.md) | 機械学習の実験計画を対話で詰めて保存する                                  |
+| [grill-me](skills/planning/grill-me/README_ja.md)               | 計画・設計の分岐点が解消されるまでユーザーへ質問を繰り返す                |
+| [grill-self](skills/planning/grill-self/README_ja.md)           | 計画・設計の分岐点をagentが調査と自己問答で解消し、意思決定ログを提示する |
 
 ### [review](skills/review)
 
-| skill                                  | 説明                                                                       |
-| -------------------------------------- | -------------------------------------------------------------------------- |
-| [test-prune](skills/review/test-prune) | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする |
+| skill                                               | 説明                                                                       |
+| --------------------------------------------------- | -------------------------------------------------------------------------- |
+| [test-prune](skills/review/test-prune/README_ja.md) | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする |
 
 `test-prune` skillは、[catnose氏の投稿](https://x.com/catnose99/status/2098238001403113924)を元に作成。
 
 ### [agent-skill](skills/agent-skill)
 
-| skill                                               | 説明                                                                                   |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [skill-review](skills/agent-skill/skill-review)     | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする                            |
-| [writing-skills](skills/agent-skill/writing-skills) | skillなしでsubagentが失敗する様子を先に観察し、従うようになるまでskillを作成・修正する |
+| skill                                                            | 説明                                                                                   |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [skill-review](skills/agent-skill/skill-review/README_ja.md)     | Agent skill (SKILL.md) の品質を採点し、修正案をレポートする                            |
+| [writing-skills](skills/agent-skill/writing-skills/README_ja.md) | skillなしでsubagentが失敗する様子を先に観察し、従うようになるまでskillを作成・修正する |
 
 `writing-skills` skillは、[obra/superpowers v6.4.2の`writing-skills` skill](https://github.com/obra/superpowers/tree/v6.4.2/skills/writing-skills)をもとに改変した。同じrepoの`test-driven-development` skillは、独立したskillとしてinstallせず`references/`へ同梱している。原文はMIT Licenseで公開されており、ライセンス文は`skills/agent-skill/writing-skills/LICENSE`に置いている。
 
 ### [research](skills/research)
 
-| skill                                          | 説明                                                                                          |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [deep-research](skills/research/deep-research) | テーマをdeep researchして引用付きの調査メモを提示し、確認のうえカレントディレクトリに保存する |
+| skill                                                       | 説明                                                                                          |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [deep-research](skills/research/deep-research/README_ja.md) | テーマをdeep researchして引用付きの調査メモを提示し、確認のうえカレントディレクトリに保存する |
 
 ### [writing](skills/writing)
 
-| skill                                                               | 説明                                             |
-| ------------------------------------------------------------------- | ------------------------------------------------ |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | 説明的な文章に緩急を設計するための規範           |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | 日本語の技術文書・書籍原稿の文章規範             |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | AIで書いた日本語を自然で読みやすい文章に書き直す |
+| skill                                                                            | 説明                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------ |
+| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing/README_ja.md) | 説明的な文章に緩急を設計するための規範           |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing/README_ja.md)       | 日本語の技術文書・書籍原稿の文章規範             |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp/README_ja.md)                   | AIで書いた日本語を自然で読みやすい文章に書き直す |
 
 `cognitive-rhythm-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/eb2929f13ed19c97188393d297be8432)をもとに改変した。
 
@@ -76,18 +76,18 @@ My [Agent Skills](https://agentskills.io).
 
 ### [docs](skills/docs)
 
-| skill                              | 説明                                                                        |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| [chat-note](skills/docs/chat-note) | 会話で調査・検討した内容を日本語のMarkdown1ファイルにまとめる               |
-| [doc-sync](skills/docs/doc-sync)   | ドキュメントと実装の乖離を検出して更新する                                  |
-| [exhtml](skills/docs/exhtml)       | 概念や仕組みを、用語集・図・ダーク/ライト切替付きの1枚のHTMLで解説する      |
-| [exmd](skills/docs/exmd)           | 概念や仕組みを、用語表・目次・Mermaid図付きの1枚のMarkdown (GFM) で解説する |
+| skill                                           | 説明                                                                        |
+| ----------------------------------------------- | --------------------------------------------------------------------------- |
+| [chat-note](skills/docs/chat-note/README_ja.md) | 会話で調査・検討した内容を日本語のMarkdown1ファイルにまとめる               |
+| [doc-sync](skills/docs/doc-sync/README_ja.md)   | ドキュメントと実装の乖離を検出して更新する                                  |
+| [exhtml](skills/docs/exhtml/README_ja.md)       | 概念や仕組みを、用語集・図・ダーク/ライト切替付きの1枚のHTMLで解説する      |
+| [exmd](skills/docs/exmd/README_ja.md)           | 概念や仕組みを、用語表・目次・Mermaid図付きの1枚のMarkdown (GFM) で解説する |
 
 ### [tools](skills/tools)
 
-| skill                                           | 説明                                                  |
-| ----------------------------------------------- | ----------------------------------------------------- |
-| [wezterm-control](skills/tools/wezterm-control) | weztermのpane・tab・windowを `wezterm cli` で操作する |
+| skill                                                        | 説明                                                  |
+| ------------------------------------------------------------ | ----------------------------------------------------- |
+| [wezterm-control](skills/tools/wezterm-control/README_ja.md) | weztermのpane・tab・windowを `wezterm cli` で操作する |
 
 ### Skill's Dependencies
 
