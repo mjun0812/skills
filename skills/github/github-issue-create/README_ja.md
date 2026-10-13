@@ -33,9 +33,9 @@ Todo・メモ・バグ報告(と同一会話で確認済みの事実)を、GitHu
 - テンプレートはリポジトリの`.github/ISSUE_TEMPLATE/`があればそれを使い、なければ`references/ISSUE_TEMPLATE/` (英語)または`references/ISSUE_TEMPLATE_JA/` (日本語)を使う。ラベルはリポジトリに既にあるものだけから選ぶ。
 - 情報のないセクションは省略する。推測・未確認の主張は仮説や調査事項として書く。本文に行番号は書かない。
 - public repositoryへ投稿するIssueに、privateなrepositoryの情報は書かない。
-- 図、diff、tree形式のファイル構成差分を、必要に応じて入れる。規則は[references/visuals.md](references/visuals.md)を参照。
+- 関係や差異が文章だけでは掴みにくい場合に、図、diff、tree形式のファイル構成差分を入れる。規則は[references/visuals.md](references/visuals.md)を参照。
 - タイトル、本文、種別、ラベルに加え、確認済み・推測・未確認の内訳、web出典、関連Issueを提示し、承認後にだけ作成する。素材が乏しくタイトルを作れない場合は、下書きの代わりに質問する。
-- 作成後にIssueを再取得して下書きと照合し、URL、テンプレート種別、ラベルを報告する。未決事項が残る場合は、実装前に仕様を詰めるよう案内する。
+- 作成後にIssueを再取得して下書きと比べ、URL、テンプレート種別、ラベルを報告する。未決事項が残る場合は、実装前に仕様を詰めるよう案内する。
 
 ## 依存
 

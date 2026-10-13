@@ -41,7 +41,7 @@ specは`--spec`、またはPR本文の`Closes #N`のIssueから解決する。�
 
 ## 依存
 
-- agent: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md)、[`code-reviewer-standards`](../../../agents/code-reviewer-standards.md)、[`code-reviewer-contract`](../../../agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の経路でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
+- agent: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md)、[`code-reviewer-standards`](../../../agents/code-reviewer-standards.md)、[`code-reviewer-contract`](../../../agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
 - `git`、`gh`、`jq`、Python
 
 手順の詳細は[SKILL.md](SKILL.md)を参照。

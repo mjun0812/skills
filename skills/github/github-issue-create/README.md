@@ -33,7 +33,7 @@ The output is a single issue with a title, a body structured by an issue templat
 - Templates come from the repository's `.github/ISSUE_TEMPLATE/` when present, otherwise from `references/ISSUE_TEMPLATE/` (English) or `references/ISSUE_TEMPLATE_JA/` (Japanese). Labels are chosen only from labels that already exist in the repository.
 - Sections without information are omitted. Inferred or unverified claims are written as hypotheses or open questions. Line numbers are not put in the body.
 - Information from private repositories is not written into issues posted to public repositories.
-- Diagrams, diffs, and tree-form file structure diffs are added where they help; see [references/visuals.md](references/visuals.md).
+- Diagrams, diffs, and tree-form file structure diffs are added when relationships or differences are hard to follow from prose alone; see [references/visuals.md](references/visuals.md).
 - The issue is created only after the user approves the title, body, type, and labels, together with the confirmed/inferred/unverified breakdown, web sources, and related issues. If the material is too thin to draft a title, it asks questions instead.
 - After creation it re-fetches the issue and compares it with the draft, then reports the URL, template type, and labels. When open decisions remain, it suggests taking the issue to a specification step before implementation.
 

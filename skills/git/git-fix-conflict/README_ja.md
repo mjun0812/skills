@@ -4,7 +4,7 @@
 
 進行中のmerge、rebase、cherry-pick、revert、`am`、`apply`で発生したコンフリクトを検出して解消する。進行中の操作が無くても、現在のbranchのPRが`CONFLICTING`の場合は、PRのbase branchをmergeして解消する。
 
-進行中の操作を継続し、リポジトリの検査を実行したうえで、PRから検出した言語(PRが無ければ依頼とリポジトリ内の直近のcommitから判定)で結果を報告する。
+進行中の操作を継続し、リポジトリのtest・lint・buildを実行したうえで、PRから検出した言語(PRが無ければ依頼とリポジトリ内の直近のcommitから判定)で結果を報告する。
 
 ## 使い方
 

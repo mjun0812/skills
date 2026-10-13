@@ -2,7 +2,7 @@
 
 [日本語](README_ja.md)
 
-Squashes and tidies the commits on the current branch with minimal interaction, then pushes with `--force-with-lease` when needed. By default commits are regrouped into logical units; with `--one` everything becomes a single commit.
+Squashes and tidies the commits on the current branch with minimal interaction, then pushes with `--force-with-lease` unless `--no-push` is given. By default commits are regrouped into logical units; with `--one` everything becomes a single commit.
 
 New commit messages follow Conventional Commits and are written in the specified language.
 

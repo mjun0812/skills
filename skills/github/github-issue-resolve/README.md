@@ -8,7 +8,7 @@ The output is a PR that references the issue (`Closes #N`). To sharpen an under-
 
 ## Usage
 
-- 「#N を解決して」
+- 「#Nを解決して」
 - 「issueから実装してPRまで」
 
 ```text

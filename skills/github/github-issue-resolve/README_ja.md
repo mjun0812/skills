@@ -8,7 +8,7 @@ GitHub issue番号を起点に、調査、専用worktreeでの実装、PR作成�
 
 ## 使い方
 
-- 「#N を解決して」
+- 「#Nを解決して」
 - 「issueから実装してPRまで」
 
 ```text

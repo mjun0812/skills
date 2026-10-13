@@ -28,7 +28,7 @@ Issueの起票や磨き上げには[`github-issue-create`](../github-issue-creat
 ## 動作
 
 - default branchにいる場合や未commitの変更がある場合は、branch名とcommitの分割案を提示し、承認後にbranch作成とcommitを`git-commit`へ委譲する。
-- base branchは、会話でユーザーが明示したものを使い、無ければdefault branchを使う。無関係なcommitが混ざる場合は、HEADが積み上がっているopen PRのhead branchを選ぶか、ユーザーに確認する。選んだbase、その理由、commit一覧を報告するため、誤った選定に気付ける。
+- base branchは、会話でユーザーが明示したものを使い、無ければdefault branchを使う。無関係なcommitが含まれる場合は、HEADが積み上がっているopen PRのhead branchを選ぶか、ユーザーに確認する。選んだbase、その理由、commit一覧を報告するため、誤った選定に気付ける。
 - 現在のbranchのPRが既にある場合は、URLと状態を表示して中止する。
 - repositoryのPR templateがあれば見出しと順序をそのまま使い、無ければ`references/pr_template.md`または`pr_template_ja.md`を使う。書くことが無い項目は削除せず`該当なし`と明記する。
 - 本文はcommit一覧とdiffを根拠に書く。推測で事実を補わず、public repositoryへ投稿するときはprivate repositoryの情報を書かない。

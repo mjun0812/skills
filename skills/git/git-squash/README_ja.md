@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-現在のbranchのcommitを、対話を最小化してsquash・整理し、必要に応じて`--force-with-lease`でpushする。未指定時は論理単位に自動でグルーピングし、`--one`指定時は全commitを1つにまとめる。
+現在のbranchのcommitを、対話を最小化してsquash・整理し、`--no-push`が無ければ`--force-with-lease`でpushする。未指定時は論理単位に自動でグルーピングし、`--one`指定時は全commitを1つにまとめる。
 
 新しいcommitメッセージはConventional Commits形式で、指定した言語で記述する。
 
