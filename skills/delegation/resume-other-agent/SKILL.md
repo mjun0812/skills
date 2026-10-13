@@ -55,7 +55,7 @@ session IDで「自分以外のagent」かつ現在のrepo/cwdに紐づくログ
 
 ## Safety
 
-- secret / token / API key / credential を出力しない
+- secret / token / API key / credentialを出力しない
 - session IDが一致するログのみ使う (関係ないsessionを混同しない)
 - git状態を確認せずに続行しない
 - confidenceが低い場合は断定しない

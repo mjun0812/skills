@@ -57,7 +57,7 @@ From an issue number, investigate, implement in a dedicated worktree, and open a
 
 If the issue lacks information needed to decide the approach, the skill stops and asks instead of guessing. The worktree and branch are removed afterwards unless PR creation failed.
 
-- Trigger phrases: "#N を解決して", "issueから実装してPRまで".
+- Trigger phrases: "#Nを解決して", "issueから実装してPRまで".
 
 ### github-issue-update
 

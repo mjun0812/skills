@@ -8,8 +8,8 @@ allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 
 ## 引数
 
-- `PR number`: 確認するPR番号（任意）
-- `--no-commit`: 修正後のコミットとプッシュをスキップ（任意）。ファイル自体は修正される（commit/pushのみスキップ）
+- `PR number`: 確認するPR番号(任意)
+- `--no-commit`: 修正後のコミットとプッシュをスキップ(任意)。ファイル自体は修正される(commit/pushのみスキップ)
 - `--dry-run`: 失敗分析と修正方針の提示までで終了し、ファイル編集・commit・pushを一切行わない
 
 ## タスク
@@ -22,27 +22,27 @@ allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:
 
 1. **PR番号が指定されている場合**: そのPRを使用するPRモード
 2. **PR番号の指定はないが、現在のブランチにPRが紐づいている場合**: そのPRを使用するPRモード
-3. **PRが存在しない場合**: リポジトリモード（最後にコミット/プッシュしない）
+3. **PRが存在しない場合**: リポジトリモード(最後にコミット/プッシュしない)
 
 検出したモードを以降のPhaseで使用するために保持する。
-PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head branch と head commit SHA を取得し、以降のCI run特定で使う。
+PRモードでは `gh pr view <number> --json headRefName,headRefOid` でhead branchとhead commit SHAを取得し、以降のCI run特定で使う。
 
-### Phase 1: 言語検出（PRモードのみ）
+### Phase 1: 言語検出(PRモードのみ)
 
-- PRのタイトルと本文を分析して言語を検出する（例: 日本語、英語）
+- PRのタイトルと本文を分析して言語を検出する(例: 日本語、英語)
 - すべてのコミットメッセージは検出された言語で記述する
 - 言語が曖昧な場合は英語をデフォルトとする
 
 ### Phase 2: CIステータスの確認
 
 - `gh pr checks` ですべてのチェックステータスを取得
-- すべてのチェックが成功している場合、成功を報告（PRモードでは検出された言語で）して終了
+- すべてのチェックが成功している場合、成功を報告(PRモードでは検出された言語で)して終了
 - チェックがまだ実行中の場合、ステータスを報告して終了する。待機やユーザー確認は行わない
 
 ### Phase 3: 失敗したチェックの特定
 
 - 失敗したすべてのチェックを名前付きで一覧表示し、check名と状態を保持する
-- PRモードでは、PR head commit SHA に一致するworkflow runだけを対象にする:
+- PRモードでは、PR head commit SHAに一致するworkflow runだけを対象にする:
   `gh run list --branch <headRefName> --commit <headRefOid> --json databaseId,name,headSha,status,conclusion,workflowName`
 - `headSha` が `<headRefOid>` と一致しないrunは古いrunなので除外する
 - 複数runが残る場合は、失敗したcheck名と `name` / `workflowName` が対応するrunを優先する。対応が曖昧な場合は最新runだけを採用し、別runのログを根拠に修正しない
@@ -51,7 +51,7 @@ PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head b
 
 - 失敗した各チェックについて、詳細ログを取得: `gh run view <run-id> --log-failed`
 - ログを解析して以下を特定:
-  - エラータイプ（テスト失敗、リントエラー、ビルドエラー、型エラー等）
+  - エラータイプ(テスト失敗、リントエラー、ビルドエラー、型エラー等)
   - 影響を受けるファイルと行番号
   - エラーメッセージ
 
@@ -73,7 +73,7 @@ PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head b
   - 修正が他の機能を壊さないことを確認
 - 修正が不明確またはリスクがある場合は、ユーザーに確認を求める
 
-### Phase 7: コミットとプッシュ（PRモードのみ、--no-commit を除く）
+### Phase 7: コミットとプッシュ(PRモードのみ、--no-commit を除く)
 
 **以下の場合はこのPhaseをスキップ**:
 
@@ -92,7 +92,7 @@ PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head b
 
 **PRモード**:
 
-- 変更がプッシュされたことを報告（検出された言語で）
+- 変更がプッシュされたことを報告(検出された言語で)
 - CIが自動的に再実行されることを通知
 - 確認のためCI完了後に再実行することを提案
 
@@ -103,7 +103,7 @@ PRモードでは `gh pr view <number> --json headRefName,headRefOid` で head b
 
 ## 注意事項
 
-- 複数のCIが失敗した場合、依存関係の順序で修正する（例: ビルド → テスト）
+- 複数のCIが失敗した場合、依存関係の順序で修正する(例: ビルド → テスト)
 - フレーキーテストの疑いがある場合は、その旨を報告し再実行を提案
-- 環境関連の失敗（シークレット不足、権限等）の場合は、手動対応が必要であることを報告
+- 環境関連の失敗(シークレット不足、権限等)の場合は、手動対応が必要であることを報告
 - 同じCIが繰り返し失敗する場合は、根本原因の調査を提案

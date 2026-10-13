@@ -24,7 +24,7 @@ issue番号を起点に、調査から実装、PR作成までを一気通貫で�
    - 対象issue: `gh issue view <number> --json number,title,state,body,labels,assignees,comments,url`
    - 現在のbranch: `git branch --show-current`
    - 既存worktree: `git worktree list --porcelain`
-   - issueが `state: CLOSED` の場合は中止し、ユーザーに「issue #N は既にclosedです」と通知する。
+   - issueが `state: CLOSED` の場合は中止し、ユーザーに「issue #Nは既にclosedです」と通知する。
 2. issueのタイトルと本文から出力言語を決める。主に日本語なら日本語、それ以外または判定が曖昧な場合は英語とし、issueコメントとPR作成に使う。
 3. 取得したissue本文・コメント・labelを読み、実装方針が明確か、実装に必要な情報が揃っているかを判断する:
    - 受け入れ基準・期待動作・既存コメントの合意事項を抽出する
@@ -35,7 +35,7 @@ issue番号を起点に、調査から実装、PR作成までを一気通貫で�
    - issue本文に `- [ ]` 形式のchecklistがある場合はそれをキューとして採用する。1回のimplementer起動で完了できない項目は分割し、細かすぎる項目は統合してよい
    - checklistが無い場合、独立に検証可能な振る舞いが複数含まれるときだけ分解する。分解は、1タスクで1つの振る舞いが端から端まで完成する単位で行う。それ以外は1タスクのままとする
    - 各タスクに受け入れ基準を割り当て、依存順に並べる。キューは会話内で管理し、issueへ書き戻さない
-5. 実装方針とタスク一覧は**簡潔に**ユーザーへ提示する。確認は取らず Phase 2 に進む。
+5. 実装方針とタスク一覧は**簡潔に**ユーザーへ提示する。確認は取らずPhase 2に進む。
 
 ### Phase 2: worktreeの作成
 
@@ -51,7 +51,7 @@ issue番号を起点に、調査から実装、PR作成までを一気通貫で�
 3. **worktree作成**:
    - `git worktree add -b <branch-name> <worktree-path> <base-branch>`
    - `<base-branch>`は最新のdefault branch
-   - 同じ path の worktree が存在し、未commit変更がある場合は中止する。clean な場合のみ作り直してよい。
+   - 同じpathのworktreeが存在し、未commit変更がある場合は中止する。cleanな場合のみ作り直してよい。
    - 作成失敗時は中止し、エラー内容をユーザーに伝える
 4. **作成したworktree情報を記録する** (中止時のクリーンアップで使う):
    - branch名
@@ -123,7 +123,7 @@ Phase 3の間は以下の制約を守る。
 
 以下を簡潔にまとめて出力する:
 
-- **Issue**: #N タイトル / URL
+- **Issue**: #Nタイトル / URL
 - **Branch**: 作成したbranch名
 - **PR**: 作成したPRのURL
 - **変更概要**: ファイル数、追加/削除行数 (`git diff --stat <base>..HEAD` の結果)

@@ -43,7 +43,7 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 - gh認証確認: `gh auth status` (失敗時は停止し、認証を案内する)
 - リポジトリ情報: `gh repo view --json defaultBranchRef,nameWithOwner`
 - 対象issue: `gh issue view <number> --json number,state,title,body,labels,comments,url`
-- issueが `state: CLOSED` の場合は中止し、「issue #N は既にclosedです」と報告する
+- issueが `state: CLOSED` の場合は中止し、「issue #Nは既にclosedです」と報告する
 
 ### Phase 1: ギャップ分析
 
@@ -102,7 +102,7 @@ AskUserQuestionで承認を取る:
 
 以下を簡潔にまとめて出力する:
 
-- **Issue**: #N タイトル / URL
+- **Issue**: #Nタイトル / URL
 - **変更点サマリ**: 追加・変更したセクション
 - **要確認事項**: 意思決定ログで確信度が低い項目の一覧
 - **別issue化の提案**: Phase 2で見つけたスコープ外の問題 (あれば)
