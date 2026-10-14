@@ -1,5 +1,7 @@
 # skills
 
+[English](README.md)
+
 My [Agent Skills](https://agentskills.io).
 
 ## Skills
