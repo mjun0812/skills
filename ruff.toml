@@ -1,0 +1,11 @@
+target-version = "py314"
+
+[lint]
+extend-select = ["UP", "ANN", "D"]
+# D100, D104: module・packageのdocstringは求めない
+# D107: __init__の引数はclassのdocstringに書く (Google style)
+# D415: 日本語のdocstringは「。」で終わる
+ignore = ["D100", "D104", "D107", "D415"]
+
+[lint.pydocstyle]
+convention = "google"
