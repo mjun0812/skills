@@ -45,6 +45,7 @@ My [Agent Skills](https://agentskills.io).
 
 | skill                                    | Description                                                                                       |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [rule-lint](skills/review/rule-lint)     | Convert prose coding conventions into linter, ast-grep, and script checks wired into hooks and CI |
 | [self-review](skills/review/self-review) | Adversarially review your own uncommitted changes or one commit and report only verified findings |
 | [test-prune](skills/review/test-prune)   | Examine every test in the codebase and list the ones that can be deleted or merged                |
 
