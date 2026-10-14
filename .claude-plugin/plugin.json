@@ -34,6 +34,7 @@
     "./skills/planning/grill-me",
     "./skills/planning/grill-self",
     "./skills/research/deep-research",
+    "./skills/review/self-review",
     "./skills/review/test-prune",
     "./skills/tools/wezterm-control",
     "./skills/writing/cognitive-rhythm-writing",

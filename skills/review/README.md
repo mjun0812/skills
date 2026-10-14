@@ -1,7 +1,8 @@
 # review
 
-Skills for reviewing an existing codebase.
+Skills for reviewing code: local changes and the existing codebase.
 
-| Skill                                | Description                                                                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------- |
-| [`test-prune`](test-prune/README.md) | Examine every test in the codebase and list the ones that can be deleted or merged |
+| Skill                                  | Description                                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [`self-review`](self-review/README.md) | Adversarially review your own uncommitted changes or one commit and report only verified findings |
+| [`test-prune`](test-prune/README.md)   | Examine every test in the codebase and list the ones that can be deleted or merged                |

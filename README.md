@@ -43,9 +43,10 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                  | Description                                                                        |
-| -------------------------------------- | ---------------------------------------------------------------------------------- |
-| [test-prune](skills/review/test-prune) | Examine every test in the codebase and list the ones that can be deleted or merged |
+| skill                                    | Description                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [self-review](skills/review/self-review) | Adversarially review your own uncommitted changes or one commit and report only verified findings |
+| [test-prune](skills/review/test-prune)   | Examine every test in the codebase and list the ones that can be deleted or merged                |
 
 The `test-prune` skill is based on [catnose's post](https://x.com/catnose99/status/2098238001403113924).
 
@@ -104,7 +105,7 @@ graph LR
 
 ### Agents
 
-The github-pr-review skill uses four reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-standards`, `code-reviewer-contract`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skill falls back to generic subagents given the same prompts.
+The github-pr-review and self-review skills use four reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-standards`, `code-reviewer-contract`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skills fall back to generic subagents given the same prompts.
 
 ## Installation
 

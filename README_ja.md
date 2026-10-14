@@ -43,9 +43,10 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                               | 説明                                                                       |
-| --------------------------------------------------- | -------------------------------------------------------------------------- |
-| [test-prune](skills/review/test-prune/README_ja.md) | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする |
+| skill                                                 | 説明                                                                               |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [self-review](skills/review/self-review/README_ja.md) | 自分の未commit変更または1 commitを敵対的にレビューし、検証を通過した指摘だけを返す |
+| [test-prune](skills/review/test-prune/README_ja.md)   | コードベース内の全テストを精査し、削除・統合できるテストをリストアップする         |
 
 `test-prune` skillは、[catnose氏の投稿](https://x.com/catnose99/status/2098238001403113924)を元に作成。
 
@@ -104,7 +105,7 @@ graph LR
 
 ### Agents
 
-github-pr-review skillは、[agents/](agents/) に定義された4つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-standards`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+github-pr-review skillとself-review skillは、[agents/](agents/) に定義された4つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-standards`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
 ## Installation
 
