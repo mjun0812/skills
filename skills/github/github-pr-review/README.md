@@ -28,6 +28,7 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`; wh
 ## Behavior
 
 - One PR per run. The PR head is checked out detached in a dedicated worktree, and all review reads that snapshot.
+- `scripts/resolve_review_range.sh` decides the review range: from the merge-base with the base branch to the PR head. For a PR stacked on another unmerged open PR, only the commits after that PR's head are reviewed. Large inputs such as the diff reach subagents as files in the temp directory.
 - Candidates are deduplicated by location or root cause, then each is verified one by one. `refuted` and `uncertain` verdicts are dropped. Findings are ordered Finder, Contract, and Contract drops a finding that duplicates an earlier one.
 - If any subagent cannot start or returns nothing, the review stops without posting, dismissing, or resolving, and reports why. The skill does not review the diff itself as a substitute.
 - Failed CI results are used as evidence for the Finders and noted in the report summary.

@@ -56,8 +56,11 @@ Phase 2以降では元のrepositoryを読まず，対象ファイルとコマン
 #### Phase 2.1: FinderとContract
 
 `code-reviewer-finder`を2つ並列に起動する．
-`--spec`指定時は，spec contract (Requirements / Boundaries / Acceptance Criteria / Out of Scope) をsourceから読み込み，`code-reviewer-contract`も並列に起動する．Markdownファイルはsnapshotではなく元のrepositoryを基準にパスを解決して読み (git管理外のファイルはsnapshotに存在しない)，GitHub Issueは`gh issue view`で取得する．specを解決できない場合はContract軸をスキップし，その旨をPhase 4の出力に含める．
-各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する．
+`--spec`指定時は，spec contract (Requirements / Boundaries / Acceptance Criteria / Out of Scope) をsourceから読み込み，`metadata.json`と同じdirectoryの`spec-contract.md`へ書き出してから，`code-reviewer-contract`も並列に起動する．specを解決できない場合はContract軸をスキップし，その旨をPhase 4の出力に含める．
+
+- Markdownファイル: snapshotではなく元のrepositoryを基準にパスを解決して読む (git管理外のファイルはsnapshotに存在しない)
+- GitHub Issue: `gh issue view`で取得する
+  各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する．
 
 ```text
 作者自身の変更に対する敵対的self-reviewを行う。
@@ -72,22 +75,24 @@ Phase 2以降では元のrepositoryを読まず，対象ファイルとコマン
 対象変更:
 - 対象種別: <target-kind>
 - 変更目的・説明: <change-description>
-- 変更ファイル一覧: <changed-files>
-- diff: <diff>
+- 変更ファイル一覧: <changed-files-file>
+- diff: <diff-file>
 - 変更履歴: <change-history>
 - snapshotの絶対パス: <snapshot-path>
 - baseline識別子: <baseline-id>
 - snapshot識別子: <snapshot-id>
 - 追加証拠: <additional-evidence>
+
+ファイルで渡した入力は、レビューを始める前に全文を読む。
 ```
 
 `<role>`と`<focus>`は次の組み合わせを使用する．
 
 - Finder 1: `Finder` / 期待される振る舞い，契約，不変条件，呼び出し経路，状態・データの流れ，同時に更新すべきdiff外の箇所
 - Finder 2: `Finder` / 境界値，失敗，並行実行，互換性，信頼できない入力，回復不能な状態
-- Contract (`--spec`指定時のみ): `Contract` / spec contractとの整合 (逸脱，未充足，boundary違反，scope creep)．`<additional-evidence>`にspec contract全文を含める
+- Contract (`--spec`指定時のみ): `Contract` / spec contractとの整合 (逸脱，未充足，boundary違反，scope creep)．`<additional-evidence>`に`spec-contract.md`のパスを指定する
 
-dirty modeでは`<target-kind>`を`Local uncommitted changes`，`<change-description>`をユーザー指定の目的または「現在の未commit変更」，`<change-history>`を`なし`とする．commit modeでは順に`Local commit`，commit message，commit SHA・first parent SHA・commit messageとする．その他のplaceholderはPhase 1のmetadataと対象差分から埋め，`<additional-evidence>`は`なし`とする (例外: Contract roleの起動時はspec contract全文とする)．
+dirty modeでは`<target-kind>`を`Local uncommitted changes`，`<change-description>`をユーザー指定の目的または「現在の未commit変更」，`<change-history>`を`なし`とする．commit modeでは順に`Local commit`，commit message，commit SHA・first parent SHA・commit messageとする．その他のplaceholderはPhase 1のmetadataと対象差分から埋め，`<changed-files-file>`と`<diff-file>`にはmetadataの`changedFilesFile`と`diffFile`を指定し，`<additional-evidence>`は`なし`とする (例外: Contract roleの起動時は`spec-contract.md`のパスとする)．
 
 Finderにはsnapshotの検索と読み取りだけを許可し，コード，テスト，ビルド，lint，型チェック，package script，再現コードを実行させない．
 
@@ -109,12 +114,14 @@ Finderにはsnapshotの検索と読み取りだけを許可し，コード，テ
 対象変更:
 - 対象種別: <target-kind>
 - 変更目的・説明: <change-description>
-- 変更ファイル一覧: <changed-files>
-- diff: <diff>
+- 変更ファイル一覧: <changed-files-file>
+- diff: <diff-file>
 - snapshotの絶対パス: <snapshot-path>
 - baseline識別子: <baseline-id>
 - snapshot識別子: <snapshot-id>
 - 追加証拠: <additional-evidence>
+
+ファイルで渡した入力は、検証を始める前に全文を読む。
 ```
 
 Finder候補では`<candidate-type>`を`Finder`，`<candidate>`を候補全文とする．他のplaceholderはPhase 2.1と同じ値を使用する．
@@ -125,7 +132,7 @@ verdictが`confirmed`の候補だけを確定指摘とし，`refuted`と`uncerta
 #### Phase 2.3: Contract候補の検証
 
 Contractを起動した場合のみ実行する．Contractの出力から形式 (`問題` / `根拠` / `完了条件`) を満たす候補だけを採用し，確定指摘と同じ行または同じ根本原因の候補を破棄した上で，残りを1件ずつ`code-reviewer-verifier`で検証する．
-VerifierにはPhase 2.2のprompt templateを使用し，`<candidate-type>`を`Contract`，`<candidate>`を候補全文とし，`<additional-evidence>`にspec contract全文を含める．
+VerifierにはPhase 2.2のprompt templateを使用し，`<candidate-type>`を`Contract`，`<candidate>`を候補全文とし，`<additional-evidence>`に`spec-contract.md`のパスを指定する．
 verdictが`confirmed`の候補だけを確定契約指摘とし，`refuted`と`uncertain`は破棄する．
 
 ### Phase 3: snapshotの有効性確認

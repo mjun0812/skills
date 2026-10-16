@@ -28,6 +28,7 @@ specは`--spec`、またはPR本文の`Closes #N`のIssueから解決する。�
 ## 動作
 
 - 1回の実行で扱うPRは1件だけ。PR headを専用worktreeにdetachedでcheckoutし、レビューはこのsnapshotだけを読む。
+- レビュー範囲は`scripts/resolve_review_range.sh`が決める。base branchとのmerge-baseからPR headまでを対象にし、未mergeの別のopen PRに積み上げたPRでは、そのPRのheadから先だけを対象にする。diffなどの大きな入力は一時directoryのファイルでSubAgentへ渡す。
 - 候補は同じ場所または同じ根本原因のものを統合した後、1件ずつ検証する。`refuted`と`uncertain`は破棄する。確定はFinder、Contractの順で行い、Contractは先に確定した指摘と重複するものを破棄する。
 - SubAgentが起動できない、または結果を返さない場合は、投稿、dismiss、resolveをせずに中止し、原因を報告する。diffを自分で読んで代替レビューはしない。
 - 失敗したCIの結果はFinderの証拠として使い、レポートの概要にも記載する。

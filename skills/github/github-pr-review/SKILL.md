@@ -37,7 +37,6 @@ spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合
 以下を取得する。
 
 - PR情報: repository名、タイトル、本文、base・head branch、最新head commit SHA
-- 変更内容: 変更ファイル一覧、diff、コミットメッセージ
 - CI: checkの結果、失敗したcheckの名前・URL・取得可能な関連ログ
 - 自分の既存レビュー: 未resolve threadと会話、`APPROVED` / `CHANGES_REQUESTED` レビューID
 
@@ -52,7 +51,7 @@ CIの失敗はレポートの概要に記載し、Finderの内部証拠として
 
 Issueがcontractセクション群 (Context〜Out of Scope) を持たない普通のIssueの場合は、本文全体をcontract相当として扱う。明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
 
-どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したcontractは `<spec-contract>` として保持する。
+どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したspec contractは、Phase 1.3で `<review-temp-dir>/spec-contract.md` に書き出す。
 
 他のレビュワーのレビューやthreadは参照しない。初回レビューではどちらのID一覧も空になる。
 
@@ -62,6 +61,19 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 2. 同じpathのworktreeが存在し、未commit変更がある場合は中止する。cleanな場合のみ作り直してよい。
 3. PRの最新head commitとbase branchを取得し、head commitをdetached状態で専用worktreeにcheckoutする。
 4. 専用worktreeをレビュー対象のsnapshotとし、Phase 2以降では対象ファイルをすべてこのsnapshot内から参照する。
+5. レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成する。SubAgentへの大きな入力は、promptに埋め込まずこのdirectoryのファイルで渡す。
+6. レビュー範囲を決め、diff、変更ファイル一覧、変更履歴を `<review-temp-dir>` に書き出す。
+
+   ```bash
+   bash "<skill-dir>/scripts/resolve_review_range.sh" \
+     --repo "<owner/repo>" --pr "<number>" \
+     --base-ref "<fetched-base-ref>" --head "<latest-commit-sha>" \
+     --out-dir "<review-temp-dir>"
+   ```
+
+   標準出力のJSONの `baseline` を `<baseline-sha>` として保持する。baselineはbase branchとのmerge-baseで、base branchに後から入った変更をdiffに含めない。PRのcommitに未mergeの別のopen PRのheadが含まれる積み上げPRでは、そのheadがbaselineになる。このとき `dependencyPr` のPRの変更はレビュー対象外とし、その旨を `<pr-title-and-body>` の末尾に1行追記してSubAgentへ伝える。
+
+7. spec contractを解決できた場合は `<review-temp-dir>/spec-contract.md` に書き出す。
 
 ### Phase 2: レビュー
 
@@ -83,15 +95,17 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - 対象種別: GitHub PR
 - PR番号: <pr-number>
 - 変更目的・説明: <pr-title-and-body>
-- 変更ファイル一覧: <changed-files>
-- diff: <diff>
-- 変更履歴: <commits>
+- 変更ファイル一覧: <review-temp-dir>/changed-files.txt
+- diff: <review-temp-dir>/diff.patch
+- 変更履歴: <review-temp-dir>/commits.txt
 - 変更サマリ: <change-summary>
 - snapshotの絶対パス: <snapshot-path>
-- baseline識別子: <base-sha>
+- baseline識別子: <baseline-sha>
 - snapshot識別子: <head-sha>
 - 追加証拠: <ci-evidence>
 - spec contract: <spec-contract>
+
+ファイルで渡した入力は、レビューを始める前に全文を読む。
 ```
 
 `<role>` と `<focus>` は次の組み合わせを使用する。
@@ -100,8 +114,8 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
 - Contract: `Contract` / spec contractとの整合 (逸脱、未充足、boundary違反、scope creep)
 
-`<spec-contract>` にはContract起動時のみ解決済みspec contract全文を指定し、Finderでは `なし` とする。
-`<change-summary>` にはchangedFiles / additions / deletionsを、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
+`<spec-contract>` にはContract起動時のみ `<review-temp-dir>/spec-contract.md` を指定し、Finderでは `なし` とする。
+`<change-summary>` には `<review-temp-dir>/diff.patch` の変更ファイル数・追加行数・削除行数を、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
 
 起動したSubAgent (専用agentを使えない環境では、同じpromptを渡した汎用SubAgent) のいずれかが、同時実行数の上限などで起動できない、または結果を返さない場合は、diffを自分で読んで代わりにレビューしない。投稿、dismiss、resolveをせずにPhase 4へ進み、レビューできなかったことと原因を報告する。Phase 2.2のverifierも同じとする。
@@ -126,29 +140,31 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - 対象種別: GitHub PR
 - PR番号: <pr-number>
 - 変更目的・説明: <pr-title-and-body>
-- 変更ファイル一覧: <changed-files>
-- diff: <diff>
+- 変更ファイル一覧: <review-temp-dir>/changed-files.txt
+- diff: <review-temp-dir>/diff.patch
 - snapshotの絶対パス: <snapshot-path>
-- baseline識別子: <base-sha>
+- baseline識別子: <baseline-sha>
 - snapshot識別子: <head-sha>
 - 追加証拠:
   - CI: <ci-evidence>
   - 同じ根本原因の既存thread: <related-thread>
   - spec contract: <spec-contract>
+
+ファイルで渡した入力は、検証を始める前に全文を読む。
 ```
 
 `<candidate>` には候補1件の全文を指定し、由来ごとに次の値を指定する。その他のplaceholderにはPhase 2.1と同じ値を指定する。
 
-| 由来     | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`         |
-| -------- | ------------------ | ----------------------------------------------- | ------------------------- |
-| Finder   | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                    |
-| Contract | `Contract`         | `なし`                                          | 解決済みspec contract全文 |
+| 由来     | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`                    |
+| -------- | ------------------ | ----------------------------------------------- | ------------------------------------ |
+| Finder   | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                               |
+| Contract | `Contract`         | `なし`                                          | `<review-temp-dir>/spec-contract.md` |
 
 確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
 #### Phase 2.3: 確定指摘の校正とレポートの生成
 
-1. レビュー実行ごとに `mktemp -d` で一意な `<review-temp-dir>` を作成し、PRのタイトルと本文を `<review-temp-dir>/pr.md` に書き出す
+1. PRのタイトルと本文を `<review-temp-dir>/pr.md` に書き出す
 2. 出力言語をscriptで決める。標準出力の `ja` または `en` を、ユーザーとの会話言語やグローバル指示に関係なく使う
 
    ```bash
@@ -233,7 +249,7 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 ### Phase 4: 終了処理
 
-レビュー用に作成したworktree、一時Git ref、投稿用の `<review-temp-dir>` を削除する。処理が中断した場合も同様に削除する。
+レビュー用に作成したworktree、一時Git ref、`<review-temp-dir>` を削除する。処理が中断した場合も同様に削除する。
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
