@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 from typing import NotRequired, TypedDict, cast
 
-ORIGINS = ("finder", "standards", "contract")
+ORIGINS = ("finder", "contract")
 SIDES = ("RIGHT", "LEFT")
 
 # Code and URLs are English in both languages, so they do not count as prose.
@@ -198,11 +198,9 @@ def validate(data: object, language: str) -> list[str]:
             errors.append(
                 f"{where}.execution_path: required for origin finder, one hop per entry"
             )
-        if origin in ("standards", "contract") and not (
-            _is_str_list(f.get("basis")) and f["basis"]
-        ):
+        if origin == "contract" and not (_is_str_list(f.get("basis")) and f["basis"]):
             errors.append(
-                f"{where}.basis: required for origin {origin}, one item per entry"
+                f"{where}.basis: required for origin contract, one item per entry"
             )
         for key in ("other_locations", "notes"):
             if key in f and not _is_str_list(f[key]):
