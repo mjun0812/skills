@@ -11,8 +11,7 @@ allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash
 PRのhead commitをworktreeにチェックアウトし、重点の異なる2つのFinder SubAgentが指摘候補を探す。
 Finder SubAgentが出した指摘候補は、1件ずつVerifier SubAgentが反証を試み、
 検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する。
-並行してStandards SubAgentがmergeをブロックすべき規約違反・コードスメルの指摘候補を探し、1件ずつVerifierの検証を経たものだけを同じレビューに含める。
-spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合の指摘候補を第3の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
+spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合の指摘候補を第2の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
 
 ## Arguments
 
@@ -66,10 +65,10 @@ Issueがcontractセクション群 (Context〜Out of Scope) を持たない普�
 
 ### Phase 2: レビュー
 
-#### Phase 2.1: FinderとStandardsとContract SubAgentの実行
+#### Phase 2.1: FinderとContract SubAgentの実行
 
-`code-reviewer-finder` を2つ、`code-reviewer-standards` を1つ並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
-Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロックすべき規約違反・コードスメルの指摘候補を、Contractはspec contractとの食い違い (未充足・boundary違反・scope creep) の指摘候補を収集する。specとコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
+`code-reviewer-finder` を2つ並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
+Finderはmergeを止める問題の指摘候補を、Contractはspec contractとの食い違い (未充足・boundary違反・scope creep) の指摘候補を収集する。specとコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
 レビュー方法、実行制約、出力形式はそれぞれのagent定義に従う。
 次のprompt templateを使用する。
 
@@ -99,10 +98,9 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 - Finder 1: `Finder` / 期待される振る舞い、契約、不変条件、呼び出し経路、状態・データの流れ、同時に更新すべきdiff外の箇所
 - Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
-- Standards: `Standards` / 文書化された必須規約、機械的に未検出の違反、merge後への先送りが安全でないコードスメル
 - Contract: `Contract` / spec contractとの整合 (逸脱、未充足、boundary違反、scope creep)
 
-`<spec-contract>` にはContract起動時のみ解決済みspec contract全文を指定し、FinderとStandardsでは `なし` とする。
+`<spec-contract>` にはContract起動時のみ解決済みspec contract全文を指定し、Finderでは `なし` とする。
 `<change-summary>` にはchangedFiles / additions / deletionsを、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
 
@@ -114,7 +112,7 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 - 各SubAgentが出力した指摘をすべて候補とする。verifierの起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる。重複統合はこの1回だけとする
 - Finder候補は、自分の既存未resolve threadと照合し、同じ根本原因の会話をverifierの反証材料にする
-- Standards候補とContract候補は、先に確定した指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Standards → Contractの順に確定する)
+- Contract候補は、先に確定したFinder由来の指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Contractの順に確定する)
 
 次のprompt templateを使用する。
 
@@ -141,13 +139,12 @@ Finderはmergeを止める問題の指摘候補を、Standardsはmergeをブロ�
 
 `<candidate>` には候補1件の全文を指定し、由来ごとに次の値を指定する。その他のplaceholderにはPhase 2.1と同じ値を指定する。
 
-| 由来      | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`         |
-| --------- | ------------------ | ----------------------------------------------- | ------------------------- |
-| Finder    | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                    |
-| Standards | `Standards`        | `なし`                                          | `なし`                    |
-| Contract  | `Contract`         | `なし`                                          | 解決済みspec contract全文 |
+| 由来     | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`         |
+| -------- | ------------------ | ----------------------------------------------- | ------------------------- |
+| Finder   | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                    |
+| Contract | `Contract`         | `なし`                                          | 解決済みspec contract全文 |
 
-確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Standards / Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
+確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
 #### Phase 2.3: 確定指摘の校正とレポートの生成
 
@@ -240,6 +237,6 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
-- Verdict、Finder由来・Standards由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、レポート本文
+- Verdict、Finder由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、レポート本文
 - レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。`--dry-run`、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)

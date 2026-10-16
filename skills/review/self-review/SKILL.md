@@ -6,13 +6,13 @@ description: 自分のlocal変更 (未commit変更、または指定した1 comm
 # Self Review
 
 自分の未commit変更または指定commitを一時worktreeへ固定し，ユーザーのworking treeを変更せずにレビューする．
-FinderとStandardsが出した候補を1件ずつVerifierで検証し，`confirmed`の指摘だけをlocalへ出力する．
+Finderが出した候補を1件ずつVerifierで検証し，`confirmed`の指摘だけをlocalへ出力する．
 変更目的や作者の想定を未検証の仮説として扱い，変更を壊す入力・状態・実行順序を積極的に探す．厳しさは探索範囲と反証の深さに使い，指摘の証拠基準は下げない．
 
 ## Arguments
 
 - `commit`: reviewするcommit-ish．省略時は現在の未commit変更を対象にする
-- `--spec <source>`: spec source (GitHub Issue番号，またはspec contractを書いたMarkdownファイルのパス)．指定時はContract軸 (specとの整合) のレビューを追加する．省略時はFinderとStandardsの2軸で行う
+- `--spec <source>`: spec source (GitHub Issue番号，またはspec contractを書いたMarkdownファイルのパス)．指定時はContract軸 (specとの整合) のレビューを追加する．省略時はFinderだけで行う
 
 ## 対象
 
@@ -53,9 +53,9 @@ Phase 2以降では元のrepositoryを読まず，対象ファイルとコマン
 
 ### Phase 2: 敵対的review agentの実行
 
-#### Phase 2.1: FinderとStandardsとContract
+#### Phase 2.1: FinderとContract
 
-`code-reviewer-finder`を2つ，`code-reviewer-standards`を1つ並列に起動する．
+`code-reviewer-finder`を2つ並列に起動する．
 `--spec`指定時は，spec contract (Requirements / Boundaries / Acceptance Criteria / Out of Scope) をsourceから読み込み，`code-reviewer-contract`も並列に起動する．Markdownファイルはsnapshotではなく元のrepositoryを基準にパスを解決して読み (git管理外のファイルはsnapshotに存在しない)，GitHub Issueは`gh issue view`で取得する．specを解決できない場合はContract軸をスキップし，その旨をPhase 4の出力に含める．
 各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する．
 
@@ -85,14 +85,13 @@ Phase 2以降では元のrepositoryを読まず，対象ファイルとコマン
 
 - Finder 1: `Finder` / 期待される振る舞い，契約，不変条件，呼び出し経路，状態・データの流れ，同時に更新すべきdiff外の箇所
 - Finder 2: `Finder` / 境界値，失敗，並行実行，互換性，信頼できない入力，回復不能な状態
-- Standards: `Standards` / 文書化された必須規約，機械的に未検出の違反，変更後への先送りが安全でないコードスメル
 - Contract (`--spec`指定時のみ): `Contract` / spec contractとの整合 (逸脱，未充足，boundary違反，scope creep)．`<additional-evidence>`にspec contract全文を含める
 
 dirty modeでは`<target-kind>`を`Local uncommitted changes`，`<change-description>`をユーザー指定の目的または「現在の未commit変更」，`<change-history>`を`なし`とする．commit modeでは順に`Local commit`，commit message，commit SHA・first parent SHA・commit messageとする．その他のplaceholderはPhase 1のmetadataと対象差分から埋め，`<additional-evidence>`は`なし`とする (例外: Contract roleの起動時はspec contract全文とする)．
 
-FinderとStandardsにはsnapshotの検索と読み取りだけを許可し，コード，テスト，ビルド，lint，型チェック，package script，再現コードを実行させない．
+Finderにはsnapshotの検索と読み取りだけを許可し，コード，テスト，ビルド，lint，型チェック，package script，再現コードを実行させない．
 
-起動したSubAgent (専用agentを使えない環境では，同じpromptを渡した汎用SubAgent) のいずれかが，同時実行数の上限などで起動できない，または結果を返さない場合は，diffを自分で読んで代わりにレビューしない．Phase 5のcleanupを実行し，レビューできなかったことと原因だけを報告して終了する．Phase 2.2〜2.4の`code-reviewer-verifier`も同じとする．
+起動したSubAgent (専用agentを使えない環境では，同じpromptを渡した汎用SubAgent) のいずれかが，同時実行数の上限などで起動できない，または結果を返さない場合は，diffを自分で読んで代わりにレビューしない．Phase 5のcleanupを実行し，レビューできなかったことと原因だけを報告して終了する．Phase 2.2〜2.3の`code-reviewer-verifier`も同じとする．
 
 #### Phase 2.2: Finder候補の検証
 
@@ -123,17 +122,9 @@ Finder候補では`<candidate-type>`を`Finder`，`<candidate>`を候補全文�
 Verifierにはsnapshot内で必要なコマンドと，関連する最小のテストや再現コードの実行を許可する．コードを変更させない．
 verdictが`confirmed`の候補だけを確定指摘とし，`refuted`と`uncertain`は破棄する．
 
-#### Phase 2.3: Standards候補の検証
+#### Phase 2.3: Contract候補の検証
 
-Standardsの出力から，agent定義の形式を満たす候補だけを採用する．
-確定指摘と同じ行または同じ根本原因の候補は破棄し，残りを1件ずつ`code-reviewer-verifier`で検証する．
-VerifierにはPhase 2.2のprompt templateを使用し，`<candidate-type>`を`Standards`，`<candidate>`を候補全文とする．
-
-verdictが`confirmed`の候補だけを確定規約指摘とし，`refuted`と`uncertain`は破棄する．
-
-#### Phase 2.4: Contract候補の検証
-
-Contractを起動した場合のみ実行する．Contractの出力から形式 (`問題` / `根拠` / `完了条件`) を満たす候補だけを採用し，確定指摘・確定規約指摘と同じ行または同じ根本原因の候補を破棄した上で，残りを1件ずつ`code-reviewer-verifier`で検証する．
+Contractを起動した場合のみ実行する．Contractの出力から形式 (`問題` / `根拠` / `完了条件`) を満たす候補だけを採用し，確定指摘と同じ行または同じ根本原因の候補を破棄した上で，残りを1件ずつ`code-reviewer-verifier`で検証する．
 VerifierにはPhase 2.2のprompt templateを使用し，`<candidate-type>`を`Contract`，`<candidate>`を候補全文とし，`<additional-evidence>`にspec contract全文を含める．
 verdictが`confirmed`の候補だけを確定契約指摘とし，`refuted`と`uncertain`は破棄する．
 
@@ -151,12 +142,11 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 
 結果はユーザーの言語に合わせ，チャットまたはterminalへ出力する．ファイルへの保存やGitHubへの投稿は行わない．
 
-- 確定指摘，確定規約指摘，確定契約指摘のいずれかが1件以上: `CHANGES_REQUIRED`
+- 確定指摘，確定契約指摘のいずれかが1件以上: `CHANGES_REQUIRED`
 - すべて0件: `PASS`
 
 冒頭にVerdict，baseline SHAの先頭7文字，snapshot IDの先頭7文字，指摘件数を記載する．
 確定指摘には`path:line`，カテゴリ，要約，問題，発生経路，完了条件を含める．
-確定規約指摘には`path:line`，カテゴリ，要約，問題，根拠，完了条件を含める．
 確定契約指摘には`path:line`，カテゴリ，要約，問題，根拠 (specの該当記述の引用)，完了条件を含める．
 Contract軸をスキップした場合 (`--spec`未指定，またはspec解決失敗) は，件数の代わりにその旨を記載する．
 Verifierの検証過程，破棄した候補，内部証拠は出力しない．
@@ -164,7 +154,7 @@ Verifierの検証過程，破棄した候補，内部証拠は出力しない．
 ```text
 Verdict: CHANGES_REQUIRED
 Snapshot: <baseline-short-sha> / <snapshot-short-id>
-Findings: <finder-count>, Standards: <standards-count>, Contract: <contract-count | skipped>
+Findings: <finder-count>, Contract: <contract-count | skipped>
 
 1. `path:line` [カテゴリ] 要約
    - 問題: ...
