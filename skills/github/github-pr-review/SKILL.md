@@ -38,11 +38,17 @@ spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合
 
 - PR情報: repository名、タイトル、本文、base・head branch、最新head commit SHA
 - CI: checkの結果、失敗したcheckの名前・URL・取得可能な関連ログ
-- 自分の既存レビュー: 未resolve threadと会話、`APPROVED` / `CHANGES_REQUESTED` レビューID
+- 自分の既存レビュー: 以前に投稿した指摘と返信、`APPROVED` / `CHANGES_REQUESTED` レビューID
 
 最新head commit SHAは `<latest-commit-sha>` として保持する。
 CIの失敗はレポートの概要に記載し、Finderの内部証拠として使用する。
-自分の既存threadと会話はVerifierの反証材料として使用し、投稿前のthread IDを `<existing-thread-ids>`、レビューIDを `<existing-review-ids>` として保持する。
+以前に投稿した指摘は、resolve済みのthreadも含めて返信とともに取得する。返信には、各指摘を修正したか、見送ったか、却下したかが記録されている。再レビューのたびに以前のthreadはresolveされるため (Phase 3.3)、未resolveのthreadだけを見ると前々回以前の判断が抜け落ち、決着済みの指摘を蒸し返すことになる。
+
+```bash
+bash "<skill-dir>/scripts/fetch_prior_findings.sh" --repo "<owner/repo>" --pr "<number>"
+```
+
+出力はPhase 1.3で `<review-temp-dir>/prior-findings.json` に書き出す。このうち `is_resolved` がfalseのthread IDを `<existing-thread-ids>`、レビューIDを `<existing-review-ids>` として保持する。
 
 さらに、Contract review用のspec contractを次の順で解決する。
 
@@ -79,6 +85,7 @@ Issueは `gh issue view <N> --json title,body,comments` で取得し、次をこ
    標準出力のJSONの `baseline` を `<baseline-sha>` として保持する。baselineはbase branchとのmerge-baseで、base branchに後から入った変更をdiffに含めない。PRのcommitに未mergeの別のopen PRのheadが含まれる積み上げPRでは、そのheadがbaselineになる。このとき `dependencyPr` のPRの変更はレビュー対象外とし、その旨を `<pr-title-and-body>` の末尾に1行追記してSubAgentへ伝える。
 
 7. spec contractを解決できた場合は `<review-temp-dir>/spec-contract.md` に書き出す。
+8. Phase 1.2で取得した以前の指摘を `<review-temp-dir>/prior-findings.json` に書き出す。
 
 ### Phase 2: レビュー
 
@@ -108,6 +115,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - baseline識別子: <baseline-sha>
 - snapshot識別子: <head-sha>
 - 追加証拠: <ci-evidence>
+- 以前の指摘と対応: <review-temp-dir>/prior-findings.json
 - spec contract: <spec-contract>
 
 ファイルで渡した入力は、レビューを始める前に全文を読む。
@@ -130,7 +138,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 各SubAgentの出力から候補を選別し、候補ごとに独立した `code-reviewer-verifier` を並列に起動して反証を試みる。verdictが `confirmed` の候補だけを確定指摘とし、`refuted` / `uncertain` は破棄する。候補が0件ならこのステップをスキップする。
 
 - 各SubAgentが出力した指摘をすべて候補とする。verifierの起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる。重複統合はこの1回だけとする
-- Finder候補は、自分の既存未resolve threadと照合し、同じ根本原因の会話をverifierの反証材料にする
+- 候補を `prior-findings.json` の以前の指摘と照合する。同じ根本原因の以前の指摘が見送りか却下で決着している候補は、その判断の前提が対象変更で崩れたことを候補自身が `file:line` で示していない限り、verifierの前で破棄する。修正済みとされた指摘と同じ根本原因の候補は、修正が不十分だという主張としてverifierへ渡す。照合した以前の指摘と返信は `<related-thread>` としてverifierの反証材料にする
 - Contract候補は、先に確定したFinder由来の指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Contractの順に確定する)
 
 次のprompt templateを使用する。
@@ -152,7 +160,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - snapshot識別子: <head-sha>
 - 追加証拠:
   - CI: <ci-evidence>
-  - 同じ根本原因の既存thread: <related-thread>
+  - 同じ根本原因の以前の指摘と返信: <related-thread>
   - spec contract: <spec-contract>
 
 ファイルで渡した入力は、検証を始める前に全文を読む。
@@ -162,8 +170,8 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 
 | 由来     | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`                    |
 | -------- | ------------------ | ----------------------------------------------- | ------------------------------------ |
-| Finder   | `Finder`           | 同じ根本原因の既存threadと会話。無ければ `なし` | `なし`                               |
-| Contract | `Contract`         | `なし`                                          | `<review-temp-dir>/spec-contract.md` |
+| Finder   | `Finder`           | 同じ根本原因の以前の指摘と返信。無ければ `なし` | `なし`                               |
+| Contract | `Contract`         | 同じ根本原因の以前の指摘と返信。無ければ `なし` | `<review-temp-dir>/spec-contract.md` |
 
 確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
@@ -258,6 +266,6 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
-- Verdict、Finder由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、レポート本文
+- Verdict、Finder由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、以前の判断と同じ根本原因として破棄した候補の件数、レポート本文
 - レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。`--dry-run`、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)
