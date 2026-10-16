@@ -10,7 +10,7 @@
 | `reviewer` | string    | 実行中のレビュワー名。Claude Codeでは `Claude`                                        |
 | `commit`   | string    | レビュー対象の `<latest-commit-sha>`。フッターには先頭7文字が入る                     |
 | `summary`  | string    | PRの変更内容だけを1〜2文で書く。レビュー結果や指摘件数は書かない                      |
-| `notes`    | string[]  | 任意。CIが失敗している場合とContract軸をスキップした場合に、それぞれ1行ずつ追加する   |
+| `notes`    | string[]  | 任意。CIが失敗している場合に1行追加する。Contract軸をスキップしたことは書かない       |
 | `findings` | finding[] | 確定指摘。0件なら空配列                                                               |
 
 ## 指摘の項目

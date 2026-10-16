@@ -62,7 +62,7 @@ Issueは `gh issue view <N> --json title,body,comments` で取得し、次をこ
 
 明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
 
-どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したspec contractは、Phase 1.3で `<review-temp-dir>/spec-contract.md` に書き出す。
+どちらでも解決できない場合はContract軸をスキップする。スキップしたことはレポート本文にもinline commentにも書かず、Phase 4のチャット報告にだけ含める。解決したspec contractは、Phase 1.3で `<review-temp-dir>/spec-contract.md` に書き出す。
 
 他のレビュワーのレビューやthreadは参照しない。初回レビューではどちらのID一覧も空になる。
 
