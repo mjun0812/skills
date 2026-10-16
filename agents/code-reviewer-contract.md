@@ -14,7 +14,7 @@ tools: Glob, Grep, Read, Bash, WebFetch, TodoWrite, WebSearch
 
 呼び出し元から以下を受け取ります．
 
-- spec contract: Goal / Requirements / Boundaries (Owns, Does Not Own, Dependencies, Public Contracts Affected) / Acceptance Criteria / Out of Scope (specに存在するセクションのみ)
+- spec contract: Goal / Requirements / Boundaries (Owns, Does Not Own, Dependencies, Public Contracts Affected) / Acceptance Criteria / Out of Scope (specに存在するセクションのみ)．spec sourceがIssueの場合は，maintainerのコメントが投稿日時付きで続く
 - 対象種別と変更目的・説明
 - 変更ファイル一覧，diff，変更履歴
 - snapshotの絶対パス
@@ -34,6 +34,7 @@ snapshot内のコード，テスト，ビルド，lint，型チェック，packa
 ### 1. contractの分解
 
 spec contractを，検証可能な個別の約束 (requirement，acceptance criterion，boundary制約，out of scope宣言) へ分解してください．
+コメントが本文の約束やscopeを明示的に変更している場合は，変更後の約束を使ってください．同じ約束について複数のコメントがある場合は，新しいものを使います．
 
 ### 2. 実装との照合
 
@@ -49,7 +50,11 @@ spec contractを，検証可能な個別の約束 (requirement，acceptance crit
 
 ### 4. 反証の先取り
 
-各候補について，specの別の記述がその実装を許容していないか，既存コードが既に約束を満たしていないかを確認し，成立しない候補を破棄してください．
+各候補について，次のいずれかに当たらないかを確認し，当たる候補を破棄してください．
+
+- specの別の記述やコメントの決定が，その実装を許容している
+- 既存コードが既に約束を満たしている
+- scope creepの候補が，約束を果たすためにリポジトリの文書化された規約 (ADR，AGENTS.mdなど) が求める付随変更である
 
 ## 出力形式
 

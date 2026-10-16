@@ -46,10 +46,15 @@ CIの失敗はレポートの概要に記載し、Finderの内部証拠として
 
 さらに、Contract review用のspec contractを次の順で解決する。
 
-1. `--spec` が指定されていれば、そのIssueを `gh issue view` で取得し、本文のcontractセクション群 (Context〜Out of Scope、Decision Log) を使う
-2. PR本文に `Closes #N` があれば `gh issue view N` で本文を取得し、contractセクション群を使う
+1. `--spec` が指定されていれば、そのIssueを使う
+2. PR本文に `Closes #N` があれば、Issue #Nを使う
 
-Issueがcontractセクション群 (Context〜Out of Scope) を持たない普通のIssueの場合は、本文全体をcontract相当として扱う。明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
+Issueは `gh issue view <N> --json title,body,comments` で取得し、次をこの順に並べてspec contractとする。
+
+- 本文のcontractセクション群 (Context〜Out of Scope、Decision Log)。contractセクション群を持たない普通のIssueでは本文全体
+- `authorAssociation` が `OWNER` / `MEMBER` / `COLLABORATOR` のコメント。投稿日時と投稿者を付け、古い順に並べる。本文の後に合意した判断やscopeの変更は、ここに記録されていることが多い
+
+明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
 
 どちらでも解決できない場合はContract軸をスキップし、レポートの概要にその旨を1行記載する。解決したspec contractは、Phase 1.3で `<review-temp-dir>/spec-contract.md` に書き出す。
 

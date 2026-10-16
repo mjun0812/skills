@@ -20,10 +20,10 @@ It does not use GitHub, PRs, CI, or review threads. To review changes that are a
 
 ## Arguments
 
-| Argument          | Effect                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------- |
-| `commit`          | Commit to review. Defaults to uncommitted changes (staged, unstaged, and untracked files not ignored).  |
-| `--spec <source>` | Spec for the Contract axis: a GitHub issue number, or the path to a Markdown file holding the contract. |
+| Argument          | Effect                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commit`          | Commit to review. Defaults to uncommitted changes (staged, unstaged, and untracked files not ignored).                                      |
+| `--spec <source>` | Spec for the Contract axis: a GitHub issue number (its body plus maintainer comments), or the path to a Markdown file holding the contract. |
 
 ## Behavior
 

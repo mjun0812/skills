@@ -20,10 +20,10 @@ GitHub、PR、CI、review threadは使わない。PRになった変更をレビ�
 
 ## 引数
 
-| 引数              | 効果                                                                                          |
-| ----------------- | --------------------------------------------------------------------------------------------- |
-| `commit`          | レビューするcommit。省略時は未commit変更 (staged、unstaged、`.gitignore`対象外のuntracked)。  |
-| `--spec <source>` | Contract軸のspec。GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパスを渡す。 |
+| 引数              | 効果                                                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `commit`          | レビューするcommit。省略時は未commit変更 (staged、unstaged、`.gitignore`対象外のuntracked)。                                     |
+| `--spec <source>` | Contract軸のspec。GitHub Issue番号 (本文とmaintainerのコメントを使う)、またはspec contractを書いたMarkdownファイルのパスを渡す。 |
 
 ## 動作
 

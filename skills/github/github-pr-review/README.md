@@ -4,7 +4,7 @@
 
 Adversarially review a GitHub Pull Request and post only verified findings as a review report plus inline comments. Two Finder subagents with different focuses and (when a spec is available) a Contract subagent propose findings from a snapshot worktree of the PR head. Every candidate is challenged by an independent Verifier subagent, and only confirmed findings are posted. Self review is supported.
 
-The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`; when neither exists, the Contract axis is skipped and the report says so. To review local changes that are not in a PR, use `self-review` instead.
+The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, with comments from maintainers (owners, members, collaborators) appended after the issue body; when neither exists, the Contract axis is skipped and the report says so. To review local changes that are not in a PR, use `self-review` instead.
 
 ## Usage
 
@@ -19,11 +19,11 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`; wh
 
 ## Arguments
 
-| Argument         | Effect                                                                                 |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| `PR number`      | PR to review. Defaults to the current branch's PR, or asks when there is none.         |
-| `--spec <issue>` | Issue whose body is the spec for the Contract axis. Overrides the PR's `Closes` issue. |
-| `--dry-run`      | Print the report only. Nothing is posted, dismissed, or resolved.                      |
+| Argument         | Effect                                                                           |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `PR number`      | PR to review. Defaults to the current branch's PR, or asks when there is none.   |
+| `--spec <issue>` | Issue used as the spec for the Contract axis. Overrides the PR's `Closes` issue. |
+| `--dry-run`      | Print the report only. Nothing is posted, dismissed, or resolved.                |
 
 ## Behavior
 

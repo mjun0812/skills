@@ -59,7 +59,7 @@ Phase 2以降では元のrepositoryを読まず，対象ファイルとコマン
 `--spec`指定時は，spec contract (Requirements / Boundaries / Acceptance Criteria / Out of Scope) をsourceから読み込み，`metadata.json`と同じdirectoryの`spec-contract.md`へ書き出してから，`code-reviewer-contract`も並列に起動する．specを解決できない場合はContract軸をスキップし，その旨をPhase 4の出力に含める．
 
 - Markdownファイル: snapshotではなく元のrepositoryを基準にパスを解決して読む (git管理外のファイルはsnapshotに存在しない)
-- GitHub Issue: `gh issue view`で取得する
+- GitHub Issue: `gh issue view <N> --json title,body,comments`で取得し，本文のcontractセクション群 (contractセクション群が無ければ本文全体) の後に，`authorAssociation`が`OWNER` / `MEMBER` / `COLLABORATOR`のコメントを投稿日時と投稿者付きで古い順に並べる．本文の後に合意した判断やscopeの変更は，コメントに記録されていることが多い
   各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する．
 
 ```text
