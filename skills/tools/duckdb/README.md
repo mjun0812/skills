@@ -4,7 +4,7 @@
 
 Use the DuckDB CLI to check the schema of record-based data files before aggregating, inspecting, converting or joining them. Supported data includes JSONL / CSV / TSV / Parquet, JSON arrays of records, and agent session logs.
 
-Use it to check row counts and distributions in data files. Also use it to check their keys and types, or to find duplicates and missing values. It is also for aggregating across many files and converting formats. Reach for it whenever you are about to write a Python or awk script for these tasks. It also works on files in S3, GCS, or over HTTPS. Do not use it just to pull a value out of a single JSON document (jq is enough) or to edit files.
+Use it to check row counts and distributions in data files. Also use it to check their keys and types, or to find duplicates and missing values. It is also for aggregating across many files and converting formats. Reach for it whenever you are about to write a Python or awk script for these tasks. It also works on files in S3, GCS, or over HTTPS, and on questions about how DuckDB or DuckLake behaves. Do not use it just to pull a value out of a single JSON document (jq is enough) or to edit files.
 
 ## Usage
 

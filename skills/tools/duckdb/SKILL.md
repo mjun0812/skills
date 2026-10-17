@@ -1,8 +1,8 @@
 ---
 name: duckdb
 description: >-
-  DuckDB CLIで、レコードの集まりからなるデータファイル (JSONL・CSV・TSV・Parquet・レコード配列のJSON、agentのsessionログなど) を、
-  schemaを確かめてから集計・検査・変換・突き合わせするSkill。
+  DuckDB CLIでデータファイルの調査、抽出、集計、結合、形式変換とDuckDB/DuckLakeの仕様確認を行うSkill。
+  レコードの集まりからなるデータファイル (JSONL・CSV・TSV・Parquet・レコード配列のJSON、agentのsessionログなど) は、schemaを確かめてから扱う。
   データファイルの件数・分布・キーや型・重複や欠損を調べるとき、複数ファイルを横断して集計するとき、形式を変換するとき、
   またはそのためにPythonやawkのscriptを書こうとしたときに使うこと。S3・GCS・HTTPS上のファイルにも使う。
   単一のJSONから値を取り出すだけの場合 (jqで足りる) や、ファイルの編集には使わない。
