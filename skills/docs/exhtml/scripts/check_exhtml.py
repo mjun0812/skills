@@ -11,7 +11,7 @@
 - 絵文字・矢印文字・外部画像・追加 <style>・追加 <script>・border-radius の混入がない
 - SVG 属性や Mermaid 記法に生の色指定が無い (図の色は c1〜c4 クラスだけ)
 - Mermaid / shiki / MathJax の任意ブロックが、使用有無と一致して残っている (削除されている)
-- Mermaid 記法に <br> やタグ、flowchart の角丸ノードが無い
+- Mermaid 記法に <br> やタグ、flowchart の角丸ノードと循環する辺が無い
 - 手描き SVG が .ex-figure-frame の中にあり viewBox を持つ
 
 Usage:
@@ -25,6 +25,7 @@ from __future__ import annotations
 import re
 import sys
 from html.parser import HTMLParser
+from itertools import pairwise
 from pathlib import Path
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "template.html"
@@ -67,6 +68,16 @@ MERMAID_RE = re.compile(
     r'<pre[^>]*class="[^"]*\bmermaid\b[^"]*"[^>]*>(.*?)</pre>', re.DOTALL
 )
 PLAIN_LANGS = {"plaintext", "text"}
+# flowchart の辺。ラベル |...| と -- text --> はノード id ではないので先に消す
+EDGE_OP_RE = re.compile(r"\s*(?:-\.+->|={2,}>|-{2,}[>ox]?)\s*")
+EDGE_TEXT_RE = re.compile(r"\|[^|]*\||--\s[^>]*?(?=-->)")
+# ((...)) や [[...]] のような二重の形を先に照合する
+NODE_SHAPE_RE = re.compile(
+    r"\(\(.*?\)\)|\[\[.*?\]\]|\{\{.*?\}\}|\[\(.*?\)\]|\(\[.*?\]\)|\[.*?\]|\{.*?\}|\(.*?\)"
+)
+FLOWCHART_STMT_RE = re.compile(
+    r"^\s*(?:%%|class\b|classDef\b|click\b|subgraph\b|end\b|direction\b|style\b|linkStyle\b)"
+)
 
 
 class Page(HTMLParser):
@@ -171,6 +182,45 @@ class Page(HTMLParser):
             and not self._inside("style")
         ):
             self.prose.append(data)
+
+
+def flowchart_cycle(src: str) -> list[str]:
+    """Flowchart の辺をたどり、循環があればそのノード id の並びを返す。"""
+    graph: dict[str, list[str]] = {}
+    for line in src.strip().split("\n")[1:]:
+        if FLOWCHART_STMT_RE.match(line):
+            continue
+        line = NODE_SHAPE_RE.sub("", EDGE_TEXT_RE.sub("", line))
+        groups = [
+            [n.strip() for n in part.split("&") if n.strip()]
+            for part in EDGE_OP_RE.split(line)
+        ]
+        for heads, tails in pairwise(groups):
+            for head in heads:
+                graph.setdefault(head, []).extend(tails)
+
+    path: list[str] = []
+    done: set[str] = set()
+
+    def visit(node: str) -> list[str]:
+        if node in path:
+            return path[path.index(node) :] + [node]
+        if node in done:
+            return []
+        path.append(node)
+        for nxt in graph.get(node, []):
+            cycle = visit(nxt)
+            if cycle:
+                return cycle
+        path.pop()
+        done.add(node)
+        return []
+
+    for node in list(graph):
+        cycle = visit(node)
+        if cycle:
+            return cycle
+    return []
 
 
 def check(path: Path) -> list[str]:
@@ -279,6 +329,12 @@ def check(path: Path) -> list[str]:
         if head.startswith(("flowchart", "graph")) and ROUNDED_NODE_RE.search(src):
             errors.append(
                 f"Mermaid #{i + 1} (flowchart) に角丸ノード id(...) がある。角丸禁止なので id[...] を使う"
+            )
+        cycle = flowchart_cycle(src) if head.startswith(("flowchart", "graph")) else []
+        if cycle:
+            errors.append(
+                f"Mermaid #{i + 1} (flowchart) に前のノードへ戻る辺がある: {' --> '.join(cycle)}。"
+                "戻り先は終端ノード (例: BK[implementerへ戻る]) で示す"
             )
 
     for in_frame, has_viewbox in page.svgs:
