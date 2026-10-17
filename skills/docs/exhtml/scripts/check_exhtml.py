@@ -8,6 +8,7 @@
 - h2/h3 に id があり、id が文書全体で一意
 - 用語集の dt に term- で始まる id があり、#term- 参照先が存在する
 - 冒頭要約が 1〜3 項目、メタ行が created/updated/model の形式
+- 用語集が 20 項目以内で、各項目が本文からリンクされ、本文での初出順に並んでいる
 - 絵文字・矢印文字・外部画像・追加 <style>・追加 <script>・border-radius の混入がない
 - SVG 属性や Mermaid 記法に生の色指定が無い (図の色は c1〜c4 クラスだけ)
 - Mermaid / shiki / MathJax の任意ブロックが、使用有無と一致して残っている (削除されている)
@@ -68,6 +69,7 @@ MERMAID_RE = re.compile(
     r'<pre[^>]*class="[^"]*\bmermaid\b[^"]*"[^>]*>(.*?)</pre>', re.DOTALL
 )
 PLAIN_LANGS = {"plaintext", "text"}
+MAX_GLOSSARY = 20
 # flowchart の辺。ラベル |...| と -- text --> はノード id ではないので先に消す
 EDGE_OP_RE = re.compile(r"\s*(?:-\.+->|={2,}>|-{2,}[>ox]?)\s*")
 EDGE_TEXT_RE = re.compile(r"\|[^|]*\||--\s[^>]*?(?=-->)")
@@ -89,6 +91,7 @@ class Page(HTMLParser):
         self.ids: list[str] = []
         self.headings: list[tuple[str, str | None]] = []
         self.anchors: list[str] = []
+        self.main_anchors: list[str] = []  # main 内の参照先を出現順に記録する
         self.glossary_dts: list[str | None] = []
         self.summary_items = 0
         self.meta_text = ""
@@ -127,6 +130,8 @@ class Page(HTMLParser):
             self.headings.append((tag, a.get("id")))
         if tag == "a" and (a.get("href") or "").startswith("#"):
             self.anchors.append((a.get("href") or "")[1:])
+            if self._inside("main"):
+                self.main_anchors.append((a.get("href") or "")[1:])
         if tag == "dt" and self._inside("aside", "ex-glossary"):
             self.glossary_dts.append(a.get("id"))
         if tag == "li" and self._inside("div", "ex-summary"):
@@ -278,6 +283,22 @@ def check(path: Path) -> list[str]:
     for dt_id in page.glossary_dts:
         if not dt_id or not dt_id.startswith("term-"):
             errors.append(f"用語集の <dt> に term- で始まる id が無い (id={dt_id!r})")
+        elif dt_id not in page.main_anchors:
+            errors.append(
+                f"用語集の #{dt_id} が本文からリンクされていない。リンクしない語は用語集から外す"
+            )
+    linked_dts = [d for d in page.glossary_dts if d in page.main_anchors]
+    first_seen = [t for t in dict.fromkeys(page.main_anchors) if t in linked_dts]
+    if linked_dts != first_seen:
+        errors.append(
+            "用語集が本文での初出順に並んでいない。期待する順: "
+            + ", ".join(f"#{t}" for t in first_seen)
+        )
+    if len(page.glossary_dts) > MAX_GLOSSARY:
+        errors.append(
+            f"用語集は {MAX_GLOSSARY} 項目まで (見つかった数: {len(page.glossary_dts)})。"
+            "想定読者が知っている語を外すか、主題を分ける"
+        )
 
     if not 1 <= page.summary_items <= 3:
         errors.append(

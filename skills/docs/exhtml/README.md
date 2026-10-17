@@ -15,16 +15,17 @@ The look is fixed by a bundled template; the agent writes only the content. For 
 
 ## Behavior
 
-- Fixes the subject (conversation content, a given file, or research results), plans the structure, and lists the technical terms first.
+- Fixes the subject (conversation content, a given file, or research results) and the intended reader, and plans the structure.
+- The glossary is written after the body and holds only terms the intended reader does not know, in the order they first appear in the body. It has at most 20 entries, and every entry is linked from the body.
 - Fills `assets/template.html`. The template part, the runtime block (theme toggle and table of contents generation), and page-specific `<style>` / `<script>` are not edited. Unused optional blocks (MathJax, Shiki, Mermaid) are removed.
 - Runs `scripts/check_exhtml.py` and fixes the file until it reports `ok`. A file that has not passed is not reported as a result.
-- Output goes to the path the user gives, otherwise `/tmp/YYYY-MM-DD-<slug>.html`. Asks before overwriting an existing file. An existing exhtml page is updated in place: the file name stays and only the body, glossary, and `updated` change.
+- Output goes to `/tmp/YYYY-MM-DD-<slug>.html`, overwriting a file with the same name. An existing exhtml page is updated in place: the file name stays and only the body, glossary, and `updated` change.
 - On macOS it opens the file with `open`; if that fails the path is simply reported.
 - Design rules: template tokens only for color, rounded corners only on chips, and no emoji, gradients, shadows, or external images. Figures use hand-drawn SVG for structure and Mermaid for branching, sequence, ER, and state diagrams. Simple one-way procedures are numbered lists, not figures.
 
 ## Dependencies
 
-- The `japanese-tech-writing` skill is called for prose style when it is installed. exhtml defines only structure and appearance.
+- The `japanese-tech-writing`, `cognitive-rhythm-writing`, and `stop-ai-slop-jp` skills are called for prose style when they are installed. exhtml defines only structure and appearance.
 - `python3` runs the check script.
 
 The full procedure lives in [SKILL.md](SKILL.md).
