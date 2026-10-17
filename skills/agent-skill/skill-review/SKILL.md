@@ -4,7 +4,7 @@ description: >-
   Agent skill (SKILL.md)の品質を評価基準に沿って採点し、観点ごとの判定と修正案をレポートするSkill。
   ユーザーが「このskillを評価して」「skillをレビューして」「SKILL.mdの品質を見て」のように依頼したら必ずこのSkillを使うこと。
   レビュー後の修正で決まった判断を「この判断を基準にして」のように評価基準へ反映する依頼にも使う。
-allowed-tools: Read, Glob, Grep, Task, Bash(find:*), Bash(rg:*), Bash(ls:*), Bash(wc:*), Bash(which:*), Bash(bash:*), Bash(shellcheck:*), Bash(shfmt -d:*), Bash(ruff check:*), Bash(ruff format --check:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Task, Bash(find:*), Bash(rg:*), Bash(ls:*), Bash(wc:*), Bash(which:*), Bash(bash:*), Bash(shellcheck:*), Bash(shfmt -d:*), Bash(ruff check:*), Bash(ruff format --check:*), Bash(codex exec:*), Bash(claude -p:*), AskUserQuestion
 ---
 
 # skill-review
@@ -122,14 +122,16 @@ skillごとに以下の形式で出力する。
 
 ### trigger test
 
-| 場面 | 期待 | 期待どおり | 選ばれたskill |
+| 場面 | 期待 | Claude Code | Codex |
 | --- | --- | --- | --- |
-| 1. 「PR作って」と依頼された | example-skill | 5/5 | example-skill 5 |
-| 2. 作成済みPRのレビューを頼まれた | なし | 2/5 | example-skill 3 / なし 2 |
+| 1. 「PR作って」と依頼された | example-skill | 5/5 (example-skill 5) | 5/5 (example-skill 5) |
+| 2. 作成済みPRのレビューを頼まれた | なし | 2/5 (example-skill 3 / なし 2) | 5/5 (なし 5) |
 
-- 場面2の理由: 「PRに関わる作業なのでexample-skillを読む」(3回)
+- Claude Code 場面2の理由: 「PRに関わる作業なのでexample-skillを読む」(3回)
 
-消費token: 1回あたり43,150〜43,814、合計217,824
+使ったモデル: Claude Code `opus` (subagent) / Codex `gpt-6.1-sol` (`model_reasoning_effort = "xhigh"`)
+
+消費token: Claude Code 1回あたり43,150〜43,814、合計217,824 / Codex 1回あたり約26,000、合計約130,000
 
 ### 要改善の詳細
 

@@ -33,19 +33,46 @@ subagentのmodelは、対象skillを実際に使うagentと同じものを指定
 2. ...
 ```
 
+## 別のclientでも試す
+
+skillはClaude CodeとCodexの両方で使われるため、main sessionと別のclientのCLIでも、同じpromptを5回試す。
+main sessionがClaude Codeなら `codex exec` を、Codexなら `claude -p` を使う。
+1回の応答でBashの呼び出しを5つ並べて並列に実行し、promptは引用符付きのheredocで標準入力から渡す。
+
+```bash
+codex exec --sandbox read-only --ephemeral --skip-git-repo-check --json - <<'PROMPT'
+<prompt>
+PROMPT
+```
+
+答えは `"type":"agent_message"` の `text` にある。消費tokenは `turn.completed` の `usage` の `input_tokens` と `output_tokens` の和とする。使ったモデルは出力に含まれないため、`$CODEX_HOME/config.toml` (既定は `~/.codex/config.toml`) の `model` と `model_reasoning_effort` を読む。
+
+```bash
+claude -p --tools "" --disable-slash-commands --strict-mcp-config --no-session-persistence --output-format json <<'PROMPT'
+<prompt>
+PROMPT
+```
+
+答えは `result` にある。消費tokenは `usage` の `input_tokens`・`cache_creation_input_tokens`・`cache_read_input_tokens`・`output_tokens` の和とする。使ったモデルは `modelUsage` のキーにある。
+
+- コマンドが見つからない、または認証のエラーで失敗したら、別のclientのテストはskipし、skipした理由をレポートに書く
+- sandboxの通信制限で失敗したら、ユーザーの承認を得てsandboxの外で実行する
+- どちらのCLIもユーザー設定 (global instructionsなど) を読み込むため、subagentより文脈が多い。期待と違う判定の理由がその設定に由来する場合は、レポートにそう書く
+
 ## 判定する
 
-場面ごとに、5回のうち期待どおりのskillが選ばれた回数を数える。
+clientごと、場面ごとに、5回のうち期待どおりのskillが選ばれた回数を数える。
 
-- すべての場面で4回以上: 観点2のtrigger testは合格
-- 3回以下の場面がある: 観点2を要改善にする。根拠には、その場面、回数、期待と違う判定をしたsubagentの理由を引用する。修正案は、理由に挙がったdescriptionの語句を直す形で書く
+- 試したすべてのclientで、すべての場面が4回以上: 観点2のtrigger testは合格
+- どれかのclientで3回以下の場面がある: 観点2を要改善にする。根拠には、そのclient、場面、回数、期待と違う判定の理由を引用する。修正案は、理由に挙がったdescriptionの語句を直す形で書く
 
 ## レポートに載せる
 
-レポートの「trigger test」に、次の3つを載せる。
+レポートの「trigger test」に、次の4つを載せる。
 
-- 場面ごとの表: 場面、期待、期待どおりだった回数、選ばれたskillの内訳 (例: `duckdb 3 / なし 2`)
-- 期待と違う判定の理由: 該当した場面ごとに、subagentが答えた理由をそのまま引用する
-- 消費token: subagentの完了時に返る使用量から、1回ごとと合計のtoken数を書く。使用量が返らないclientでは「不明」と書く
+- 場面ごとの表: 場面、期待、clientごとの期待どおりだった回数と選ばれたskillの内訳 (例: `duckdb 3 / なし 2`)
+- 期待と違う判定の理由: 該当したclientと場面ごとに、答えた理由をそのまま引用する
+- 消費token: clientごとに、1回ごとと合計のtoken数を書く。subagentは完了時に返る使用量を使い、返らなければ「不明」と書く
+- 使ったモデル: clientごとに書く。subagentは起動時に指定したモデルを書く
 
-再テストでは、直す前と直した後の回数と内訳を同じ表に並べ、消費tokenも両方を書く。
+再テストでは、直す前と直した後の回数と内訳を同じ表に並べ、消費tokenと使ったモデルも両方を書く。

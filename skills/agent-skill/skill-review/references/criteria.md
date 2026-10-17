@@ -70,14 +70,14 @@ frontmatterの`description`はskillを発動するかどうかの判断材料に
 - 同じリポジトリまたはskill配置ルートにある他skillと、発動対象が衝突していない
 - 具体的な作業手順や内部動作について述べない
 - 冗長な表現は避け、Token数が小さくなるようにする
-- trigger testのすべての場面で、5回中4回以上、期待どおりのskillが選ばれる ([trigger-test.md](trigger-test.md))
+- trigger testを試したすべてのclientで、すべての場面について5回中4回以上、期待どおりのskillが選ばれる ([trigger-test.md](trigger-test.md))
 
 要改善のシグナル:
 
 - 機能説明のみでトリガー条件が無い
 - 他のskillのdescriptionと発動条件が重複・衝突している
 - 文字数が1024を超えている (`scripts/check_description_length.sh` の結果で判定し、文数では判定しない)
-- trigger testで、期待どおりのskillが選ばれたのが5回中3回以下の場面がある
+- trigger testのどれかのclientで、5回中3回以下しか期待どおりのskillを選ばなかった場面がある
 
 競合の判定方法:
 
