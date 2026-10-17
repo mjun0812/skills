@@ -4,7 +4,7 @@
 
 Use the DuckDB CLI to check the schema of record-based data files before aggregating, inspecting, converting or joining them. Supported data includes JSONL / CSV / TSV / Parquet, JSON arrays of records, and agent session logs.
 
-Use it to check row counts and distributions in data files. Also use it to check their keys and types, or to find duplicates and missing values. It is also for aggregating across many files and converting formats. Reach for it whenever you are about to write a Python or awk script for these tasks. It also works on files in S3, GCS, or over HTTPS, and on questions about how DuckDB or DuckLake behaves. Do not use it just to pull a value out of a single JSON document (jq is enough) or to edit files.
+Use it to check row counts and distributions in data files. Also use it to check their keys and types, or to find duplicates and missing values. It is also for aggregating across many files and converting formats. Reach for it whenever you are about to write a Python or awk script for these tasks. It also works on files in S3, GCS, or over HTTPS, and on questions about how DuckDB behaves. Do not use it just to pull a value out of a single JSON object such as a config file or an API response (jq is enough) or to edit files.
 
 ## Usage
 
@@ -18,8 +18,9 @@ Use it to check row counts and distributions in data files. Also use it to check
 - Checks the schema with `DESCRIBE` / `SUMMARIZE` before aggregating, and writes SQL with the column names and types it confirmed. For columns with mixed types, it looks at the breakdown with `json_type()`.
 - Prints output as `-csv` or `-markdown`, and returns only the rows it needs through aggregation or `LIMIT`.
 - Reads CSVs with differing columns with `union_by_name`, and JSONL whose records differ in shape with `from_json` and `unnest`.
-- Knows how to avoid the SQL errors that actually came up most often (aliases without `AS`, `->>` mixed with `AND`, missing statement separators).
-- When unsure about a function name or syntax, caches DuckDB's official full-text search index locally and searches it ([references/docs-search.md](references/docs-search.md)).
+- Follows rules for writing SQL (give every alias `AS`, parenthesize expressions whose precedence is unclear, separate statements with `;`).
+- Before using DuckDB-specific functions or options, caches DuckDB's official full-text search index locally and searches it ([references/docs-search.md](references/docs-search.md)).
+- Looks up the extension and the read and write options for Excel, SQLite, geospatial data, and Avro in a table ([references/formats.md](references/formats.md)).
 - Reads files in S3, R2, GCS, or over HTTPS without downloading them ([references/remote.md](references/remote.md)).
 
 ## Dependencies
