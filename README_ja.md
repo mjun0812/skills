@@ -89,9 +89,10 @@ My [Agent Skills](https://agentskills.io).
 
 ### [tools](skills/tools)
 
-| skill                                                        | 説明                                                  |
-| ------------------------------------------------------------ | ----------------------------------------------------- |
-| [wezterm-control](skills/tools/wezterm-control/README_ja.md) | weztermのpane・tab・windowを `wezterm cli` で操作する |
+| skill                                                        | 説明                                                                         |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| [duckdb](skills/tools/duckdb/README_ja.md)                   | レコード型のデータファイルを、DuckDB CLIでschemaを確かめてから集計・変換する |
+| [wezterm-control](skills/tools/wezterm-control/README_ja.md) | weztermのpane・tab・windowを `wezterm cli` で操作する                        |
 
 ### Skill's Dependencies
 

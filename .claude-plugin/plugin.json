@@ -37,6 +37,7 @@
     "./skills/review/rule-lint",
     "./skills/review/self-review",
     "./skills/review/test-prune",
+    "./skills/tools/duckdb",
     "./skills/tools/wezterm-control",
     "./skills/writing/cognitive-rhythm-writing",
     "./skills/writing/japanese-tech-writing",
