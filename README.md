@@ -89,9 +89,10 @@ The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](h
 
 ### [tools](skills/tools)
 
-| skill                                           | Description                                                |
-| ----------------------------------------------- | ---------------------------------------------------------- |
-| [wezterm-control](skills/tools/wezterm-control) | Control wezterm panes, tabs, and windows via `wezterm cli` |
+| skill                                           | Description                                                                                           |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [duckdb](skills/tools/duckdb)                   | Check the schema of record-based data files with the DuckDB CLI before aggregating or converting them |
+| [wezterm-control](skills/tools/wezterm-control) | Control wezterm panes, tabs, and windows via `wezterm cli`                                            |
 
 ### Skill's Dependencies
 
