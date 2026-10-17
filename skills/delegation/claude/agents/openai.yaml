@@ -1,0 +1,7 @@
+interface:
+  display_name: "Claudeへの相談と委譲"
+  short_description: "Claude Code CLIでread-onlyの相談または作業委譲を行う"
+  default_prompt: "$claude を使って、指定した相談内容をClaude Codeにread-onlyで問い合わせてください。"
+
+policy:
+  allow_implicit_invocation: false

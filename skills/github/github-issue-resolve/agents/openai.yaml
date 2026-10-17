@@ -1,0 +1,4 @@
+interface:
+  display_name: "Issueを実装してPRを作成"
+  short_description: "GitHub Issueを起点に、調査から実装・PR作成まで進める"
+  default_prompt: "$github-issue-resolve を使って、指定したGitHub Issueを調査・実装し、PR作成まで進めてください。"

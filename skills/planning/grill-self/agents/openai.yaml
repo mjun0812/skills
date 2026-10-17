@@ -1,0 +1,4 @@
+interface:
+  display_name: "調査と自己問答で設計を詰める"
+  short_description: "計画や設計の未決事項を調査と自己問答で解消し、判断の根拠を示す"
+  default_prompt: "$grill-self を使って、この計画や設計を質問せずに調査と自己問答で詰め、意思決定ログを提示してください。"
