@@ -8,10 +8,11 @@
 - h2/h3 に id があり、id が文書全体で一意
 - 用語集の dt に term- で始まる id があり、#term- 参照先が存在する
 - 冒頭要約が 1〜3 項目、メタ行が created/updated/model の形式
+- 用語集が 20 項目以内で、各項目が本文からリンクされ、本文での初出順に並んでいる
 - 絵文字・矢印文字・外部画像・追加 <style>・追加 <script>・border-radius の混入がない
 - SVG 属性や Mermaid 記法に生の色指定が無い (図の色は c1〜c4 クラスだけ)
 - Mermaid / shiki / MathJax の任意ブロックが、使用有無と一致して残っている (削除されている)
-- Mermaid 記法に <br> やタグ、flowchart の角丸ノードが無い
+- Mermaid 記法に <br> やタグ、flowchart の角丸ノードと循環する辺が無い
 - 手描き SVG が .ex-figure-frame の中にあり viewBox を持つ
 
 Usage:
@@ -25,6 +26,7 @@ from __future__ import annotations
 import re
 import sys
 from html.parser import HTMLParser
+from itertools import pairwise
 from pathlib import Path
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "template.html"
@@ -67,6 +69,17 @@ MERMAID_RE = re.compile(
     r'<pre[^>]*class="[^"]*\bmermaid\b[^"]*"[^>]*>(.*?)</pre>', re.DOTALL
 )
 PLAIN_LANGS = {"plaintext", "text"}
+MAX_GLOSSARY = 20
+# flowchart の辺。ラベル |...| と -- text --> はノード id ではないので先に消す
+EDGE_OP_RE = re.compile(r"\s*(?:-\.+->|={2,}>|-{2,}[>ox]?)\s*")
+EDGE_TEXT_RE = re.compile(r"\|[^|]*\||--\s[^>]*?(?=-->)")
+# ((...)) や [[...]] のような二重の形を先に照合する
+NODE_SHAPE_RE = re.compile(
+    r"\(\(.*?\)\)|\[\[.*?\]\]|\{\{.*?\}\}|\[\(.*?\)\]|\(\[.*?\]\)|\[.*?\]|\{.*?\}|\(.*?\)"
+)
+FLOWCHART_STMT_RE = re.compile(
+    r"^\s*(?:%%|class\b|classDef\b|click\b|subgraph\b|end\b|direction\b|style\b|linkStyle\b)"
+)
 
 
 class Page(HTMLParser):
@@ -78,6 +91,7 @@ class Page(HTMLParser):
         self.ids: list[str] = []
         self.headings: list[tuple[str, str | None]] = []
         self.anchors: list[str] = []
+        self.main_anchors: list[str] = []  # main 内の参照先を出現順に記録する
         self.glossary_dts: list[str | None] = []
         self.summary_items = 0
         self.meta_text = ""
@@ -116,6 +130,8 @@ class Page(HTMLParser):
             self.headings.append((tag, a.get("id")))
         if tag == "a" and (a.get("href") or "").startswith("#"):
             self.anchors.append((a.get("href") or "")[1:])
+            if self._inside("main"):
+                self.main_anchors.append((a.get("href") or "")[1:])
         if tag == "dt" and self._inside("aside", "ex-glossary"):
             self.glossary_dts.append(a.get("id"))
         if tag == "li" and self._inside("div", "ex-summary"):
@@ -173,6 +189,45 @@ class Page(HTMLParser):
             self.prose.append(data)
 
 
+def flowchart_cycle(src: str) -> list[str]:
+    """Flowchart の辺をたどり、循環があればそのノード id の並びを返す。"""
+    graph: dict[str, list[str]] = {}
+    for line in src.strip().split("\n")[1:]:
+        if FLOWCHART_STMT_RE.match(line):
+            continue
+        line = NODE_SHAPE_RE.sub("", EDGE_TEXT_RE.sub("", line))
+        groups = [
+            [n.strip() for n in part.split("&") if n.strip()]
+            for part in EDGE_OP_RE.split(line)
+        ]
+        for heads, tails in pairwise(groups):
+            for head in heads:
+                graph.setdefault(head, []).extend(tails)
+
+    path: list[str] = []
+    done: set[str] = set()
+
+    def visit(node: str) -> list[str]:
+        if node in path:
+            return path[path.index(node) :] + [node]
+        if node in done:
+            return []
+        path.append(node)
+        for nxt in graph.get(node, []):
+            cycle = visit(nxt)
+            if cycle:
+                return cycle
+        path.pop()
+        done.add(node)
+        return []
+
+    for node in list(graph):
+        cycle = visit(node)
+        if cycle:
+            return cycle
+    return []
+
+
 def check(path: Path) -> list[str]:
     """1 ファイルを検査し、違反メッセージの一覧を返す。"""
     errors: list[str] = []
@@ -228,6 +283,22 @@ def check(path: Path) -> list[str]:
     for dt_id in page.glossary_dts:
         if not dt_id or not dt_id.startswith("term-"):
             errors.append(f"用語集の <dt> に term- で始まる id が無い (id={dt_id!r})")
+        elif dt_id not in page.main_anchors:
+            errors.append(
+                f"用語集の #{dt_id} が本文からリンクされていない。リンクしない語は用語集から外す"
+            )
+    linked_dts = [d for d in page.glossary_dts if d in page.main_anchors]
+    first_seen = [t for t in dict.fromkeys(page.main_anchors) if t in linked_dts]
+    if linked_dts != first_seen:
+        errors.append(
+            "用語集が本文での初出順に並んでいない。期待する順: "
+            + ", ".join(f"#{t}" for t in first_seen)
+        )
+    if len(page.glossary_dts) > MAX_GLOSSARY:
+        errors.append(
+            f"用語集は {MAX_GLOSSARY} 項目まで (見つかった数: {len(page.glossary_dts)})。"
+            "想定読者が知っている語を外すか、主題を分ける"
+        )
 
     if not 1 <= page.summary_items <= 3:
         errors.append(
@@ -279,6 +350,12 @@ def check(path: Path) -> list[str]:
         if head.startswith(("flowchart", "graph")) and ROUNDED_NODE_RE.search(src):
             errors.append(
                 f"Mermaid #{i + 1} (flowchart) に角丸ノード id(...) がある。角丸禁止なので id[...] を使う"
+            )
+        cycle = flowchart_cycle(src) if head.startswith(("flowchart", "graph")) else []
+        if cycle:
+            errors.append(
+                f"Mermaid #{i + 1} (flowchart) に前のノードへ戻る辺がある: {' --> '.join(cycle)}。"
+                "戻り先は終端ノード (例: BK[implementerへ戻る]) で示す"
             )
 
     for in_frame, has_viewbox in page.svgs:
