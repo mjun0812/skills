@@ -30,6 +30,7 @@ To create or edit a skill and check that agents actually follow it, use [`writin
 
 - Checks that the criteria are recorded: `scripts/check_criteria.sh` compares `references/criteria.md` with a recorded baseline, and any change is logged in `references/CHANGELOG.md` after the user confirms it.
 - Runs a specification gate (Agent Skills frontmatter and structure, including the description length via `scripts/check_description_length.sh`), then eleven criteria: goal and boundaries, description quality, amount of command examples, completion criteria, early return, self-containment, conciseness, splitting into references, readability, freshness, and client compatibility.
+- Description quality includes a trigger test. It drafts about ten scenarios, mixing ones that should select the skill with tricky adjacent ones, and confirms them with the user. Five subagents, given only the names and descriptions of the skills, then answer in parallel which skill they would load. Any scenario answered as expected three times or fewer out of five makes the criterion need improvement. The report shows the count and the breakdown of selected skills for each scenario, the reasons behind unexpected answers, and the tokens the subagents used ([references/trigger-test.md](references/trigger-test.md)).
 - Each criterion is judged pass, needs improvement, not applicable, or undetermined. "Needs improvement" always quotes the offending lines and gives a fix.
 - Freshness includes running `shellcheck`, `shfmt`, and `ruff` on bundled scripts and executing them with side-effect-free arguments (`--help`, dry-run, read-only). Arguments that write or post are never used.
 - Output is a report per skill, with a summary when several skills are evaluated. If the path does not exist or no `SKILL.md` is found, it reports that and stops.
@@ -39,5 +40,6 @@ To create or edit a skill and check that agents actually follow it, use [`writin
 ## Dependencies
 
 - `shellcheck`, `shfmt`, and `ruff` for the freshness check of bundled scripts.
+- Subagents to run the trigger test.
 
 The full procedure lives in [SKILL.md](SKILL.md). The criteria are in [references/criteria.md](references/criteria.md).
