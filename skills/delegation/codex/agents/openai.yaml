@@ -1,0 +1,7 @@
+interface:
+  display_name: "Codexへの相談と委譲"
+  short_description: "Codex CLIでread-onlyの相談または作業委譲を行う"
+  default_prompt: "$codex を使って、指定した相談内容をCodexにread-onlyで問い合わせてください。"
+
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "別agentの作業を再開"
+  short_description: "別のcoding agentのsessionログから作業文脈を復元する"
+  default_prompt: "$resume-other-agent を使って、指定した別agentのsessionログから作業文脈を復元し、続きを進めてください。"

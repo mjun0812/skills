@@ -1,0 +1,4 @@
+interface:
+  display_name: "不要なテストを洗い出す"
+  short_description: "コードベース内のテストを精査し、削除・統合できる候補を洗い出す"
+  default_prompt: "$test-prune を使って、このコードベースのテストを精査し、削除・統合できる候補と理由を提示してください。"

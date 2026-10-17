@@ -1,0 +1,4 @@
+interface:
+  display_name: "DuckDBでデータを調査"
+  short_description: "DuckDB CLIでデータのschemaを確認し、調査・抽出・集計・変換する"
+  default_prompt: "$duckdb を使って、指定したデータをDuckDB CLIで調査し、schemaを確認して必要な結果を示してください。"

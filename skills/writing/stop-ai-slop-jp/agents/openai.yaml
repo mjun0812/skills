@@ -1,0 +1,4 @@
+interface:
+  display_name: "日本語のAI臭を校正"
+  short_description: "AIが書いた日本語を点検・採点し、自然で読みやすい文章への修正案を出す"
+  default_prompt: "$stop-ai-slop-jp を使って、指定した日本語の文章のAI臭を点検・採点し、自然で読みやすい修正案を提示してください。"

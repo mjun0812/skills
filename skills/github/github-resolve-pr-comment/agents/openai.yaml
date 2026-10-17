@@ -1,0 +1,4 @@
+interface:
+  display_name: "PRレビューコメントに対応"
+  short_description: "PRのレビューコメントを確認し、必要な修正と返信を行う"
+  default_prompt: "$github-resolve-pr-comment を使って、指定したPRの未対応レビューコメントを確認し、必要な修正と返信を行ってください。"

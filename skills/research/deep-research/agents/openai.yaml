@@ -1,0 +1,4 @@
+interface:
+  display_name: "テーマを深く調査"
+  short_description: "指定テーマを徹底調査し、出典付きの日本語Markdownメモを作成する"
+  default_prompt: "$deep-research を使って、指定したテーマを詳しく調査し、出典付きの日本語Markdownメモを作成してください。"

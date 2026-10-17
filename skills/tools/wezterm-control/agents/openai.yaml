@@ -1,0 +1,4 @@
+interface:
+  display_name: "WezTermのpaneとtabを操作"
+  short_description: "WezTerm CLIで指定したpane・tab・windowを操作して結果を確認する"
+  default_prompt: "$wezterm-control を使って、WezTermの構成とIDを確認し、指定したpane・tab・windowを操作してください。"
