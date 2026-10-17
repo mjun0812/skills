@@ -20,6 +20,7 @@ DuckDB CLIで、レコードの集まりからなるデータファイル (JSONL
 - 列の違うCSVは `union_by_name`、レコードごとに形が違うJSONLは `from_json` と `unnest` で読む。
 - SQLを書くときの注意 (別名には `AS` を付ける、優先順位がはっきりしない式は括弧で囲む、文を `;` で区切る) を持つ。
 - DuckDB固有の関数やオプションは、書く前にDuckDB公式の全文検索indexを手元にcacheして検索する ([references/docs-search.md](references/docs-search.md))。
+- Excel・SQLite・地理データ・Avroは、必要な拡張と読み書きの指定を表で確かめる ([references/formats.md](references/formats.md))。
 - S3・R2・GCS・HTTPS上のファイルは、ダウンロードせずに読む ([references/remote.md](references/remote.md))。
 
 ## 依存

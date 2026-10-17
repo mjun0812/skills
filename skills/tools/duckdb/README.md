@@ -20,6 +20,7 @@ Use it to check row counts and distributions in data files. Also use it to check
 - Reads CSVs with differing columns with `union_by_name`, and JSONL whose records differ in shape with `from_json` and `unnest`.
 - Follows rules for writing SQL (give every alias `AS`, parenthesize expressions whose precedence is unclear, separate statements with `;`).
 - Before using DuckDB-specific functions or options, caches DuckDB's official full-text search index locally and searches it ([references/docs-search.md](references/docs-search.md)).
+- Looks up the extension and the read and write options for Excel, SQLite, geospatial data, and Avro in a table ([references/formats.md](references/formats.md)).
 - Reads files in S3, R2, GCS, or over HTTPS without downloading them ([references/remote.md](references/remote.md)).
 
 ## Dependencies

@@ -29,13 +29,14 @@ SELECT json_type(col) AS t, count(*) AS n FROM read_json('data/*.jsonl') GROUP B
 
 ## 読み込み方
 
-| データ                       | 読み方                                                                                    |
-| ---------------------------- | ----------------------------------------------------------------------------------------- |
-| CSV・TSV                     | `read_csv('results/*.csv', union_by_name = true)`。ファイルごとに列が違ってもよい         |
-| JSONL・JSON配列              | `read_json('data/*.jsonl')`。ネストはSTRUCTとLISTになり、`meta.source` のように参照できる |
-| Parquet                      | `read_parquet('*.parquet')`、またはファイル名をそのまま `FROM 'x.parquet'`                |
-| レコードごとに形が違う列     | `JSON` 型になる。配列は `from_json(col, '["json"]')` を `unnest` して要素ごとに扱う       |
-| 複数のファイルを横断するとき | `filename = true` を付けて、各行がどのファイルから来たかを残す                            |
+| データ                                          | 読み方                                                                                        |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| CSV・TSV                                        | `read_csv('results/*.csv', union_by_name = true)`。ファイルごとに列が違ってもよい             |
+| JSONL・JSON配列                                 | `read_json('data/*.jsonl')`。ネストはSTRUCTとLISTになり、`meta.source` のように参照できる     |
+| Parquet                                         | `read_parquet('*.parquet')`、またはファイル名をそのまま `FROM 'x.parquet'`                    |
+| Excel・SQLite・地理データなど、拡張が必要な形式 | [references/formats.md](references/formats.md) の表で、拡張・読み方・書き出しの指定を確かめる |
+| レコードごとに形が違う列                        | `JSON` 型になる。配列は `from_json(col, '["json"]')` を `unnest` して要素ごとに扱う           |
+| 複数のファイルを横断するとき                    | `filename = true` を付けて、各行がどのファイルから来たかを残す                                |
 
 次の例は、配列と配列以外の値が混在する列 `col` から、配列の行だけを選んで要素ごとの行に分け、要素の `kind` ごとに件数を数える。
 
