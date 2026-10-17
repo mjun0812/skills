@@ -4,7 +4,7 @@ description: >-
   Agent skill (SKILL.md)の品質を評価基準に沿って採点し、観点ごとの判定と修正案をレポートするSkill。
   ユーザーが「このskillを評価して」「skillをレビューして」「SKILL.mdの品質を見て」のように依頼したら必ずこのSkillを使うこと。
   レビュー後の修正で決まった判断を「この判断を基準にして」のように評価基準へ反映する依頼にも使う。
-allowed-tools: Read, Glob, Grep, Bash(find:*), Bash(rg:*), Bash(ls:*), Bash(wc:*), Bash(which:*), Bash(bash:*), Bash(shellcheck:*), Bash(shfmt -d:*), Bash(ruff check:*), Bash(ruff format --check:*), AskUserQuestion
+allowed-tools: Read, Glob, Grep, Task, Bash(find:*), Bash(rg:*), Bash(ls:*), Bash(wc:*), Bash(which:*), Bash(bash:*), Bash(shellcheck:*), Bash(shfmt -d:*), Bash(ruff check:*), Bash(ruff format --check:*), AskUserQuestion
 ---
 
 # skill-review
@@ -33,7 +33,7 @@ Agent skill (SKILL.mdとその付属ファイル)を評価基準に沿って点�
 | #   | 観点               | 要約                                                                                                                                         |
 | --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | 目標と境界         | 目的が冒頭で簡潔に述べられ、descriptionの書き写しでなく、発動条件と矛盾していないか                                                          |
-| 2   | description品質    | 発動条件が容易に判断でき、簡潔な表現になっているか                                                                                           |
+| 2   | description品質    | 発動条件が容易に判断でき、簡潔な表現になっていて、trigger testで期待どおりに選ばれるか                                                       |
 | 3   | コマンド例の量     | 例が最小限で、形式・順序・境界ケースの明確化に限定されているか                                                                               |
 | 4   | 完了条件           | 何をもって成功とするか、および副作用 (commit / push / 外部への書き込み) の範囲が定義されているか                                             |
 | 5   | 早期リターン       | 前提が満たされない場合に即終了する手順があるか                                                                                               |
@@ -94,7 +94,7 @@ skillごとに以下を行う。
 2. [references/criteria.md](references/criteria.md)の基準に沿って観点1〜11を判定する
 3. 「要改善」には**該当行の引用**を根拠として付け、具体的な修正案を書く
 4. 観点10(鮮度)は、本文中のファイルパス・コマンド名の実在を確認し、付属スクリプトには `shellcheck` と `shfmt -d` (Pythonは `ruff check` と `ruff format --check`。Formatterのオプションはリポジトリのformatter設定に従い、無ければ既定で実行する) を適用したうえで、副作用の無い引数 (`--help`、dry-run、読み取り専用の操作) で実行して判定する。書き込みや投稿を伴う引数では実行しない
-5. 観点2(description品質)は、列挙した他skillのdescriptionと発動条件を比較する
+5. 観点2(description品質)は、列挙した他skillのdescriptionと発動条件を比較し、[references/trigger-test.md](references/trigger-test.md) の手順でtrigger testを行う
 6. CHANGELOG.mdのentryごとに「痕跡」を評価対象から探し、種別で扱いを分ける
    - `強化` の痕跡 → 該当観点の要改善に含め、根拠に「旧基準由来 (CHANGELOG YYYY-MM-DD <観点>)」と書く
    - `廃止` の痕跡 → 減点せず、レポートの「削除してよい箇所」に列挙する
@@ -119,6 +119,17 @@ skillごとに以下の形式で出力する。
 | 2. description品質 | 要改善 | トリガーフレーズが無い |
 | 10. 鮮度 | 判定保留 | コマンドの実在を確認できる環境が無い |
 | ... | ... | ... |
+
+### trigger test
+
+| 場面 | 期待 | 期待どおり | 選ばれたskill |
+| --- | --- | --- | --- |
+| 1. 「PR作って」と依頼された | example-skill | 5/5 | example-skill 5 |
+| 2. 作成済みPRのレビューを頼まれた | なし | 2/5 | example-skill 3 / なし 2 |
+
+- 場面2の理由: 「PRに関わる作業なのでexample-skillを読む」(3回)
+
+消費token: 1回あたり43,150〜43,814、合計217,824
 
 ### 要改善の詳細
 
