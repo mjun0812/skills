@@ -19,8 +19,6 @@ COPY FROM DATABASE remote TO tmp;
 fi
 ```
 
-DuckLakeについて調べるときは、URLを `https://ducklake.select/data/docs-search.duckdb`、cacheのファイル名を `ducklake-docs.duckdb` に替える。
-
 ## 検索する
 
 検索語は、質問文から関数名・SQLのキーワード・名詞だけを抜き出して作る (例: 「CSVを列名で揃えて読みたい」なら `union_by_name read_csv`)。
@@ -37,6 +35,6 @@ LIMIT 5;
 "
 ```
 
-`version` は、DuckDBのdocsなら `lts`・`current`・`blog`、DuckLakeなら `stable`・`preview` がある。手元のduckdbより新しい機能を調べるときは `current` にするか、条件を外す。
+`version` は `lts`・`current`・`blog` がある。手元のduckdbより新しい機能を調べるときは `current` にするか、条件を外す。
 
 結果が無ければ、検索語を1〜2語に減らして検索し直す。それでも無ければ https://duckdb.org/docs を直接参照する。
