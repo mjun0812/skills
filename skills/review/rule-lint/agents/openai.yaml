@@ -1,4 +1,0 @@
-interface:
-  display_name: "文章のコード規約をlintに変換"
-  short_description: "文章で定めたコード規約をlinter・scriptによる機械的な検査へ変換する"
-  default_prompt: "$rule-lint を使って、このリポジトリの文章で定めたコード規約を、機械的に検査できる形にしてください。"
