@@ -1,0 +1,7 @@
+interface:
+  display_name: "lintの警告に沿った日本語の推敲"
+  short_description: "AIが書いた日本語を、lintが警告した箇所だけ意味を変えずに推敲する"
+  default_prompt: "$yomiyasu-lite を使って、指定した日本語の文章をlintの警告に沿って推敲してください。"
+
+policy:
+  allow_implicit_invocation: false

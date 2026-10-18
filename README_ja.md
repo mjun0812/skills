@@ -67,15 +67,18 @@ My [Agent Skills](https://agentskills.io).
 
 ### [writing](skills/writing)
 
-| skill                                                                            | 説明                                             |
-| -------------------------------------------------------------------------------- | ------------------------------------------------ |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing/README_ja.md) | 説明的な文章に緩急を設計するための規範           |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing/README_ja.md)       | 日本語の技術文書・書籍原稿の文章規範             |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp/README_ja.md)                   | AIで書いた日本語を自然で読みやすい文章に書き直す |
+| skill                                                                            | 説明                                                               |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing/README_ja.md) | 説明的な文章に緩急を設計するための規範                             |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing/README_ja.md)       | 日本語の技術文書・書籍原稿の文章規範                               |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp/README_ja.md)                   | AIで書いた日本語を自然で読みやすい文章に書き直す                   |
+| [yomiyasu-lite](skills/writing/yomiyasu-lite/README_ja.md)                       | AIが書いた日本語のうち、lintが警告した箇所だけを意味を変えずに直す |
 
 `cognitive-rhythm-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/eb2929f13ed19c97188393d297be8432)をもとに改変した。
 
 `japanese-tech-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)をもとに改変した。原文はUnlicenseで公開されている。
+
+`yomiyasu-lite` skillに同梱したlintは、[nanaism/yomiyasu](https://github.com/nanaism/yomiyasu)をもとに改変した。
 
 ### [docs](skills/docs)
 
