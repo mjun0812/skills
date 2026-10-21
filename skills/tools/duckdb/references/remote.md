@@ -25,11 +25,12 @@ FROM read_blob('s3://bucket/prefix/*')
 ORDER BY filename LIMIT 50;
 ```
 
-ファイルのschemaと件数は、ローカルと同じく `DESCRIBE FROM 's3://bucket/x.parquet'` と `count(*)` で確かめる。Parquetの行数とサイズはmetadataだけで分かる。
+ファイルのschemaと件数は、ローカルと同じく `DESCRIBE FROM 's3://bucket/x.parquet'` と `count(*)` で確かめる。Parquetの行数とサイズは、ファイルのfooterだけを読む `parquet_file_metadata` で分かる。
 
 ```sql
-SELECT file_name, sum(row_group_num_rows) AS total_rows,
-       (sum(row_group_compressed_bytes) / 1024 / 1024)::DECIMAL(10, 1) AS compressed_mb
-FROM parquet_metadata('s3://bucket/prefix/*.parquet')
-GROUP BY file_name;
+SELECT file_name, num_rows, num_row_groups,
+       (file_size_bytes / 1024 / 1024)::DECIMAL(10, 1) AS size_mb
+FROM parquet_file_metadata('s3://bucket/prefix/*.parquet');
 ```
+
+`parquet_metadata` は列ごとに1行を返すため、`row_group_num_rows` を合計すると行数が列数倍になる。
