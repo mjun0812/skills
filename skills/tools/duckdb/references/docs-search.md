@@ -13,11 +13,14 @@ if [ ! -f "$F" ] || [ $(( ($(date +%s) - $(stat -f %m "$F" 2>/dev/null || stat -
     duckdb -c "
 INSTALL httpfs; INSTALL fts; LOAD httpfs;
 ATTACH 'https://duckdb.org/data/docs-search.duckdb' AS remote (READ_ONLY);
-ATTACH '$F.tmp' AS tmp;
+ATTACH '$F.tmp' AS tmp (STORAGE_VERSION 'v1.5.0');
 COPY FROM DATABASE remote TO tmp;
 " && mv "$F.tmp" "$F"
 fi
 ```
+
+公式のindexはduckdb 2.0以降でしか開けない。`STORAGE_VERSION 'v1.5.0'` で書き出したcacheは、1.5でも2.0でも読める。
+duckdb 1.5で実行すると `ATTACH` が `IO Error` になるが、既存のcacheが残っていればそのまま検索に使える。
 
 ## 検索する
 
@@ -25,16 +28,22 @@ fi
 
 ```bash
 duckdb "$HOME/.duckdb/docs/duckdb-docs.duckdb" -readonly -json -c "
-LOAD fts;
-SELECT page_title, section, url, text,
-       fts_main_docs_chunks.match_bm25(chunk_id, 'union_by_name read_csv') AS score
-FROM docs_chunks
-WHERE score IS NOT NULL AND version = 'lts'
+INSTALL fts; LOAD fts;
+SELECT page_title, section, url, text, score
+FROM (
+  SELECT *, fts_main_docs_chunks.match_bm25(chunk_id, 'union_by_name read_csv') AS score
+  FROM docs_chunks
+  WHERE version <> 'blog'
+)
+WHERE score IS NOT NULL
 ORDER BY score DESC
 LIMIT 5;
 "
 ```
 
-`version` は `lts`・`current`・`blog` がある。手元のduckdbより新しい機能を調べるときは `current` にするか、条件を外す。
+`score` は副問合せの中で求める。duckdb 2.0では、`match_bm25` の別名を同じ `SELECT` の `WHERE` で参照するとBinder Errorになる。
+
+`version` 列は、`2.0` のような最新版のdocsのversionと、blog記事を表す `blog` に分かれる。blog記事も探すときは `WHERE version <> 'blog'` を外す。
+indexは最新版のdocsだけを含む。手元のduckdbが古いときは、見つけた関数が手元にあるかを `SELECT DISTINCT function_name FROM duckdb_functions() WHERE function_name = '<関数名>'` で確かめる。
 
 結果が無ければ、検索語を1〜2語に減らして検索し直す。それでも無ければ https://duckdb.org/docs を直接参照する。

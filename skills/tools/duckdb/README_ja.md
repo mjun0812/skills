@@ -25,7 +25,7 @@ DuckDB CLIで、レコードの集まりからなるデータファイル (JSONL
 
 ## 依存
 
-- `duckdb` CLI
+- `duckdb` CLI 1.5以降。docs検索のindexの取得には2.0以降が要る (取得したcacheは1.5でも読める)
 - docs検索とリモートのファイルには、DuckDBの `httpfs` と `fts` extension (初回に自動でinstallされる)
 
 ## 出典

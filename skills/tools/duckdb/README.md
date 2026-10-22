@@ -25,7 +25,7 @@ Use it to check row counts and distributions in data files. Also use it to check
 
 ## Dependencies
 
-- `duckdb` CLI
+- `duckdb` CLI 1.5 or later. Fetching the docs search index requires 2.0 or later (the cached index is readable by 1.5)
 - DuckDB's `httpfs` and `fts` extensions for docs search and remote files (installed automatically on first use)
 
 ## Source
