@@ -30,6 +30,7 @@
     "./skills/github/github-pr-fix",
     "./skills/github/github-pr-review",
     "./skills/github/github-resolve-pr-comment",
+    "./skills/github/work-report",
     "./skills/planning/experiment-plan",
     "./skills/planning/grill-me",
     "./skills/planning/grill-self",

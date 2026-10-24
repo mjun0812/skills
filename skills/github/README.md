@@ -15,5 +15,6 @@ Skills for the GitHub side of a change: issues, pull requests, CI, and review. T
 | Reply to and act on review comments                                       | [`github-resolve-pr-comment`](github-resolve-pr-comment/README.md) |
 | Fix failing CI                                                            | [`github-fix-ci`](github-fix-ci/README.md)                         |
 | Fix everything blocking a PR (conflicts, CI, comments) in one go          | [`github-pr-fix`](github-pr-fix/README.md)                         |
+| Report one user's PR, issue, review, and coding agent work for a period   | [`work-report`](work-report/README.md)                             |
 
 `github-pr-fix` orchestrates `git-fix-conflict`, `github-fix-ci`, and `github-resolve-pr-comment`, so use it only when more than one kind of problem needs fixing. `github-issue-resolve` chains into `git-commit` and `github-pr-create` for the final steps.

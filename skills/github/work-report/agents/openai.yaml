@@ -1,0 +1,4 @@
+interface:
+  display_name: "作業報告を作成"
+  short_description: "期間内のPR・Issue・レビューとエージェントとの会話を集計し、repoとテーマごとのHTMLの作業報告にする"
+  default_prompt: "$work-report を使って、指定した期間の自分の作業を報告書のHTMLにまとめてください。"

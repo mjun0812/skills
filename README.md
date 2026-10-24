@@ -22,6 +22,7 @@ My [Agent Skills](https://agentskills.io).
 | [github-pr-fix](skills/github/github-pr-fix)                         | Detect all PR problems (conflicts, CI failures, review comments) and fix them in a git worktree        |
 | [github-pr-review](skills/github/github-pr-review)                   | Review a PR with Finder/Verifier subagents and post a report and inline comments                       |
 | [github-resolve-pr-comment](skills/github/github-resolve-pr-comment) | Check PR review comments, address them, and reply                                                      |
+| [work-report](skills/github/work-report)                             | Report the PR, issue, review, and coding agent work done in a period as one HTML page                  |
 
 `github-pr-create` is inspired by the [`pr` skill in mattpocock/skills](https://github.com/mattpocock/skills/tree/main/skills/engineering/pr).
 
