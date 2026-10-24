@@ -1,8 +1,8 @@
 # skills
 
-[日本語](README_ja.md)
-
 My [Agent Skills](https://agentskills.io).
+
+[日本語README](README_ja.md)
 
 ## Skills
 
