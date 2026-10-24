@@ -2,7 +2,7 @@
 name: github-issue-polish
 description: >-
   GitHub issueを「issueだけで実装できる」状態まで磨き上げるSkill。
-  コードベース調査・設計判断・worktreeでのお試し実装で修正方針を検証し、承認を得てからissue本文を書き換える。
+  コードベース調査・設計判断・worktreeでのお試し実装で修正方針を検証し、承認を得てから、自分が作成したissueは本文を書き換え、他人のissueにはコメントで提案する。
   ユーザーが「issueを磨いて」「#Nをpolishして」「issueを実装できるレベルに詰めて」のように依頼したら使うこと。
   起票はgithub-issue-create、実装からPR作成まではgithub-issue-resolveを使う。
 allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), Bash(ls:*), Bash(cat:*), Bash(mktemp:*), Read, Write, Edit, Glob, Grep, AskUserQuestion
@@ -10,7 +10,7 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 
 # Polish GitHub Issue
 
-指定されたissueを、実装者が追加調査なしで着手できる「issueだけで実装できる」状態まで磨き上げるSkill。コードベース調査で原因と変更箇所を特定し、設計の分岐点を根拠付きで決定し、worktreeでのお試し実装で修正方針を検証した上で、承認を得てissue本文を書き換える。
+指定されたissueを、実装者が追加調査なしで着手できる「issueだけで実装できる」状態まで磨き上げるSkill。コードベース調査で原因と変更箇所を特定し、設計の分岐点を根拠付きで決定し、worktreeでのお試し実装で修正方針を検証した上で、承認を得て反映する。反映先は、自分が作成したissueなら本文、他人が作成したissueならコメントである。本文は作成者の言葉なので、他人の本文は書き換えない。
 
 ## Arguments
 
@@ -42,8 +42,9 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 
 - gh認証確認: `gh auth status` (失敗時は停止し、認証を案内する)
 - リポジトリ情報: `gh repo view --json defaultBranchRef,nameWithOwner`
-- 対象issue: `gh issue view <number> --json number,state,title,body,labels,comments,url`
+- 対象issue: `gh issue view <number> --json number,state,title,body,labels,comments,url,author`
 - issueが `state: CLOSED` の場合は中止し、「issue #Nは既にclosedです」と報告する
+- 反映先: `author.login` が認証ユーザー (`gh api user --jq .login`) と一致すれば本文、一致しなければコメントとする (Phase 6)
 
 ### Phase 1: ギャップ分析
 
@@ -80,7 +81,7 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 
 ### Phase 5: 本文生成と全文提示
 
-Target Structureに沿って本文を再構成し、磨き上げ後の全文と変更点サマリ (追加・変更したセクションと理由) をユーザーに提示する。
+Target Structureに沿って本文を再構成し、磨き上げ後の全文と変更点サマリ (追加・変更したセクションと理由)、反映先 (本文の上書きか、コメントでの提案か) をユーザーに提示する。
 
 - タイトルも内容を正確に表すよう必要なら改善案を含める
 - `--dry-run` 指定時はここで終了する
@@ -93,16 +94,20 @@ AskUserQuestionで承認を取る:
 2. 「修正して再提示」の場合は指摘を反映してPhase 5からやり直す
 3. 「キャンセル」の場合はissueに書き込まず終了する
 
-承認後に反映する:
+承認後、Phase 0で決めた反映先へ反映する。どちらもエスケープ問題を避けるため一時ファイル経由で書き込む。
 
-- 本文はエスケープ問題を避けるため一時ファイル経由で上書きする: `gh issue edit <number> --body-file <tmpfile>`
-- 変更点サマリを `gh issue comment` で1件追記する (body編集はwatcherに通知されないため、通知とトレーサビリティをコメントで補う)
+- 自分が作成したissue:
+  - 本文を上書きする: `gh issue edit <number> --body-file <tmpfile>`
+  - 変更点サマリを `gh issue comment` で1件追記する (body編集はwatcherに通知されないため、通知とトレーサビリティをコメントで補う)
+- 他人が作成したissue:
+  - 本文とタイトルは書き換えない
+  - 磨いた本文を、提案であることと変更点サマリ (タイトルの改善案があればそれも) を添えて、`gh issue comment <number> --body-file <tmpfile>` で1件投稿する
 
 ### Phase 7: 結果報告
 
 以下を簡潔にまとめて出力する:
 
 - **Issue**: #Nタイトル / URL
-- **変更点サマリ**: 追加・変更したセクション
+- **変更点サマリ**: 追加・変更したセクションと、反映先 (本文 / コメント)
 - **要確認事項**: 意思決定ログで確信度が低い項目の一覧
 - **別issue化の提案**: Phase 2で見つけたスコープ外の問題 (あれば)
