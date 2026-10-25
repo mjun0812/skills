@@ -1,4 +1,4 @@
 interface:
-  display_name: "Markdown解説記事を作成"
+  display_name: "exmd"
   short_description: "概念や調査内容を用語表・目次・図付きのMarkdownで解説する"
   default_prompt: "$exmd を使って、指定したテーマを用語表・目次・Mermaid図を備えた1枚のMarkdownで解説してください。"

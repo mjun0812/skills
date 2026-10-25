@@ -1,4 +1,4 @@
 interface:
-  display_name: "skillの品質レビュー"
+  display_name: "skill-review"
   short_description: "Agent skillの品質を評価し、根拠付きの修正案を提示する"
   default_prompt: "$skill-review を使って、指定したskillを評価し、問題点と修正案を提示してください。"

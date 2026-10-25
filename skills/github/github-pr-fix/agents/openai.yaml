@@ -1,4 +1,4 @@
 interface:
-  display_name: "PRの問題をまとめて修正"
+  display_name: "github-pr-fix"
   short_description: "PRのコンフリクト・CI失敗・レビューコメントを検出して修正する"
   default_prompt: "$github-pr-fix を使って、指定したPRのコンフリクト・CI失敗・レビューコメントを確認し、問題をまとめて修正してください。"

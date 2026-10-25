@@ -1,4 +1,4 @@
 interface:
-  display_name: "日本語の文章に緩急をつける"
+  display_name: "cognitive-rhythm-writing"
   short_description: "日本語の解説文や記事の認知リズムを点検し、読み進めやすい文章にする"
   default_prompt: "$cognitive-rhythm-writing を使って、指定した日本語の解説文を点検し、必要な文脈を保ちながら文章の緩急を整えてください。"

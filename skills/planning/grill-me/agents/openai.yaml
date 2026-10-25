@@ -1,4 +1,4 @@
 interface:
-  display_name: "質問で計画と設計を詰める"
+  display_name: "grill-me"
   short_description: "計画や設計の未決事項を一つずつ質問し、意思決定を明確にする"
   default_prompt: "$grill-me を使って、この計画や設計の未決事項を一つずつ質問し、意思決定が揃うまで詰めてください。"

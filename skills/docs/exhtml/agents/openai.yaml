@@ -1,4 +1,4 @@
 interface:
-  display_name: "HTML解説ページを作成"
+  display_name: "exhtml"
   short_description: "概念や調査内容を用語集・目次・図付きの自己完結HTMLで解説する"
   default_prompt: "$exhtml を使って、指定したテーマを用語集・目次・図を備えた1枚のHTMLで解説してください。"

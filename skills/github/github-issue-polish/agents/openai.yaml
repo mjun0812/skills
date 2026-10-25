@@ -1,4 +1,4 @@
 interface:
-  display_name: "Issueを実装できる状態に磨く"
+  display_name: "github-issue-polish"
   short_description: "GitHub Issueを調査・設計・試作で実装に着手できる状態に磨く"
   default_prompt: "$github-issue-polish を使って、指定したGitHub Issueを調査し、実装に着手できる状態まで磨いてください。"

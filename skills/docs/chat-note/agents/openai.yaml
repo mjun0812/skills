@@ -1,4 +1,4 @@
 interface:
-  display_name: "会話をMarkdownメモに保存"
+  display_name: "chat-note"
   short_description: "現在の会話で確立した内容を日本語のMarkdownメモにまとめる"
   default_prompt: "$chat-note を使って、ここまでの会話で確立した内容を日本語のMarkdownメモにまとめてください。"

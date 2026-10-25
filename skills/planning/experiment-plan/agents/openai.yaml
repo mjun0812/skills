@@ -1,4 +1,4 @@
 interface:
-  display_name: "機械学習の実験計画を作成"
+  display_name: "experiment-plan"
   short_description: "機械学習の学習・評価実験について仮説と判定基準を詰めて計画書にする"
   default_prompt: "$experiment-plan を使って、指定した機械学習実験の目的・仮説・判定基準を対話で詰め、計画書を作成してください。"

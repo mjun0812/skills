@@ -1,4 +1,4 @@
 interface:
-  display_name: "ローカル変更をレビュー"
+  display_name: "self-review"
   short_description: "ローカル変更または指定commitをレビューし、検証済みの指摘を返す"
   default_prompt: "$self-review を使って、現在のローカル変更を厳しくレビューし、検証を通過した指摘だけを提示してください。"

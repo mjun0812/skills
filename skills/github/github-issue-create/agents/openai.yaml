@@ -1,4 +1,4 @@
 interface:
-  display_name: "GitHub Issueを起票"
+  display_name: "github-issue-create"
   short_description: "Todo・メモ・バグ報告の主張を裏取りしてGitHub Issueを起票する"
   default_prompt: "$github-issue-create を使って、指定したTodo・メモ・バグ報告の主張を裏取りし、GitHub Issueを1件作成してください。"

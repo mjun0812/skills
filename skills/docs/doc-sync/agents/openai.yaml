@@ -1,4 +1,4 @@
 interface:
-  display_name: "ドキュメントと実装を同期"
+  display_name: "doc-sync"
   short_description: "リポジトリ内のドキュメントと実装の乖離を検出して一括更新する"
   default_prompt: "$doc-sync を使って、このリポジトリのドキュメントを実装と比較し、古い記述を更新してください。"

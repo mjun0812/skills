@@ -1,4 +1,4 @@
 interface:
-  display_name: "commitを整理"
+  display_name: "git-squash"
   short_description: "現在のbranchのcommitを論理単位で整理し、必要に応じてpushする"
   default_prompt: "$git-squash を使って、現在のbranchのcommitを論理単位で整理してください。"
