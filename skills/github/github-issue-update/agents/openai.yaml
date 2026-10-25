@@ -1,4 +1,4 @@
 interface:
-  display_name: "未解決のIssueを整理"
+  display_name: "github-issue-update"
   short_description: "未解決のGitHub Issueを点検し、承認後に整理を一括反映する"
   default_prompt: "$github-issue-update を使って、このリポジトリの未解決Issueを点検し、整理案を提示して承認後に反映してください。"

@@ -1,4 +1,4 @@
 interface:
-  display_name: "CI失敗を修正"
+  display_name: "github-fix-ci"
   short_description: "GitHubのCI失敗を分析し、原因の修正から再検証まで行う"
   default_prompt: "$github-fix-ci を使って、現在のbranchに関するCI失敗を調べ、原因を修正して再検証してください。"

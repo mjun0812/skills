@@ -1,4 +1,4 @@
 interface:
-  display_name: "Gitコンフリクトを解消"
+  display_name: "git-fix-conflict"
   short_description: "Git操作やPRで発生したコンフリクトを検出して解消する"
   default_prompt: "$git-fix-conflict を使って、現在のGit操作またはPRで発生しているコンフリクトを検出し、解消してください。"

@@ -1,4 +1,4 @@
 interface:
-  display_name: "変更をGit commitに記録"
+  display_name: "git-commit"
   short_description: "現在の変更を確認し、内容に合うメッセージでGit commitを作成する"
   default_prompt: "$git-commit を使って、現在の変更を確認し、内容に合うメッセージでcommitしてください。"

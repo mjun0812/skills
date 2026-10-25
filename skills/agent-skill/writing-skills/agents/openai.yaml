@@ -1,4 +1,4 @@
 interface:
-  display_name: "skillの作成と検証"
+  display_name: "writing-skills"
   short_description: "Agent skillを作成・編集し、実際のagentの挙動で検証する"
   default_prompt: "$writing-skills を使って、依頼内容に合うAgent skillを作成または改善し、動作を検証してください。"

@@ -1,4 +1,4 @@
 interface:
-  display_name: "PRをレビュー"
+  display_name: "github-pr-review"
   short_description: "GitHubのPRをレビューし、検証を通過した指摘だけを投稿する"
   default_prompt: "$github-pr-review を使って、指定したPRをレビューし、検証を通過した指摘をレポートとinline commentで投稿してください。"

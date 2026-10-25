@@ -1,4 +1,4 @@
 interface:
-  display_name: "日本語技術文書を執筆・推敲"
+  display_name: "japanese-tech-writing"
   short_description: "日本語の技術文書や記事を、論証・段落構成・整形の規範に沿って整える"
   default_prompt: "$japanese-tech-writing を使って、指定した日本語の技術文書を、論証・段落構成・整形の規範に沿って執筆または推敲してください。"

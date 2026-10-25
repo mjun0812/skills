@@ -1,4 +1,4 @@
 interface:
-  display_name: "Pull Requestを作成"
+  display_name: "github-pr-create"
   short_description: "現在のbranchの変更内容に基づいてGitHubのPRを作成する"
   default_prompt: "$github-pr-create を使って、現在のbranchの変更内容を確認し、Pull Requestを作成してください。"
