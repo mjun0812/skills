@@ -42,7 +42,9 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 「2. 変更内容の取得」で得た差分とcommitを根拠に、以下を決定する。
 
-- **タイトル**: Conventional Commitsに従い、差分の内容を要約した簡潔なタイトルにする。1つのcommitのみの場合、そのcommitメッセージをベースにする
+- **タイトル**: Conventional Commitsに従い、この変更で実現・解決しようとしている目的を要約した簡潔なタイトルにする。実装の手段ではなく、利用者や開発者から見た結果を書く。commitが1つだけでも、commitメッセージを流用しない。descriptionは `language` で決めた言語で書き、typeとscopeは訳さない
+  - GOOD: `fix: セッション切れの後に再ログインできない問題を修正`
+  - BAD: `fix: refresh_tokenの失効時にsession cookieを削除`
 - **関連Issue**: `spec` で渡されたIssue番号を解決するIssue (`Closes`) の最優先候補にする。次にbranch名、commitメッセージ、open issueの一覧から関連するIssueを探し、タイトルだけで判断せず本文を読んで問題、背景、受け入れ条件を確認する。open issueが大量にある場合は、この突き合わせをSubAgentに委譲してよい
 - **Label**: repositoryの既存labelから合うものを選ぶ。合うものが無ければ付与しない
 
@@ -59,7 +61,7 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 - CIで自動実行されるlint・format・型チェックは記載しない (そのチェック設定自体を変更したPRを除く)。記載するのはCIが検証しない動作確認の手順と結果
 - diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
 - public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
-- 投稿前に本文を見直す: templateの見出しがすべて埋まりコメントやplaceholderが残っていないこと、各箇条書きがdiffにあり文体規則に沿うこと、private repositoryの情報が残っていないこと
+- 投稿前に本文を見直す: タイトルのdescriptionが本文と同じ言語であること、templateの見出しがすべて埋まりコメントやplaceholderが残っていないこと、各箇条書きがdiffにあり文体規則を守ること、private repositoryの情報が残っていないこと
 
 ### 表現の選択
 
