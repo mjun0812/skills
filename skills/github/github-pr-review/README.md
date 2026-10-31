@@ -2,7 +2,7 @@
 
 [日本語](README_ja.md)
 
-Adversarially review a GitHub Pull Request and post only verified findings as a review report plus inline comments. Two Finder subagents with different focuses and (when a spec is available) a Contract subagent propose findings from a snapshot worktree of the PR head. Every candidate is challenged by an independent Verifier subagent, and only confirmed findings are posted. Self review is supported.
+Adversarially review a GitHub Pull Request and post only verified findings as a review report plus inline comments. The review is shown for confirmation before posting; with `--auto` it is posted without asking. Two Finder subagents with different focuses and (when a spec is available) a Contract subagent propose findings from a snapshot worktree of the PR head. Every candidate is challenged by an independent Verifier subagent, and only confirmed findings are posted. Self review is supported.
 
 The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, with comments from maintainers (owners, members, collaborators) appended after the issue body; when neither exists, the Contract axis is skipped. The skip is not posted to the PR; only the chat report mentions it. To review local changes that are not in a PR, use `self-review` instead.
 
@@ -14,7 +14,7 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, wi
 /github-pr-review
 /github-pr-review 123
 /github-pr-review 123 --spec 45
-/github-pr-review 123 --dry-run
+/github-pr-review 123 --auto
 ```
 
 ## Arguments
@@ -23,7 +23,7 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, wi
 | ---------------- | -------------------------------------------------------------------------------- |
 | `PR number`      | PR to review. Defaults to the current branch's PR, or asks when there is none.   |
 | `--spec <issue>` | Issue used as the spec for the Contract axis. Overrides the PR's `Closes` issue. |
-| `--dry-run`      | Print the report only. Nothing is posted, dismissed, or resolved.                |
+| `--auto`         | Skip the confirmation before posting and post right away.                        |
 
 ## Behavior
 
@@ -34,6 +34,7 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, wi
 - Failed CI results are used as evidence for the Finders and noted in the report summary.
 - Earlier findings on the same PR and their replies, including resolved threads, are fetched by `scripts/fetch_prior_findings.sh` and passed to subagents. A candidate with the same root cause as a finding that was settled as deferred or declined is dropped before verification unless it shows that the premise of that decision has changed, so settled findings are not raised again.
 - The report language (`ja` or `en`) is decided by `scripts/render_review.py` from the PR title and body. The same script renders the review body and inline comments from a findings JSON (format in `references/findings.md`). The Verdict is `REQUEST_CHANGES` with one or more findings and `APPROVE` with none.
+- Before posting, the Verdict, report body, inline comments, and the number of reviews to dismiss and threads to resolve are shown, and the user chooses to post, revise and show again, or cancel. `--auto` skips this confirmation.
 - Posting goes through `scripts/post_review.sh`, which drops inline comments whose `(path, line, side)` is not in the diff. Body and comments are passed as files.
 - Self review is posted as a `COMMENT` event, since GitHub does not allow approving or requesting changes on your own PR. The Verdict text in the body is unchanged.
 - After a successful post, earlier reviews by the same reviewer are dismissed (`scripts/dismiss_my_reviews.sh`) and their threads are resolved (`scripts/resolve_review_threads.sh`). If posting fails, nothing is dismissed or resolved.
