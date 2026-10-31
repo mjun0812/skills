@@ -17,7 +17,7 @@ spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合
 
 - `PR number`: レビューするPR番号 (optional, defaults to PR for current branch)
 - `--spec <issue-number>`: Contract reviewに使うspecのGitHub Issue番号。指定時は関連Issueより優先する
-- `--dry-run`: 生成したレポート本文をチャットに提示するのみで、`post_review.sh` 等の投稿スクリプト・dismiss・resolve操作を一切呼ばない(worktreeの後片付けは通常どおり行う)
+- `--auto`: Phase 2.4の投稿前の確認を省き、生成したレビューをそのまま投稿する
 
 ## Task
 
@@ -199,9 +199,22 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 
 確定指摘の内部レコードは校正後も保持する。
 
+#### Phase 2.4: 投稿前の確認
+
+`--auto` が指定されていない場合のみ実行する。
+
+次をチャットに提示し、`AskUserQuestion` で「投稿する / 修正して再提示 / キャンセル」を確認する。承認されるまでPhase 3へ進まない。
+
+- Verdictと、Phase 3.1で決まるGitHub APIのevent
+- `<review-temp-dir>/body.md` の全文
+- `<review-temp-dir>/comments.json` の各inline commentの `path:line` と本文
+- 投稿後にdismissする既存レビューとresolveする以前のthreadの件数
+
+「修正して再提示」の場合は、指示を `findings.json` に反映してPhase 2.3の手順5から再実行し、再び確認する。「キャンセル」の場合はPhase 3を実行せずPhase 4へ進む。
+
 ### Phase 3: レビューの投稿と置き換え
 
-`--dry-run` が指定されていない場合のみ実行する。
+`--auto` が指定されているか、Phase 2.4で投稿が承認された場合のみ実行する。
 最初にPRの現在のhead commit SHAを再取得し、Phase 1で保持した`<latest-commit-sha>`と比較する。一致しない場合は次のとおりにしてPhase 4に進む。
 
 - 確定指摘が1件以上: Phase 3.2の手順で `<latest-commit-sha>` に対して `--event COMMENT` で投稿する。古いcommitに対するVerdictで現在のPRを承認・差し戻ししないためにCOMMENTを使い、確定した指摘はPR上に残す。Phase 3.3は実行しない
@@ -267,5 +280,5 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
 - Verdict、Finder由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、以前の判断と同じ根本原因として破棄した候補の件数、レポート本文
-- レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。`--dry-run`、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
+- レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。Phase 2.4でのキャンセル、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)
