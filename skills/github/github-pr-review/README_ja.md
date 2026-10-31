@@ -4,7 +4,7 @@
 
 GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿する。投稿前に内容を確認し、`--auto`を付けると確認せずに投稿する。PR headのsnapshot worktreeを対象に、重点の異なる2つのFinder SubAgentと、specがあればContract SubAgentが指摘候補を探す。すべての候補は独立したVerifier SubAgentが反証を試み、確定した指摘だけを投稿する。self reviewにも対応する。
 
-specは`--spec`、またはPR本文の`Closes #N`のIssueから解決し、Issue本文の後にmaintainer (owner、member、collaborator) のコメントを加える。どちらも無ければContract軸をスキップする。スキップしたことはPRへ投稿せず、チャットの報告にだけ書く。PRになっていないlocalの変更をレビューするには`self-review`を使う。
+specは`--spec`、またはPR本文の`Closes #N`のIssueから解決し、Issue本文の後にmaintainer (owner、member、collaborator) のコメントを加える。どちらも無ければContract軸をスキップする。スキップしたことはPRへ投稿せず、チャットの報告にだけ書く。自分の変更を投稿せずに自己採点するには`self-review`を使う。
 
 ## 使い方
 
