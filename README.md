@@ -44,10 +44,10 @@ My [Agent Skills](https://agentskills.io).
 
 ### [review](skills/review)
 
-| skill                                    | Description                                                                                       |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [self-review](skills/review/self-review) | Adversarially review your own uncommitted changes or one commit and report only verified findings |
-| [test-prune](skills/review/test-prune)   | Examine every test in the codebase and list the ones that can be deleted or merged                |
+| skill                                    | Description                                                                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [self-review](skills/review/self-review) | Adversarially review your own branch changes or one commit and report only verified findings without posting to GitHub |
+| [test-prune](skills/review/test-prune)   | Examine every test in the codebase and list the ones that can be deleted or merged                                     |
 
 The `test-prune` skill is based on [catnose's post](https://x.com/catnose99/status/2098238001403113924).
 

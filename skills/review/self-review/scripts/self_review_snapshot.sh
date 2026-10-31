@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Pin local changes into a detached review worktree, then verify or remove it.
 #
-# Usage: self_review_snapshot.sh create-dirty --repo <path>
+# create-branch reviews everything since the merge-base with --base: the
+# branch's commits plus staged, unstaged and untracked changes.
+#
+# Usage: self_review_snapshot.sh create-branch --repo <path> --base <ref>
 #        self_review_snapshot.sh create-commit --repo <path> --commit <commit>
 #        self_review_snapshot.sh verify --metadata <metadata.json>
 #        self_review_snapshot.sh cleanup --metadata <metadata.json>
@@ -9,7 +12,7 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: $0 create-dirty --repo <path>" >&2
+    echo "Usage: $0 create-branch --repo <path> --base <ref>" >&2
     echo "       $0 create-commit --repo <path> --commit <commit>" >&2
     echo "       $0 verify --metadata <metadata.json>" >&2
     echo "       $0 cleanup --metadata <metadata.json>" >&2
@@ -22,7 +25,9 @@ write_state_manifest() {
     local relative_path
     local file_type
 
-    git -C "$repo_root" diff --binary --full-index HEAD -- > "$output_path"
+    # HEAD is part of the state so that a new commit invalidates the snapshot.
+    printf 'HEAD %s\n' "$(git -C "$repo_root" rev-parse --verify HEAD)" > "$output_path"
+    git -C "$repo_root" diff --binary --full-index HEAD -- >> "$output_path"
     git -C "$repo_root" ls-files --others --exclude-standard -z |
         while IFS= read -r -d '' relative_path; do
             if [[ -L "$repo_root/$relative_path" ]]; then
@@ -56,11 +61,12 @@ command_name="${1:-}"
 shift
 
 case "$command_name" in
-create-dirty | create-commit)
-    if [[ $command_name == "create-dirty" ]]; then
-        [[ $# -eq 2 && $1 == "--repo" ]] || usage
+create-branch | create-commit)
+    if [[ $command_name == "create-branch" ]]; then
+        [[ $# -eq 4 && $1 == "--repo" && $3 == "--base" ]] || usage
         repo_arg="$2"
-        mode="dirty"
+        base_arg="$4"
+        mode="branch"
     else
         [[ $# -eq 4 && $1 == "--repo" && $3 == "--commit" ]] || usage
         repo_arg="$2"
@@ -69,11 +75,24 @@ create-dirty | create-commit)
     fi
 
     repo_root=$(git -C "$repo_arg" rev-parse --show-toplevel)
-    if [[ $mode == "dirty" ]]; then
-        baseline_sha=$(git -C "$repo_root" rev-parse --verify HEAD)
+    if [[ $mode == "branch" ]]; then
+        head_sha=$(git -C "$repo_root" rev-parse --verify HEAD)
+        if ! base_sha=$(git -C "$repo_root" rev-parse --verify --end-of-options "${base_arg}^{commit}"); then
+            echo "Base not found: $base_arg" >&2
+            exit 10
+        fi
+        if ! baseline_sha=$(git -C "$repo_root" merge-base "$base_sha" "$head_sha"); then
+            echo "HEAD has no common ancestor with the base: $base_arg" >&2
+            exit 10
+        fi
         untracked_count=$(git -C "$repo_root" ls-files --others --exclude-standard -z | wc -c | tr -d ' ')
         if git -C "$repo_root" diff --quiet HEAD -- && ((untracked_count == 0)); then
-            echo "No uncommitted changes to review." >&2
+            has_uncommitted=false
+        else
+            has_uncommitted=true
+        fi
+        if [[ $has_uncommitted == false ]] && git -C "$repo_root" diff --quiet "$baseline_sha" "$head_sha" --; then
+            echo "No changes to review since the merge-base with $base_arg." >&2
             exit 3
         fi
     else
@@ -89,6 +108,9 @@ create-dirty | create-commit)
             echo "The commit has no changes to review: $snapshot_id" >&2
             exit 3
         fi
+        base_arg=""
+        head_sha="$snapshot_id"
+        has_uncommitted=false
     fi
 
     snapshot_root=$(mktemp -d /tmp/self-review.XXXXXX)
@@ -97,6 +119,7 @@ create-dirty | create-commit)
     metadata_path="$snapshot_root/metadata.json"
     diff_path="$snapshot_root/diff.patch"
     changed_files_path="$snapshot_root/changed-files.txt"
+    commits_path="$snapshot_root/commits.txt"
     tracked_patch="$snapshot_root/tracked.patch"
     state_before="$snapshot_root/state.before"
     state_after="$snapshot_root/state.after"
@@ -121,12 +144,12 @@ create-dirty | create-commit)
             fi
         ' EXIT
 
-    if [[ $mode == "dirty" ]]; then
+    if [[ $mode == "branch" ]]; then
         write_state_manifest "$repo_root" "$state_before"
         snapshot_id=$(git -C "$repo_root" hash-object "$state_before")
         git -C "$repo_root" diff --binary --full-index HEAD -- > "$tracked_patch"
 
-        git -C "$repo_root" worktree add --detach "$worktree_path" "$baseline_sha" > /dev/null
+        git -C "$repo_root" worktree add --detach "$worktree_path" "$head_sha" > /dev/null
         if [[ -s $tracked_patch ]]; then
             git -C "$worktree_path" apply --binary --whitespace=nowarn "$tracked_patch"
         fi
@@ -139,8 +162,9 @@ create-dirty | create-commit)
             done
 
         git -C "$worktree_path" add -A
-        git -C "$worktree_path" diff --cached --binary --full-index HEAD -- > "$diff_path"
-        git -C "$worktree_path" diff --cached --name-status HEAD -- > "$changed_files_path"
+        git -C "$worktree_path" diff --cached --binary --full-index "$baseline_sha" -- > "$diff_path"
+        git -C "$worktree_path" diff --cached --name-status "$baseline_sha" -- > "$changed_files_path"
+        git -C "$repo_root" log --format='%H %s' "${baseline_sha}..${head_sha}" > "$commits_path"
 
         write_state_manifest "$repo_root" "$state_after"
         current_snapshot_id=$(git -C "$repo_root" hash-object "$state_after")
@@ -148,11 +172,12 @@ create-dirty | create-commit)
             echo "The working tree changed while the snapshot was being created." >&2
             exit 5
         fi
-        worktree_head="$baseline_sha"
+        worktree_head="$head_sha"
     else
         git -C "$repo_root" worktree add --detach "$worktree_path" "$snapshot_id" > /dev/null
         git -C "$worktree_path" diff --binary --full-index "$baseline_sha" "$snapshot_id" -- > "$diff_path"
         git -C "$worktree_path" diff --name-status "$baseline_sha" "$snapshot_id" -- > "$changed_files_path"
+        git -C "$repo_root" log -1 --format='%H %s' "$snapshot_id" > "$commits_path"
         worktree_head="$snapshot_id"
     fi
 
@@ -161,25 +186,33 @@ create-dirty | create-commit)
 
     jq -n \
         --arg mode "$mode" \
+        --arg baseRef "$base_arg" \
+        --argjson hasUncommitted "$has_uncommitted" \
         --arg repoRoot "$repo_root" \
         --arg worktree "$worktree_path" \
         --arg worktreeHead "$worktree_head" \
         --arg worktreeStateId "$worktree_state_id" \
         --arg baselineSha "$baseline_sha" \
+        --arg headSha "$head_sha" \
         --arg snapshotId "$snapshot_id" \
         --arg diffFile "$diff_path" \
         --arg changedFilesFile "$changed_files_path" \
+        --arg commitsFile "$commits_path" \
         '{
-                version: 2,
+                version: 3,
                 mode: $mode,
+                baseRef: $baseRef,
+                hasUncommitted: $hasUncommitted,
                 repoRoot: $repoRoot,
                 worktree: $worktree,
                 worktreeHead: $worktreeHead,
                 worktreeStateId: $worktreeStateId,
                 baselineSha: $baselineSha,
+                headSha: $headSha,
                 snapshotId: $snapshotId,
                 diffFile: $diffFile,
-                changedFilesFile: $changedFilesFile
+                changedFilesFile: $changedFilesFile,
+                commitsFile: $commitsFile
             }' > "$metadata_path"
 
     rm -f "$tracked_patch" "$state_before" "$state_after" "$worktree_state"
@@ -207,10 +240,10 @@ verify)
     worktree_path=$(metadata_value "$metadata_path" '.worktree')
     worktree_head=$(metadata_value "$metadata_path" '.worktreeHead')
     worktree_state_id=$(metadata_value "$metadata_path" '.worktreeStateId')
-    baseline_sha=$(metadata_value "$metadata_path" '.baselineSha')
+    head_sha=$(metadata_value "$metadata_path" '.headSha')
     snapshot_id=$(metadata_value "$metadata_path" '.snapshotId')
 
-    [[ $version == "2" && ($mode == "dirty" || $mode == "commit") ]] || {
+    [[ $version == "3" && ($mode == "branch" || $mode == "commit") ]] || {
         echo "Unsupported snapshot metadata." >&2
         exit 6
     }
@@ -234,9 +267,9 @@ verify)
         exit 11
     fi
 
-    if [[ $mode == "dirty" ]]; then
-        current_baseline_sha=$(git -C "$repo_root" rev-parse --verify HEAD)
-        if [[ $current_baseline_sha != "$baseline_sha" ]]; then
+    if [[ $mode == "branch" ]]; then
+        current_head_sha=$(git -C "$repo_root" rev-parse --verify HEAD)
+        if [[ $current_head_sha != "$head_sha" ]]; then
             echo "HEAD changed after the snapshot was created." >&2
             exit 7
         fi
