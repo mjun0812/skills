@@ -100,13 +100,47 @@ My [Agent Skills](https://agentskills.io).
 ### Skill's Dependencies
 
 ```mermaid
-graph LR
-    github-issue-resolve --> git-commit
-    github-issue-resolve --> github-pr-create
-    github-pr-fix --> git-fix-conflict
-    github-pr-fix --> github-fix-ci
-    github-pr-fix --> github-resolve-pr-comment
+flowchart LR
+    github-issue-resolve --> git-commit & github-pr-create
+    github-pr-create --> git-commit
+    github-pr-fix --> git-fix-conflict & github-fix-ci & github-resolve-pr-comment
+    cognitive-rhythm-writing --> japanese-tech-writing
+    exhtml -.-> japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
+    exmd -.-> japanese-tech-writing
 ```
+
+実線は必須の呼び出し、点線は任意の呼び出し(installされていれば読み込む)を表す。
+
+外部ツールへの依存は次のとおり。任意のツールは、無ければそのツールを使う部分だけを省く。詳細はskillごとのREADMEを参照。
+
+| skill                       | 必須                                 | 任意                      |
+| --------------------------- | ------------------------------------ | ------------------------- |
+| `git-commit`                | `git`                                | -                         |
+| `git-fix-conflict`          | `git`, `gh`                          | -                         |
+| `git-squash`                | `git`, `gh`                          | -                         |
+| `github-fix-ci`             | `git`, `gh`                          | -                         |
+| `github-issue-create`       | `gh`                                 | -                         |
+| `github-issue-polish`       | `git`, `gh`                          | -                         |
+| `github-issue-resolve`      | `git`, `gh`                          | -                         |
+| `github-issue-update`       | `gh`                                 | -                         |
+| `github-pr-create`          | `git`, `gh`                          | -                         |
+| `github-pr-fix`             | `git`, `gh`                          | -                         |
+| `github-pr-review`          | `git`, `gh`, `jq`, `python3`         | -                         |
+| `github-resolve-pr-comment` | `git`, `gh`                          | -                         |
+| `work-report`               | `git`, `gh`, `jq`, `python3` (3.11+) | -                         |
+| `claude`                    | `claude` CLI                         | -                         |
+| `codex`                     | `codex` CLI                          | -                         |
+| `resume-other-agent`        | `git`, `rg`, `jq`                    | -                         |
+| `experiment-plan`           | -                                    | `oxfmt`                   |
+| `self-review`               | `git`, `gh`, `jq`                    | `hunk`, `herdr`           |
+| `skill-review`              | `shellcheck`, `shfmt`, `ruff`        | `claude` CLI, `codex` CLI |
+| `writing-skills`            | -                                    | Graphviz (`dot`)          |
+| `deep-research`             | `oxfmt`                              | -                         |
+| `yomiyasu-lite`             | `python3` (3.14+)                    | -                         |
+| `exhtml`                    | `python3`                            | -                         |
+| `exmd`                      | `python3`                            | -                         |
+| `duckdb`                    | `duckdb` CLI (1.5+)                  | -                         |
+| `wezterm-control`           | `wezterm` CLI                        | -                         |
 
 ### Agents
 
