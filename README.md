@@ -109,9 +109,9 @@ flowchart LR
     exmd -.-> japanese-tech-writing
 ```
 
-Solid lines are required calls; dotted lines are optional calls, loaded when installed. Skills that call no other skill are not shown.
+Solid lines are required calls; dotted lines are optional calls, loaded when installed.
 
-External tools each skill depends on are listed below. Without an optional tool, only the part that uses it is skipped. Standard commands such as bash are omitted. See each skill's README for details.
+External tools each skill depends on are listed below. Without an optional tool, only the part that uses it is skipped. See each skill's README for details.
 
 | Skill                       | Required                             | Optional                  |
 | --------------------------- | ------------------------------------ | ------------------------- |
