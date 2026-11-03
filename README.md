@@ -100,13 +100,66 @@ The lint bundled with the `yomiyasu-lite` skill is adapted from [nanaism/yomiyas
 ### Skill's Dependencies
 
 ```mermaid
-graph LR
-    github-issue-resolve --> git-commit
-    github-issue-resolve --> github-pr-create
-    github-pr-fix --> git-fix-conflict
-    github-pr-fix --> github-fix-ci
-    github-pr-fix --> github-resolve-pr-comment
+flowchart LR
+    classDef tool fill:#fde68a,stroke:#b45309,color:#1f2937
+
+    subgraph uses_git_gh [Skills using git and gh]
+        git-fix-conflict
+        git-squash
+        github-fix-ci
+        github-issue-polish
+        github-issue-resolve
+        github-pr-create
+        github-pr-fix
+        github-pr-review
+        github-resolve-pr-comment
+        self-review
+        work-report
+    end
+    uses_git_gh --> t_git & t_gh
+
+    github-issue-resolve --> git-commit & github-pr-create
+    github-pr-create --> git-commit
+    github-pr-fix --> git-fix-conflict & github-fix-ci & github-resolve-pr-comment
+    cognitive-rhythm-writing --> japanese-tech-writing
+    exhtml -.-> japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
+    exmd -.-> japanese-tech-writing
+
+    git-commit --> t_git
+    github-issue-create & github-issue-update --> t_gh
+    github-pr-review & work-report & self-review --> t_jq
+    github-pr-review & work-report & exhtml & exmd & yomiyasu-lite --> t_python
+    self-review -.-> t_hunk & t_herdr
+    resume-other-agent --> t_git & t_rg & t_jq
+    claude --> t_claude
+    codex --> t_codex
+    skill-review --> t_shellcheck & t_shfmt & t_ruff
+    skill-review -.-> t_claude & t_codex
+    writing-skills -.-> t_graphviz
+    deep-research --> t_oxfmt
+    experiment-plan -.-> t_oxfmt
+    duckdb --> t_duckdb
+    wezterm-control --> t_wezterm
+
+    t_git[git]:::tool
+    t_gh[gh]:::tool
+    t_jq[jq]:::tool
+    t_python[python3]:::tool
+    t_rg[rg]:::tool
+    t_hunk[hunk]:::tool
+    t_herdr[herdr]:::tool
+    t_claude[claude CLI]:::tool
+    t_codex[codex CLI]:::tool
+    t_shellcheck[shellcheck]:::tool
+    t_shfmt[shfmt]:::tool
+    t_ruff[ruff]:::tool
+    t_graphviz[Graphviz]:::tool
+    t_oxfmt[oxfmt]:::tool
+    t_duckdb[duckdb CLI]:::tool
+    t_wezterm[wezterm CLI]:::tool
 ```
+
+Solid lines are required dependencies; dotted lines are optional ones (used when installed, or the related part is skipped without them). Yellow nodes are external tools; standard commands such as bash are omitted. Every skill in the box uses `git` and `gh`. Skills without dependencies are not shown. See each skill's README for details.
 
 ### Agents
 
