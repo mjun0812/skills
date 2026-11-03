@@ -54,6 +54,10 @@ if [[ -n $session_id ]]; then
             hunk session comment rm "$session_id" "$comment_id" > /dev/null
         done
     hunk session reload "$session_id" -- "${review_command[@]}" > /dev/null
+elif (($(jq '.comments | length' "$notes_path") == 0)); then
+    # No previous notes to remove and nothing to show, so do not open a pane.
+    echo "No Hunk session is open for $repo_root, and there are no notes to show." >&2
+    exit 3
 elif [[ ${HERDR_ENV:-} == 1 ]] && command -v herdr > /dev/null; then
     read -r width height < <(herdr pane layout --pane "$HERDR_PANE_ID" |
         jq -r --arg pane "$HERDR_PANE_ID" \

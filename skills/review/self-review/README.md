@@ -26,7 +26,7 @@ Even when a PR exists, nothing is posted to GitHub as a review or comment. To re
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `commit`          | Commit to review. No target is proposed when given.                                                                                                                                                                                               |
 | `--base <ref>`    | Starting point of the branch's changes. When given, no target is proposed and the branch's changes are reviewed. Defaults to the base branch of the current branch's open PR, or the default branch of the repository `gh` resolves without a PR. |
-| `--spec <source>` | Spec for the Contract axis: a GitHub issue number (its body plus maintainer comments), or the path to a Markdown file holding the contract. Defaults to the open PR body's `Closes #N` issue.                                                     |
+| `--spec <source>` | Spec for the Contract axis: a GitHub issue number (its body plus maintainer comments), or the path to a Markdown file holding the contract. Defaults to the open PR body's `Closes #N` issue when no commit is given.                             |
 
 ## Behavior
 
@@ -49,12 +49,12 @@ Even when a PR exists, nothing is posted to GitHub as a review or comment. To re
 - Before reporting, it checks that no agent changed the snapshot. When the branch's changes are reviewed, it also checks that the original repository's HEAD and working tree are unchanged since the snapshot was created. If either changed, the results are discarded and only the need for a re-review is reported.
 - If `hunk` is available, findings are shown as notes on the reviewed diff. An open Hunk session for the repository is switched to the reviewed diff; without one, Hunk is launched in a Herdr pane. Only notes from a previous self-review are removed; notes from other agents and from you are kept. Findings outside the diff's hunks are not shown in Hunk; only their count is reported. Without a Hunk session and outside Herdr, the Hunk display is skipped.
 - The verdict is `CHANGES_REQUIRED` with one or more confirmed findings and `PASS` with none. Every finding goes to the chat even when shown in Hunk. Nothing is saved to a file or posted to GitHub.
-- The snapshot is removed at the end, including on interruption. It never runs `reset`/`restore`/`stash`/`checkout`/`clean` on the original repository. The Hunk session and pane are kept.
+- The snapshot is removed at the end, including on interruption. It never runs `reset`/`restore`/`stash`/`checkout`/`clean` on the original repository. The Hunk session, its notes, and the pane that runs Hunk are kept.
 
 ## Dependencies
 
 - Agents: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md), [`code-reviewer-contract`](../../../agents/code-reviewer-contract.md), [`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md). They ship through the Claude Code plugin and apm. `apm install -t codex` converts them to Codex agent format, dropping the `tools` restriction. On other install methods, the same prompts are given to generic subagents instead.
-- `git`, `jq`, bash, and `gh` to read the PR or a `--spec` issue
+- `git`, `jq`, bash, and `gh` to resolve the base when `--base` is omitted and to read the PR or a `--spec` issue
 - Optional: [`hunk`](https://github.com/modem-dev/hunk), and [Herdr](https://github.com/herdrdev/herdr) to open a pane when no Hunk session exists
 
 See [SKILL.md](SKILL.md) for the full procedure.

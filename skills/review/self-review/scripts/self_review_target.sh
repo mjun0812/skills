@@ -15,7 +15,7 @@
 #    "untrackedFiles": <count>,
 #    "stats": {"branch": "<shortstat>", "uncommitted": "<shortstat>", "head": "<shortstat>"}}
 # The shortstats count tracked files only; untrackedFiles is reported apart.
-# Exit status 10 means the base could not be resolved; pass --base.
+# Exit status 10 means the base could not be resolved or fetched; pass --base.
 
 set -euo pipefail
 
@@ -63,7 +63,10 @@ if [[ -z $base ]]; then
         echo "No git remote points to $base_repo. Pass --base." >&2
         exit 10
     }
-    git fetch --quiet "$base_remote" "+refs/heads/$base_branch:refs/remotes/$base_remote/$base_branch"
+    git fetch --quiet "$base_remote" "+refs/heads/$base_branch:refs/remotes/$base_remote/$base_branch" || {
+        echo "Could not fetch $base_branch from $base_remote. Pass --base." >&2
+        exit 10
+    }
     base="$base_remote/$base_branch"
 fi
 

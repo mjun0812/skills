@@ -22,11 +22,11 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 
 ## 引数
 
-| 引数              | 効果                                                                                                                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `commit`          | レビューするcommit。指定時は対象を提案しない。                                                                                                                                 |
-| `--base <ref>`    | branchの変更の起点。指定時は対象を提案せず、branchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branch。     |
-| `--spec <source>` | Contract軸のspec。GitHub Issue番号(本文とmaintainerのコメントを使う)、またはspec contractを書いたMarkdownファイルのパスを渡す。省略時はopen PR本文の`Closes #N`のIssueを使う。 |
+| 引数              | 効果                                                                                                                                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `commit`          | レビューするcommit。指定時は対象を提案しない。                                                                                                                                                             |
+| `--base <ref>`    | branchの変更の起点。指定時は対象を提案せず、branchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branch。                                 |
+| `--spec <source>` | Contract軸のspec。GitHub Issue番号(本文とmaintainerのコメントを使う)、またはspec contractを書いたMarkdownファイルのパスを渡す。省略時は、commitを指定していなければopen PR本文の`Closes #N`のIssueを使う。 |
 
 ## 動作
 
@@ -49,12 +49,12 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 - 出力の前に、snapshotがagentに変更されていないことを確かめる。branchの変更が対象なら、元のrepositoryのHEADとworking treeがsnapshot作成時から変わっていないことも確かめる。どちらかが変わっていればレビュー結果を破棄し、再レビューが必要なことだけを報告する。
 - `hunk`があれば、指摘を対象差分の上にnoteとして表示する。このrepositoryのhunk sessionがあればその表示を対象差分へ切り替え、無ければHerdrのpaneでhunkを起動する。以前のself-reviewが付けたnoteだけを消し、他のagentやユーザーが付けたnoteは残す。diffのhunk外を指す指摘はhunkには表示せず、件数だけを報告する。hunk sessionが無く、Herdr外で実行している場合はhunkへの表示をスキップする。
 - Verdictは確定指摘が1件以上なら`CHANGES_REQUIRED`、0件なら`PASS`になる。hunkへ表示した場合も、すべての指摘をチャットへ出力する。ファイル保存やGitHubへの投稿はしない。
-- snapshotは、中断した場合も含めて最後に削除する。元のrepositoryへreset、restore、stash、checkout、cleanは実行しない。hunkのsessionとpaneは残す。
+- snapshotは、中断した場合も含めて最後に削除する。元のrepositoryへreset、restore、stash、checkout、cleanは実行しない。hunkのsessionとnote、hunkを起動したpaneは残す。
 
 ## 依存
 
 - agent: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md)、[`code-reviewer-contract`](../../../agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
-- `git`、`jq`、bash。PRの情報や`--spec`のIssueを読むには`gh`
+- `git`、`jq`、bash。`--base`を省略したときのbaseの解決、PRの情報や`--spec`のIssueの取得には`gh`
 - 任意: [`hunk`](https://github.com/modem-dev/hunk)。hunk sessionが無いときにpaneを開くには[Herdr](https://github.com/herdrdev/herdr)
 
 手順の詳細は[SKILL.md](SKILL.md)を参照。

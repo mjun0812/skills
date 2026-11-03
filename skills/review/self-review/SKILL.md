@@ -14,7 +14,7 @@ PRがあってもレビューやcommentは投稿しない。GitHubからはPRの
 
 - `commit`: reviewするcommit-ish。指定時は対象を提案せず、そのcommitだけをレビューする
 - `--base <ref>`: branchの変更の起点にするref。指定時は対象を提案せず、このbaseからのbranchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branchを使う。`commit`指定時は使わない
-- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。省略時は現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う
+- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。`commit`未指定時に省略した場合は現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。`commit`指定時に省略した場合はFinderだけで行う
 
 ## 対象
 
@@ -116,7 +116,7 @@ spec sourceがある場合は、spec contract(Requirements / Boundaries / Accept
 - Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
 - Contract (spec sourceがある場合のみ): `Contract` / spec contractとの整合(逸脱、未充足、boundary違反、scope creep)。`<additional-evidence>`に`spec-contract.md`のパスを指定する
 
-branch modeでは`<target-kind>`を`Local branch changes`とする。未commit変更のみを選んだ場合は`Local uncommitted changes`とする。`<change-description>`はユーザー指定の目的、PRのタイトルと本文、「`<baseRef>`からの変更」の順に、最初に得られたものとする。`<change-history>`は`commitsFile`のパスとし、`hasUncommitted`がtrueなら「未commit変更を含む」と添える。commit modeでは順に`Local commit`、commit message、`commitsFile`のパスとする。`<baseline-id>`と`<head-id>`にはmetadataの`baselineSha`と`headSha`を指定する。その他のplaceholderはPhase 1のmetadataと対象差分から埋め、`<changed-files-file>`と`<diff-file>`にはmetadataの`changedFilesFile`と`diffFile`を指定し、`<additional-evidence>`は`なし`とする(例外: Contract roleの起動時は`spec-contract.md`のパスとする)。
+branch modeでは`<target-kind>`を`Local branch changes`とする。未commit変更のみを選んだ場合は`Local uncommitted changes`とする。`<change-description>`はユーザー指定の目的、PRのタイトルと本文、「`<baseRef>`からの変更」の順に、最初に得られたものとする。`<change-history>`は`commitsFile`のパスとし、`hasUncommitted`がtrueなら「未commit変更を含む」と添える。commit modeでは順に`Local commit`、commit message、`commitsFile`のパスとする。`<baseline-id>`にはmetadataの`baselineSha`を指定する。`<head-id>`には、commit modeでは`headSha`を、branch modeでは「HEAD `<headSha>`に未commit変更を重ねたsnapshotのindex。baselineとの比較にはsnapshot内で`git diff --cached <baselineSha>`を使う」と指定する。branch modeの変更はsnapshotのindexにだけあり、`headSha`と比べると未commit変更が抜けるためである。その他のplaceholderはPhase 1のmetadataと対象差分から埋め、`<changed-files-file>`と`<diff-file>`にはmetadataの`changedFilesFile`と`diffFile`を指定し、`<additional-evidence>`は`なし`とする(例外: Contract roleの起動時は`spec-contract.md`のパスとする)。
 
 Finderにはsnapshotの検索と読み取りだけを許可し、コード、テスト、ビルド、lint、型チェック、package script、再現コードを実行させない。
 
@@ -173,7 +173,7 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 
 `hunk`があれば、確定指摘と確定契約指摘をhunkのnoteとして対象差分の上に表示する。このrepositoryのhunk sessionがあればそれを使い、無ければherdrのpaneでhunkを起動する。どちらもできない環境ではscriptが終了コード3を返すので、このPhaseをスキップしてPhase 5へ進む。
 
-1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する
+1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する。このrepositoryのhunk sessionが無く指摘も0件の場合、scriptはpaneを開かずに終了コード3を返す
    - `filePath`: `path:line`のpath
    - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く
    - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`
@@ -220,4 +220,4 @@ Hunk: <applied>件を表示, <omitted>件はhunk外 | skipped (<理由>)
 bash "<skill-dir>/scripts/self_review_snapshot.sh" cleanup --metadata "$metadata_path"
 ```
 
-cleanup対象はscriptが作成した`/tmp/self-review.*`だけとし、元のrepositoryへreset、restore、stash、checkout、cleanを実行しない。hunkのsessionとnoteは残す。
+cleanup対象はscriptが作成した`/tmp/self-review.*`だけとし、元のrepositoryへreset、restore、stash、checkout、cleanを実行しない。hunkのsessionとnote、scriptが開いたherdrのpaneは残す。
