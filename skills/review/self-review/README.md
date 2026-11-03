@@ -26,7 +26,7 @@ Even when a PR exists, nothing is posted to GitHub as a review or comment. To re
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `commit`          | Commit to review. No target is proposed when given.                                                                                                                                                                                               |
 | `--base <ref>`    | Starting point of the branch's changes. When given, no target is proposed and the branch's changes are reviewed. Defaults to the base branch of the current branch's open PR, or the default branch of the repository `gh` resolves without a PR. |
-| `--spec <source>` | Spec for the Contract axis: a GitHub issue number (its body plus maintainer comments), or the path to a Markdown file holding the contract. Defaults to the open PR body's `Closes #N` issue when no commit is given.                             |
+| `--spec <source>` | Spec for the Contract axis: a GitHub issue number (its body plus maintainer comments), or the path to a Markdown file holding the contract. Defaults to the open PR body's `Closes #N` issue when the target is the branch's changes.             |
 
 ## Behavior
 
@@ -39,6 +39,8 @@ Even when a PR exists, nothing is posted to GitHub as a review or comment. To re
   | 1                         | No                  | The branch's changes                                                             |
   | 2 or more                 | No                  | Choose: the branch's changes / the latest commit only                            |
   | 1 or more                 | Yes                 | Choose: the branch's changes / uncommitted changes only / the latest commit only |
+
+  When HEAD is a merge commit, "the latest commit only" is left out so that changes merged from others are not reviewed.
 
 - Without a commit, the commits from the merge-base of the base and HEAD up to HEAD are reviewed together with uncommitted changes. Without `--base`, the base branch is fetched from the remote that points to the PR's base repository, so a stale `origin/main` in a fork is never used as the base. If an open PR exists, its title and body are passed to the subagents as the purpose of the change.
 - With a commit, only the diff between that commit and its first parent is reviewed. Root commits and branches or PRs that are not checked out are out of scope.

@@ -40,10 +40,9 @@ else
     review_command=(show "$(jq -er '.headSha' "$metadata_path")")
 fi
 
-# shellcheck disable=SC2016 # $repo is a jq variable.
-session_query='[.sessions[]? | select(.repoRoot == $repo and .fileCount > 0)][0].sessionId // empty'
 pane_id=""
-session_id=$(hunk session list --json | jq -r --arg repo "$repo_root" "$session_query")
+session_id=$(hunk session list --json |
+    jq -r --arg repo "$repo_root" '[.sessions[]? | select(.repoRoot == $repo)][0].sessionId // empty')
 if [[ -n $session_id ]]; then
     # Remove the notes before the reload so that a failure, such as a user reply
     # to one of them, leaves the session as the user last saw it. `comment clear`
@@ -71,8 +70,11 @@ elif [[ ${HERDR_ENV:-} == 1 ]] && command -v herdr > /dev/null; then
     pane_id=$(herdr pane split --current --direction "$direction" --cwd "$repo_root" --no-focus |
         jq -er '.result.pane.pane_id')
     herdr pane run "$pane_id" "hunk ${review_command[*]}" > /dev/null
+    # The session registers before Hunk has loaded the diff, so wait for files.
     for _ in $(seq 1 40); do
-        session_id=$(hunk session list --json | jq -r --arg repo "$repo_root" "$session_query")
+        session_id=$(hunk session list --json |
+            jq -r --arg repo "$repo_root" \
+                '[.sessions[]? | select(.repoRoot == $repo and .fileCount > 0)][0].sessionId // empty')
         [[ -n $session_id ]] && break
         sleep 0.5
     done
@@ -86,18 +88,19 @@ else
 fi
 
 # Hunk rejects the whole batch when one note is outside the diff, so keep only
-# notes on lines that a hunk covers on their side.
+# notes on lines that a hunk covers on their side. Hunk identifies a renamed
+# file by its new path, so an old-side note may name the previous path.
 review=$(hunk session review "$session_id" --json)
 notes=$(jq --argjson review "$review" '
-    [$review.review.files[] | {path, hunks}] as $files
-    | {comments: [.comments[] | select(
-        . as $note
-        | any($files[]; .path == $note.filePath
-            and any(.hunks[];
-                if $note.oldLine != null then .oldRange else .newRange end as $range
-                | ($note.oldLine // $note.newLine) as $line
-                | $range[0] <= $line and $line <= $range[1])))
-        | .author = "self-review"]}
+    {comments: [.comments[] as $note
+        | first($review.review.files[]
+            | select(.path == $note.filePath
+                or ($note.oldLine != null and .previousPath == $note.filePath))) as $file
+        | select(any($file.hunks[];
+            (if $note.oldLine != null then .oldRange else .newRange end) as $range
+            | ($note.oldLine // $note.newLine) as $line
+            | $range[0] <= $line and $line <= $range[1]))
+        | $note | .filePath = $file.path | .author = "self-review"]}
     ' "$notes_path")
 applied=$(jq '.comments | length' <<< "$notes")
 omitted=$(($(jq '.comments | length' "$notes_path") - applied))

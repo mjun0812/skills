@@ -22,11 +22,11 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 
 ## 引数
 
-| 引数              | 効果                                                                                                                                                                                                       |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `commit`          | レビューするcommit。指定時は対象を提案しない。                                                                                                                                                             |
-| `--base <ref>`    | branchの変更の起点。指定時は対象を提案せず、branchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branch。                                 |
-| `--spec <source>` | Contract軸のspec。GitHub Issue番号(本文とmaintainerのコメントを使う)、またはspec contractを書いたMarkdownファイルのパスを渡す。省略時は、commitを指定していなければopen PR本文の`Closes #N`のIssueを使う。 |
+| 引数              | 効果                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `commit`          | レビューするcommit。指定時は対象を提案しない。                                                                                                                                                         |
+| `--base <ref>`    | branchの変更の起点。指定時は対象を提案せず、branchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branch。                             |
+| `--spec <source>` | Contract軸のspec。GitHub Issue番号(本文とmaintainerのコメントを使う)、またはspec contractを書いたMarkdownファイルのパスを渡す。省略時は、対象がbranchの変更ならopen PR本文の`Closes #N`のIssueを使う。 |
 
 ## 動作
 
@@ -39,6 +39,8 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
   | 1                  | なし         | branchの変更                                              |
   | 2以上              | なし         | branchの変更 / 最新commitのみ から選ぶ                    |
   | 1以上              | あり         | branchの変更 / 未commit変更のみ / 最新commitのみ から選ぶ |
+
+  HEADがmerge commitの場合は、取り込んだ他人の変更をレビューしないよう「最新commitのみ」を選択肢から外す。
 
 - commitを省略すると、baseとHEADのmerge-baseからHEADまでのcommitと、未commit変更をまとめて対象にする。`--base`を省略した場合は、PRのbase repositoryを指すremoteからbase branchをfetchして使うので、fork構成でも古い`origin/main`をbaseにしない。open PRがあれば、そのタイトルと本文を変更目的としてSubAgentへ渡す。
 - commit指定時は、そのcommitとfirst parentの差分だけを対象にする。root commit、checkoutしていないbranchやPRは対象外。

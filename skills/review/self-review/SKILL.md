@@ -14,7 +14,7 @@ PRがあってもレビューやcommentは投稿しない。GitHubからはPRの
 
 - `commit`: reviewするcommit-ish。指定時は対象を提案せず、そのcommitだけをレビューする
 - `--base <ref>`: branchの変更の起点にするref。指定時は対象を提案せず、このbaseからのbranchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branchを使う。`commit`指定時は使わない
-- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。`commit`未指定時に省略した場合は現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。`commit`指定時に省略した場合はFinderだけで行う
+- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。省略した場合、対象がbranchの変更なら現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。対象が未commit変更のみか1 commitなら、PRの一部だけを見るためFinderだけで行う
 
 ## 対象
 
@@ -36,7 +36,7 @@ branchの変更は、PRの作成前と作成後のどちらでも、PRに載る�
 2. `commit`指定時は手順4へ進む。それ以外は`scripts/self_review_target.sh`でbase、現在のbranchのopen PR、候補ごとの変更量を集計する。`--base`を指定された場合はそのまま渡す。scriptはbaseを指定されなければ、PRのbase repository(PRが無ければ`gh`が解決するrepository)を指すremoteからbase branchをfetchし、その`<remote>/<branch>`をbaseとする。fork構成で古い`origin/main`をbaseにしないためである。
    - 標準出力のJSONの`base`をbaseとして保持する
    - `pr`がnullでなければ、PRのタイトルと本文を`<change-description>`に使う
-   - `--spec`未指定でPR本文に`Closes #N`がある場合は、Issue #Nをspec sourceにする
+   - `--spec`未指定でPR本文に`Closes #N`がある場合は、手順3で対象がbranchの変更に決まったときだけIssue #Nをspec sourceにする。未commit変更のみや1 commitに当てはめると、対象外の部分で満たしている要件を未充足と誤って報告するためである
 3. `--base`指定時はbranchの変更を対象にする。それ以外は、JSONの`commits`(merge-base以降のcommit数)と`hasUncommitted`から対象を決める。
 
    | `commits` | `hasUncommitted` | 対象                                                                                           |
@@ -46,6 +46,8 @@ branchの変更は、PRの作成前と作成後のどちらでも、PRに載る�
    | 1         | false            | 質問せずにbranchの変更                                                                         |
    | 2以上     | false            | `AskUserQuestion`で「branchの変更(Recommended)」「最新commitのみ」から選ぶ                     |
    | 1以上     | true             | `AskUserQuestion`で「branchの変更(Recommended)」「未commit変更のみ」「最新commitのみ」から選ぶ |
+
+   HEADがmerge commitの場合(`headIsMerge: true`)は「最新commitのみ」を選択肢から外す。merge commitのfirst parentとの差分は、取り込んだ他人の変更になるためである。外した結果、選択肢がbranchの変更だけになった場合は質問せずにbranchの変更を対象にする。
 
    選択肢の説明には、`stats`の`branch` / `uncommitted` / `head`の変更量を書く。branchの変更にはcommit数とPR番号(PRがあれば)を、branchの変更と未commit変更のみには`untrackedFiles`が1以上ならuntracked fileの数を添える。`stats`はuntracked fileを数えていないためである。
 
@@ -72,7 +74,7 @@ metadata_path=$(bash "<skill-dir>/scripts/self_review_snapshot.sh" create-branch
 metadata_path=$(bash "<skill-dir>/scripts/self_review_snapshot.sh" create-commit --repo "<repo-root>" --commit "<commit>")
 ```
 
-scriptが対象差分なし、baseの解決失敗(終了コード10)、root commit、作成中のworking tree変更、またはsnapshot作成失敗を報告した場合はレビューを開始しない。baseを解決できなかった場合は、`--base`の指定をユーザーに求める。
+scriptが対象差分なし、baseの解決失敗(終了コード10)、commitの解決失敗またはroot commit(終了コード12)、作成中のworking tree変更、またはsnapshot作成失敗を報告した場合はレビューを開始しない。終了コード10の場合は`--base`の指定をユーザーに求める。それ以外はscriptのメッセージを報告して終了する。
 Phase 2以降では、Phase 4のhunk表示を除いて元のrepositoryを読まず、対象ファイルとコマンド実行をすべてsnapshot内に限定する。
 
 ### Phase 2: 敵対的review agentの実行
@@ -175,7 +177,7 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 
 1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する。このrepositoryのhunk sessionが無く指摘も0件の場合、scriptはpaneを開かずに終了コード3を返す
    - `filePath`: `path:line`のpath
-   - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く
+   - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く。renameしたファイルでは、`filePath`は変更前と変更後のどちらのpathでもよい
    - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`
    - `rationale`: 問題と完了条件を改行で区切った文。契約指摘では根拠も含める
 2. scriptを実行する。scriptは以前のself-reviewが付けたnoteを消し、sessionの内容をbranch modeでは`diff <baselineSha>`、commit modeでは`show <headSha>`へ切り替えてから、作成者`self-review`としてnoteを付ける。他のagentやユーザーが付けたnoteは消さない

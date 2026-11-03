@@ -12,7 +12,7 @@
 # Prints to stdout:
 #   {"base": "<ref>", "pr": {"number", "title", "body"} | null,
 #    "commits": <commits since the merge-base>, "hasUncommitted": <bool>,
-#    "untrackedFiles": <count>,
+#    "untrackedFiles": <count>, "headIsMerge": <bool>,
 #    "stats": {"branch": "<shortstat>", "uncommitted": "<shortstat>", "head": "<shortstat>"}}
 # The shortstats count tracked files only; untrackedFiles is reported apart.
 # Exit status 10 means the base could not be resolved or fetched; pass --base.
@@ -89,9 +89,10 @@ jq -n --arg base "$base" --argjson pr "$pr" \
     --argjson commits "$(git rev-list --count "${merge_base}..HEAD")" \
     --argjson hasUncommitted "$has_uncommitted" \
     --argjson untrackedFiles "$untracked_files" \
+    --argjson headIsMerge "$(git rev-parse --verify -q HEAD^2 > /dev/null && echo true || echo false)" \
     --arg branch "$(git diff --shortstat "$merge_base" --)" \
     --arg uncommitted "$(git diff --shortstat HEAD --)" \
     --arg head "$(git show --shortstat --format= HEAD --)" \
     '{base: $base, pr: $pr, commits: $commits, hasUncommitted: $hasUncommitted,
-      untrackedFiles: $untrackedFiles,
+      untrackedFiles: $untrackedFiles, headIsMerge: $headIsMerge,
       stats: {branch: $branch, uncommitted: $uncommitted, head: $head} | map_values(ltrimstr(" "))}'

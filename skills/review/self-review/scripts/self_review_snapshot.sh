@@ -98,11 +98,11 @@ create-branch | create-commit)
     else
         if ! snapshot_id=$(git -C "$repo_root" rev-parse --verify --end-of-options "${commit_arg}^{commit}"); then
             echo "Commit not found: $commit_arg" >&2
-            exit 10
+            exit 12
         fi
         if ! baseline_sha=$(git -C "$repo_root" rev-parse --verify "${snapshot_id}^1"); then
             echo "Root commits are not supported: $snapshot_id" >&2
-            exit 10
+            exit 12
         fi
         if git -C "$repo_root" diff --quiet "$baseline_sha" "$snapshot_id" --; then
             echo "The commit has no changes to review: $snapshot_id" >&2
