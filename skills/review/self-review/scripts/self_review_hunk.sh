@@ -39,7 +39,9 @@ if [[ $mode == "branch" ]]; then
     # Hunk compares the working tree, untracked files included, with the baseline.
     review_command=(diff "$(jq -er '.baselineSha' "$metadata_path")")
 else
-    review_command=(show "$(jq -er '.headSha' "$metadata_path")")
+    # `show` of a merge commit lists no files, while the review covers the diff
+    # from the first parent.
+    review_command=(diff "$(jq -er '.baselineSha' "$metadata_path")" "$(jq -er '.headSha' "$metadata_path")")
 fi
 
 pane_id=""

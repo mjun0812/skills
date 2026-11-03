@@ -14,7 +14,7 @@ PRがあってもレビューやcommentは投稿しない。GitHubからはPRの
 
 - `commit`: reviewするcommit-ish。指定時は対象を提案せず、そのcommitだけをレビューする
 - `--base <ref>`: branchの変更の起点にするref。指定時は対象を提案せず、このbaseからのbranchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branchを使う。`commit`指定時は使わない
-- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。省略した場合、対象がbranchの変更なら現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。対象が未commit変更のみか1 commitなら、PRの一部だけを見るためFinderだけで行う
+- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。省略した場合、対象がbranchの変更で、`--base`を省略したかPRのbaseと同じ値を指定したなら、現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。対象が未commit変更のみか1 commitなら、PRの一部だけを見るためFinderだけで行う
 
 ## 対象
 
@@ -35,6 +35,7 @@ branchの変更は、PRの作成前と作成後のどちらでも、PRに載る�
 1. 現在位置からrepository rootを特定する。Git repositoryでなければ終了する。
 2. `commit`指定時は手順4へ進む。それ以外は`scripts/self_review_target.sh`でbase、現在のbranchのopen PR、候補ごとの変更量を集計する。`--base`を指定された場合はそのまま渡す。scriptはbaseを指定されなければ、PRのbase repository(PRが無ければ`gh`が解決するrepository)を指すremoteからbase branchをfetchし、その`<remote>/<branch>`をbaseとする。fork構成で古い`origin/main`をbaseにしないためである。
    - 標準出力のJSONの`base`をbaseとして保持する
+   - 以下のPRの情報は、`--base`を省略したか、PRのbase(`origin/<baseRefName>`のような`base`の値)と同じ値を指定したときだけ使う。別のbaseを指定した範囲はPR全体と一致しないためである
    - `pr`がnullでなければ、手順3で対象がbranchの変更に決まったときだけ、PRのタイトルと本文を`<change-description>`に使う。PR全体の説明を一部の差分の目的として渡すと、対象外の振る舞いに照らした指摘が出るためである
    - `--spec`未指定でPR本文に`Closes #N`がある場合は、手順3で対象がbranchの変更に決まったときだけIssue #Nをspec sourceにする。未commit変更のみや1 commitに当てはめると、対象外の部分で満たしている要件を未充足と誤って報告するためである
 3. `--base`指定時はbranchの変更を対象にする。それ以外は、JSONの`commits`(merge-base以降のcommit数)と`hasUncommitted`から対象を決める。
@@ -179,10 +180,10 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 
 1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する。このrepositoryのhunk sessionが無く指摘も0件の場合、scriptはpaneを開かずに終了コード3を返す
    - `filePath`: `path:line`のpath
-   - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く。renameしたファイルの削除行への指摘では、`filePath`は変更前と変更後のどちらのpathでもよい。追加行への指摘では変更後のpathを使う
+   - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く。renameしたファイルの削除行への指摘では`filePath`に変更前のpathを、追加行への指摘では変更後のpathを使う。`git mv`していない未commitのrenameを、hunkは削除と追加の2ファイルとして表示するためである
    - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`
    - `rationale`: 問題と完了条件を改行で区切った文。契約指摘では根拠も含める
-2. scriptを実行する。scriptは以前のself-reviewが付けたnoteのうち返信が付いていないものを消し、sessionの内容をbranch modeでは`diff <baselineSha>`、commit modeでは`show <headSha>`へ切り替えてから、作成者`self-review`としてnoteを付ける。他のagentやユーザーが付けたnoteは消さない
+2. scriptを実行する。scriptは以前のself-reviewが付けたnoteのうち返信が付いていないものを消し、sessionの内容をbranch modeでは`diff <baselineSha>`、commit modeでは`diff <baselineSha> <headSha>`へ切り替えてから、作成者`self-review`としてnoteを付ける。他のagentやユーザーが付けたnoteは消さない
 
 ```bash
 bash "<skill-dir>/scripts/self_review_hunk.sh" show --metadata "$metadata_path" --notes "<metadata-dir>/hunk-notes.json"
