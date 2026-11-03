@@ -68,18 +68,15 @@ The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/s
 
 ### [writing](skills/writing)
 
-| skill                                                               | Description                                                                         |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | Guidelines for designing rhythm and tempo in expository writing                     |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | Writing guidelines for Japanese technical documents and book manuscripts            |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | Rewrite AI-generated Japanese into natural, readable prose                          |
-| [yomiyasu-lite](skills/writing/yomiyasu-lite)                       | Fix only the lint-flagged spots in AI-written Japanese without changing the meaning |
+| skill                                                               | Description                                                              |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | Guidelines for designing rhythm and tempo in expository writing          |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | Writing guidelines for Japanese technical documents and book manuscripts |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | Rewrite AI-generated Japanese into natural, readable prose               |
 
 The `cognitive-rhythm-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/eb2929f13ed19c97188393d297be8432).
 
 The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d). The original is released under the Unlicense.
-
-The lint bundled with the `yomiyasu-lite` skill is adapted from [nanaism/yomiyasu](https://github.com/nanaism/yomiyasu).
 
 ### [docs](skills/docs)
 
@@ -136,7 +133,6 @@ External tools each skill depends on are listed below. Without an optional tool,
 | `skill-review`              | `shellcheck`, `shfmt`, `ruff`        | `claude` CLI, `codex` CLI |
 | `writing-skills`            | -                                    | Graphviz (`dot`)          |
 | `deep-research`             | `oxfmt`                              | -                         |
-| `yomiyasu-lite`             | `python3` (3.14+)                    | -                         |
 | `exhtml`                    | `python3`                            | -                         |
 | `exmd`                      | `python3`                            | -                         |
 | `duckdb`                    | `duckdb` CLI (1.5+)                  | -                         |
