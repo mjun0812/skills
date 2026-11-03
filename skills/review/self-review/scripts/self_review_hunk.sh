@@ -3,8 +3,9 @@
 #
 # Reuses the Hunk session already open for the repository, or opens Hunk in a
 # new Herdr pane when running inside Herdr. Notes left by a previous
-# self-review are removed, the session is reloaded with the reviewed diff, and
-# the notes are applied with the author self-review.
+# self-review are removed, except those someone replied to, the session is
+# reloaded with the reviewed diff, and the notes are applied with the author
+# self-review.
 #
 # Usage: self_review_hunk.sh show --metadata <metadata.json> --notes <notes.json>
 #
@@ -12,7 +13,8 @@
 #   {"comments": [{"filePath": "...", "newLine": 1, "summary": "...", "rationale": "..."}]}
 # A note on a deleted line uses "oldLine" instead of "newLine".
 #
-# Prints {"sessionId", "paneId", "applied", "omitted"} to stdout.
+# Prints {"sessionId", "paneId", "applied", "omitted", "kept"} to stdout. kept
+# counts previous self-review notes left in place because they have replies.
 # Exit status 3 means Hunk is unavailable here; the caller skips the display.
 
 set -euo pipefail
@@ -41,16 +43,22 @@ else
 fi
 
 pane_id=""
+kept=0
 session_id=$(hunk session list --json |
     jq -r --arg repo "$repo_root" '[.sessions[]? | select(.repoRoot == $repo)][0].sessionId // empty')
 if [[ -n $session_id ]]; then
-    # Remove the notes before the reload so that a failure, such as a user reply
-    # to one of them, leaves the session as the user last saw it. `comment clear`
-    # would also remove notes left by other agents.
-    hunk session comment list "$session_id" --json |
-        jq -r '.comments[] | select(.author == "self-review") | .commentId' |
-        while IFS= read -r comment_id; do
-            hunk session comment rm "$session_id" "$comment_id" > /dev/null
+    # Hunk refuses to remove a note with replies, and the replies hold the
+    # user's discussion, so keep those notes. `comment clear` would also remove
+    # notes left by other agents. `--type all` includes notes written in the TUI.
+    previous_notes=$(hunk session comment list "$session_id" --type all --json)
+    kept=$(jq '[.comments[].parentId // empty] as $parents
+        | [.comments[] | select(.author == "self-review" and (.noteId as $id | $parents | index($id)))]
+        | length' <<< "$previous_notes")
+    jq -r '[.comments[].parentId // empty] as $parents
+        | .comments[] | select(.author == "self-review" and (.noteId as $id | $parents | index($id) | not))
+        | .noteId' <<< "$previous_notes" |
+        while IFS= read -r note_id; do
+            hunk session comment rm "$session_id" "$note_id" > /dev/null
         done
     hunk session reload "$session_id" -- "${review_command[@]}" > /dev/null
 elif (($(jq '.comments | length' "$notes_path") == 0)); then
@@ -110,5 +118,5 @@ if ((applied > 0)); then
 fi
 
 jq -n --arg sessionId "$session_id" --arg paneId "$pane_id" \
-    --argjson applied "$applied" --argjson omitted "$omitted" \
-    '{sessionId: $sessionId, paneId: $paneId, applied: $applied, omitted: $omitted}'
+    --argjson applied "$applied" --argjson omitted "$omitted" --argjson kept "$kept" \
+    '{sessionId: $sessionId, paneId: $paneId, applied: $applied, omitted: $omitted, kept: $kept}'

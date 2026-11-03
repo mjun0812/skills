@@ -42,14 +42,14 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 
   HEADがmerge commitの場合は、取り込んだ他人の変更をレビューしないよう「最新commitのみ」を選択肢から外す。
 
-- commitを省略すると、baseとHEADのmerge-baseからHEADまでのcommitと、未commit変更をまとめて対象にする。`--base`を省略した場合は、PRのbase repositoryを指すremoteからbase branchをfetchして使うので、fork構成でも古い`origin/main`をbaseにしない。open PRがあれば、そのタイトルと本文を変更目的としてSubAgentへ渡す。
+- commitを省略すると、baseとHEADのmerge-baseからHEADまでのcommitと、未commit変更をまとめて対象にする。`--base`を省略した場合は、PRのbase repositoryを指すremoteからbase branchをfetchして使うので、fork構成でも古い`origin/main`をbaseにしない。対象がbranchの変更でopen PRがあれば、そのタイトルと本文を変更目的としてSubAgentへ渡す。remoteが無い、offlineなどでbaseを解決できない場合は、未commit変更があれば未commit変更のみをレビューし、無ければ`--base`の指定を求める。
 - commit指定時は、そのcommitとfirst parentの差分だけを対象にする。root commit、checkoutしていないbranchやPRは対象外。
 - `scripts/self_review_snapshot.sh`がsnapshot用のworktreeを`/tmp/self-review.*`に作る。レビューはこのsnapshotだけを読み、ユーザーのworking treeは変更しない。
 - Finderはsnapshotの検索と読み取りだけを行い、コマンドを実行しない。Verifierはsnapshot内で最小限のテストや再現コードを実行してよい。
 - 候補は同じ場所または同じ根本原因のものを統合した後、1件ずつ検証する。`refuted`と`uncertain`は破棄する。確定はFinder、Contractの順で行い、Contractは先に確定した指摘と重複するものを破棄する。
 - SubAgentが起動できない、または結果を返さない場合は中止し、原因を報告する。diffを自分で読んで代替レビューはしない。
-- 出力の前に、snapshotがagentに変更されていないことを確かめる。branchの変更が対象なら、元のrepositoryのHEADとworking treeがsnapshot作成時から変わっていないことも確かめる。どちらかが変わっていればレビュー結果を破棄し、再レビューが必要なことだけを報告する。
-- `hunk`があれば、指摘を対象差分の上にnoteとして表示する。このrepositoryのhunk sessionがあればその表示を対象差分へ切り替え、無ければHerdrのpaneでhunkを起動する。以前のself-reviewが付けたnoteだけを消し、他のagentやユーザーが付けたnoteは残す。diffのhunk外を指す指摘はhunkには表示せず、件数だけを報告する。hunk sessionが無く、Herdr外で実行している場合はhunkへの表示をスキップする。
+- 出力の前に、snapshotがagentに変更されていないことを確かめる。branchの変更か未commit変更のみが対象なら、元のrepositoryのHEADとworking treeがsnapshot作成時から変わっていないことも確かめる。どちらかが変わっていればレビュー結果を破棄し、再レビューが必要なことだけを報告する。
+- `hunk`があれば、指摘を対象差分の上にnoteとして表示する。このrepositoryのhunk sessionがあればその表示を対象差分へ切り替え、無ければHerdrのpaneでhunkを起動する。以前のself-reviewが付けたnoteだけを消し、他のagentやユーザーが付けたnoteは残す。以前のnoteでも、返信が付いているものは消さずに残す。diffのhunk外を指す指摘はhunkには表示せず、件数だけを報告する。hunk sessionが無く、Herdr外で実行している場合はhunkへの表示をスキップする。
 - Verdictは確定指摘が1件以上なら`CHANGES_REQUIRED`、0件なら`PASS`になる。hunkへ表示した場合も、すべての指摘をチャットへ出力する。ファイル保存やGitHubへの投稿はしない。
 - snapshotは、中断した場合も含めて最後に削除する。元のrepositoryへreset、restore、stash、checkout、cleanは実行しない。hunkのsessionとnote、hunkを起動したpaneは残す。
 
