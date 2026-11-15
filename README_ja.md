@@ -140,7 +140,15 @@ flowchart LR
 
 ### Agents
 
-github-pr-review skillとself-review skillは、[agents/](agents/) に定義された3つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+github-pr-review skillとself-review skillは、[agents/](agents/) に定義された次の3つのレビュー用agentを使う。
+
+| agent                                                        | 役割                                                                                                        |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探す                                                            |
+| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
+| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
+
+agentはClaude Code pluginとapmで配布される。`apm install -t codex` ではCodexのagent形式へ変換され、そのときtools制限は失われる。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
 ## Installation
 

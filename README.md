@@ -140,7 +140,15 @@ External tools each skill depends on are listed below. Without an optional tool,
 
 ### Agents
 
-The github-pr-review and self-review skills use three reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-contract`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skills fall back to generic subagents given the same prompts.
+The github-pr-review and self-review skills use the following three reviewer agents defined in [agents/](agents/).
+
+| Agent                                                        | Role                                                                                                                                      |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized                                                      |
+| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
+| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
+
+Agents ship through the Claude Code plugin and through apm. With `apm install -t codex` they are converted to Codex agent format, and the `tools` restriction is dropped in conversion. On other install methods the skills fall back to generic subagents given the same prompts.
 
 ## Installation
 
