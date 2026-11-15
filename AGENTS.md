@@ -10,7 +10,8 @@ skill本体、配布用manifest、英日READMEの一覧を常に一致させる�
 - `skills/<category>/<name>/`: skillの定義。`SKILL.md`、詳細資料、script、templateを含む。
 - `agents/`: agentの定義。
 - `.claude-plugin/`と`.codex-plugin/`: plugin配布用manifest。
-- `scripts/`: このrepoで管理しているskillのためのscript集。layout、manifestの検証、releaseを行う。
+- `.claude/skills/`と`.agents/skills/`: repo内でClaude CodeとCodexにskillを読み込ませるsymlink。`scripts/link_skills.py`が生成し、手で編集しない。
+- `scripts/`: このrepoで管理しているskillのためのscript集。layout、manifestの検証、symlinkの生成、releaseを行う。
 
 ## skillの配布方法
 

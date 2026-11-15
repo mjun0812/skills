@@ -237,6 +237,17 @@ apm update
 | apm                        | 更新時に自動で削除される (lockfileを基にstale fileとして掃除される) |
 | npx skills / gh skill      | ローカルコピーが残るため、手動で削除する                            |
 
+## ローカルでのテスト
+
+Claude Code用の `.claude/skills/` とCodex用の `.agents/skills/` に、各skillへのsymlinkをcommitしてある。このrepoで起動すれば、working treeのskillを試せる。
+
+symlinkは [scripts/link_skills.py](scripts/link_skills.py) が生成する。skillを追加・削除・改名したときは、prekのhookがsymlinkを貼り直してcommitを止めるので、変更をstageしてcommitし直す。CIも同じhookで、symlinkの貼り忘れを検出する。
+
+同じskillを `~/.claude/skills/` や `~/.agents/skills/` にもinstallしている場合は、次のようにする。
+
+- Claude Code: user側が優先されるため、`claude --setting-sources project,local` で起動する。userのCLAUDE.md・hook・権限設定も読まれなくなる。
+- Codex: 両方が一覧に出るため、試す間だけ `~/.agents/skills/` から外す。
+
 ## Release
 
 リリースはmise taskで行う。

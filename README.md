@@ -237,6 +237,17 @@ How a skill removed from this repo is handled depends on the install method.
 | apm                        | Removed automatically on update (cleaned up as stale files based on the lockfile) |
 | npx skills / gh skill      | Local copies remain; delete them manually                                         |
 
+## Local testing
+
+Symlinks to every skill are committed in `.claude/skills/` for Claude Code and `.agents/skills/` for Codex. Start either tool in this repo to try the working-tree skills.
+
+[scripts/link_skills.py](scripts/link_skills.py) generates the symlinks. After a skill is added, removed, or renamed, the prek hook relinks the skills and stops the commit. Stage the changes and commit again. CI runs the same hook and catches missing links.
+
+If the same skill is also installed in `~/.claude/skills/` or `~/.agents/skills/`:
+
+- Claude Code: the user copy takes precedence, so start with `claude --setting-sources project,local`. This also skips the user CLAUDE.md, hooks, and permission settings.
+- Codex: both copies are listed, so move the skill out of `~/.agents/skills/` while testing.
+
 ## Release
 
 Releases are cut with the mise task:
