@@ -140,7 +140,15 @@ flowchart LR
 
 ### Agents
 
-github-pr-review skillとself-review skillは、[agents/](agents/) に定義された3つのレビュー用agent (`code-reviewer-finder`、`code-reviewer-contract`、`code-reviewer-verifier`) を使う。agentはClaude Code pluginとapmで配布される (`apm install -t codex` ではCodexのagent形式へ変換される。変換時にtools制限は失われる)。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+github-pr-review skillとself-review skillは、[agents/](agents/) に定義された次の3つのレビュー用agentを使う。
+
+| agent                                                        | 役割                                                                                                        |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探す                                                            |
+| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
+| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
+
+agentはClaude Code pluginとapmで配布される。`apm install -t codex` ではCodexのagent形式へ変換され、そのときtools制限は失われる。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
 ## Installation
 
@@ -236,6 +244,17 @@ apm update
 | Claude Code / Codex plugin | 更新時に自動で削除される (バンドル全体が置き換わるため)             |
 | apm                        | 更新時に自動で削除される (lockfileを基にstale fileとして掃除される) |
 | npx skills / gh skill      | ローカルコピーが残るため、手動で削除する                            |
+
+## ローカルでのテスト
+
+Claude Code用の `.claude/skills/` とCodex用の `.agents/skills/` に、各skillへのsymlinkをcommitしてある。このrepoで起動すれば、working treeのskillを試せる。
+
+symlinkは [scripts/link_skills.py](scripts/link_skills.py) が生成する。skillを追加・削除・改名したときは、prekのhookがsymlinkを貼り直してcommitを止めるので、変更をstageしてcommitし直す。CIも同じhookで、symlinkの貼り忘れを検出する。
+
+同じskillを `~/.claude/skills/` や `~/.agents/skills/` にもinstallしている場合は、次のようにする。
+
+- Claude Code: user側が優先されるため、`claude --setting-sources project,local` で起動する。userのCLAUDE.md・hook・権限設定も読まれなくなる。
+- Codex: 両方が一覧に出るため、試す間だけ `~/.agents/skills/` から外す。
 
 ## Release
 

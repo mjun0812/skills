@@ -140,7 +140,15 @@ External tools each skill depends on are listed below. Without an optional tool,
 
 ### Agents
 
-The github-pr-review and self-review skills use three reviewer agents defined in [agents/](agents/): `code-reviewer-finder`, `code-reviewer-contract`, and `code-reviewer-verifier`. Agents ship through the Claude Code plugin and through apm; with `apm install -t codex` they are converted to Codex agent format (the `tools` restriction is dropped in conversion). On other install methods the skills fall back to generic subagents given the same prompts.
+The github-pr-review and self-review skills use the following three reviewer agents defined in [agents/](agents/).
+
+| Agent                                                        | Role                                                                                                                                      |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized                                                      |
+| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
+| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
+
+Agents ship through the Claude Code plugin and through apm. With `apm install -t codex` they are converted to Codex agent format, and the `tools` restriction is dropped in conversion. On other install methods the skills fall back to generic subagents given the same prompts.
 
 ## Installation
 
@@ -236,6 +244,17 @@ How a skill removed from this repo is handled depends on the install method.
 | Claude Code / Codex plugin | Removed automatically on update (the whole bundle is replaced)                    |
 | apm                        | Removed automatically on update (cleaned up as stale files based on the lockfile) |
 | npx skills / gh skill      | Local copies remain; delete them manually                                         |
+
+## Local testing
+
+Symlinks to every skill are committed in `.claude/skills/` for Claude Code and `.agents/skills/` for Codex. Start either tool in this repo to try the working-tree skills.
+
+[scripts/link_skills.py](scripts/link_skills.py) generates the symlinks. After a skill is added, removed, or renamed, the prek hook relinks the skills and stops the commit. Stage the changes and commit again. CI runs the same hook and catches missing links.
+
+If the same skill is also installed in `~/.claude/skills/` or `~/.agents/skills/`:
+
+- Claude Code: the user copy takes precedence, so start with `claude --setting-sources project,local`. This also skips the user CLAUDE.md, hooks, and permission settings.
+- Codex: both copies are listed, so move the skill out of `~/.agents/skills/` while testing.
 
 ## Release
 
