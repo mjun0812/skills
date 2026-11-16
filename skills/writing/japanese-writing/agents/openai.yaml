@@ -1,0 +1,4 @@
+interface:
+  display_name: "japanese-writing"
+  short_description: "日本語の文章を、文書の種類に合った規範で書く、または直す"
+  default_prompt: "$japanese-writing を使って、指定した日本語の文章を、文書の種類に合った規範で執筆または修正してください。"

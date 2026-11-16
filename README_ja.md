@@ -68,15 +68,18 @@ My [Agent Skills](https://agentskills.io).
 
 ### [writing](skills/writing)
 
-| skill                                                                            | 説明                                             |
-| -------------------------------------------------------------------------------- | ------------------------------------------------ |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing/README_ja.md) | 説明的な文章に緩急を設計するための規範           |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing/README_ja.md)       | 日本語の技術文書・書籍原稿の文章規範             |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp/README_ja.md)                   | AIで書いた日本語を自然で読みやすい文章に書き直す |
+| skill                                                                            | 説明                                                     |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing/README_ja.md) | 説明的な文章に緩急を設計するための規範                   |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing/README_ja.md)       | 日本語の技術文書・書籍原稿の文章規範                     |
+| [japanese-writing](skills/writing/japanese-writing/README_ja.md)                 | 日本語の文章を、文書の種類に合った規範で書く、または直す |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp/README_ja.md)                   | AIで書いた日本語を自然で読みやすい文章に書き直す         |
 
 `cognitive-rhythm-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/eb2929f13ed19c97188393d297be8432)をもとに改変した。
 
 `japanese-tech-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)をもとに改変した。原文はUnlicenseで公開されている。
+
+`japanese-writing` skillは、上の3つのskillの規範を1つにまとめたもので、同じ原文を参考にした。
 
 ### [docs](skills/docs)
 

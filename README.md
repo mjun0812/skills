@@ -68,15 +68,18 @@ The `writing-skills` skill is adapted from the [`writing-skills` skill in obra/s
 
 ### [writing](skills/writing)
 
-| skill                                                               | Description                                                              |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | Guidelines for designing rhythm and tempo in expository writing          |
-| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | Writing guidelines for Japanese technical documents and book manuscripts |
-| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | Rewrite AI-generated Japanese into natural, readable prose               |
+| skill                                                               | Description                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [cognitive-rhythm-writing](skills/writing/cognitive-rhythm-writing) | Guidelines for designing rhythm and tempo in expository writing            |
+| [japanese-tech-writing](skills/writing/japanese-tech-writing)       | Writing guidelines for Japanese technical documents and book manuscripts   |
+| [japanese-writing](skills/writing/japanese-writing)                 | Write or revise Japanese prose under rules chosen for the kind of document |
+| [stop-ai-slop-jp](skills/writing/stop-ai-slop-jp)                   | Rewrite AI-generated Japanese into natural, readable prose                 |
 
 The `cognitive-rhythm-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/eb2929f13ed19c97188393d297be8432).
 
 The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d). The original is released under the Unlicense.
+
+The `japanese-writing` skill merges the rules of the three skills above and draws on the same originals.
 
 ### [docs](skills/docs)
 
