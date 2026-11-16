@@ -148,7 +148,7 @@ github-pr-review skillとself-review skillは、[agents/](agents/) に定義さ�
 | [`code-reviewer-contract`](agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
 | [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
 
-agentはClaude Code pluginとapmで配布される。`apm install -t codex` ではCodexのagent形式へ変換され、そのときtools制限は失われる。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
+agentはClaude Code pluginとapmで配布される。agentごとの`tools`制限は指定せず、利用できるtoolと権限は各実行環境の設定に従う。OpenCodeでは`mode: subagent`によりsubagentとして読み込まれる。`apm install -t codex` ではCodexのagent形式へ変換される。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
 ## Installation
 

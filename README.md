@@ -148,7 +148,7 @@ The github-pr-review and self-review skills use the following three reviewer age
 | [`code-reviewer-contract`](agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
 | [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
 
-Agents ship through the Claude Code plugin and through apm. With `apm install -t codex` they are converted to Codex agent format, and the `tools` restriction is dropped in conversion. On other install methods the skills fall back to generic subagents given the same prompts.
+Agents ship through the Claude Code plugin and through apm. They do not specify per-agent `tools` restrictions; available tools and permissions follow each runtime's configuration. In OpenCode, `mode: subagent` makes them load as subagents. With `apm install -t codex` they are converted to Codex agent format. On other install methods the skills fall back to generic subagents given the same prompts.
 
 ## Installation
 
