@@ -51,7 +51,7 @@ issue番号を起点に、調査から実装、PR作成までを一気通貫で�
 3. **worktree作成**:
    - `git worktree add -b <branch-name> <worktree-path> <base-branch>`
    - `<base-branch>`は最新のdefault branch
-   - 同じpathのworktreeが存在し、未commit変更がある場合は中止する。cleanな場合のみ作り直してよい。
+   - 同じpathのworktreeが存在する場合は、cleanでも作り直さず、別の衝突しないpathを選ぶ。
    - 作成失敗時は中止し、エラー内容をユーザーに伝える
 4. **作成したworktree情報を記録する** (中止時のクリーンアップで使う):
    - branch名
@@ -130,8 +130,9 @@ Phase 3の間は以下の制約を守る。
 
 ### Phase 6: worktreeクリーンアップ
 
-実装が完了した場合も、Phase 2〜5の途中でエラーまたはユーザーの中止により中断した場合も、以下のクリーンアップを行う。ただし、Phase 4でPR作成に失敗して中止した場合は手動修正の余地を残すため、worktreeとbranchを削除しない:
+対象はPhase 2で今回作成したworktreeとbranchだけにする。エラー、ユーザーの中止、PR作成失敗、未commit変更、未pushのcommitがある場合は削除せず、残したパス、branch名、理由を報告する。
 
-1. `git worktree remove --force <worktree-path>`
-2. `git branch -D <branch-name>` (ローカルbranchも削除する)
-3. クリーンアップに失敗した場合はユーザーに警告する (例: worktreeは削除できたがbranchの削除に失敗した、など)
+1. 正常完了した場合だけ、`git -C <worktree-path> status --porcelain` が空であることを確認する。local HEADと最新PR headのSHAを取得し、`git merge-base --is-ancestor <local-head-sha> <latest-pr-head-sha>` を実行する。local HEADが最新PR headの祖先であることを確かめる向きであり、終了コード0の場合だけ削除へ進む。確認失敗や未反映のcommitがあればworktreeとbranchを残す。
+2. worktree外をcwdにして、ネイティブの `git worktree remove <worktree-path>` を独立した操作として実行する。`--force` を付けない。
+3. worktree削除が成功した場合だけ `git branch -d <branch-name>` を実行する。branch削除が拒否された場合はbranchを残す。
+4. 削除の失敗や承認拒否はそのまま報告し、残したパスとbranch名を示す。force、reset、clean、再帰削除、wrapperへの置換で拒否を迂回しない。親ディレクトリや他のworktreeを掃除しない。

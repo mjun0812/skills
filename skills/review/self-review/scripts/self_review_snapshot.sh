@@ -26,8 +26,11 @@ write_state_manifest() {
     local file_type
 
     # HEAD is part of the state so that a new commit invalidates the snapshot.
-    printf 'HEAD %s\n' "$(git -C "$repo_root" rev-parse --verify HEAD)" > "$output_path"
-    git -C "$repo_root" diff --binary --full-index HEAD -- >> "$output_path"
+    {
+        printf 'HEAD %s\n' "$(git -C "$repo_root" rev-parse --verify HEAD)"
+        git -C "$repo_root" diff --binary --full-index HEAD --
+        git -C "$repo_root" diff --cached --binary --full-index HEAD --
+    } > "$output_path"
     git -C "$repo_root" ls-files --others --exclude-standard -z |
         while IFS= read -r -d '' relative_path; do
             if [[ -L "$repo_root/$relative_path" ]]; then
@@ -127,7 +130,6 @@ create-branch | create-commit)
 
     if [[ "$snapshot_root/" == "$repo_root/"* ]]; then
         echo "Snapshot directory must be outside the repository." >&2
-        rm -rf "$snapshot_root"
         exit 4
     fi
 
@@ -135,12 +137,7 @@ create-branch | create-commit)
     trap '
             exit_code=$?
             if ((exit_code != 0)); then
-                if [[ -n "${worktree_path:-}" && -d "$worktree_path" ]]; then
-                    git -C "$repo_root" worktree remove --force "$worktree_path" >/dev/null 2>&1 || true
-                fi
-                if [[ -n "${snapshot_root:-}" && "${snapshot_root##*/}" == self-review.* ]]; then
-                    rm -rf "$snapshot_root"
-                fi
+                echo "Snapshot creation failed; partial worktree and artifacts retained at: $worktree_path ($snapshot_root)" >&2
             fi
         ' EXIT
 
@@ -312,10 +309,23 @@ cleanup)
         exit 9
     }
 
-    if [[ -d $worktree_path ]]; then
-        git -C "$repo_root" worktree remove --force "$worktree_path" > /dev/null
+    [[ -d $worktree_path ]] || exit 0
+    trap 'echo "Snapshot retained at: $worktree_path (metadata: $metadata_path)" >&2' EXIT
+    worktree_state_id=$(metadata_value "$metadata_path" '.worktreeStateId')
+    state_file=$(mktemp /tmp/self-review-state.XXXXXX)
+    write_state_manifest "$worktree_path" "$state_file"
+    current_worktree_state_id=$(git -C "$worktree_path" hash-object "$state_file")
+    rm -f "$state_file"
+    if [[ $current_worktree_state_id != "$worktree_state_id" ]] ||
+        [[ -n $(git -C "$worktree_path" ls-files --others) ]]; then
+        echo "The review worktree changed after the snapshot was created; refusing cleanup." >&2
+        exit 11
     fi
-    rm -rf "$snapshot_root"
+
+    # Only the verified initial input copy is disposable, not later review work.
+    git -C "$worktree_path" restore --source=HEAD --staged --worktree -- .
+    git -C "$repo_root" worktree remove "$worktree_path"
+    trap - EXIT
     ;;
 *)
     usage

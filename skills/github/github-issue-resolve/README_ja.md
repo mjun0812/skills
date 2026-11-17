@@ -34,7 +34,7 @@ GitHub issue番号を起点に、調査、専用worktreeでの実装、PR作成�
 - 1タスクごとに、毎回新規のimplementer SubAgent([templates/implementer-prompt.md](templates/implementer-prompt.md))で実装し、新規のreviewer SubAgent([templates/reviewer-prompt.md](templates/reviewer-prompt.md))で検証する。差し戻しは同一タスクにつき最大2周で、超えたら中止して未解決の指摘を報告する。判定は構造化フィールドとコマンドの実行結果で行い、SubAgentの完了主張は使わない。
 - 全タスク後に、リポジトリのtest・lint・buildコマンド(manifest、タスクランナー、CI設定、READMEの順に探す)を実行する。失敗は最大2周差し戻す。コマンドが見つからなければスキップし、報告に含める。
 - `git-commit`と`github-pr-create`でcommitとPR作成を行い、PR本文に`Closes #N`があることを確認する。
-- issue、branch、PRのURL、diff statを報告する。worktreeとbranchは、中断した場合も含めて削除する。ただしPR作成に失敗した場合は手動修正のため残す。実装中に破壊的なresetは行わず、PRのPhaseまでcommitもpushもしない。
+- issue、branch、PRのURL、diff statを報告する。正常完了し、変更がすべてPR branchへpush済みの場合だけ、今回作ったworktreeを`git worktree remove`で削除する。成功後にlocal branchを`git branch -d`で削除する。エラー、中止、未commit変更、未pushのcommit、削除拒否の場合はworktreeとbranchを残し、パスと理由を報告する。親ディレクトリや他のworktreeは削除せず、拒否された削除を別の方法で実行しない。実装中に破壊的なresetは行わず、PRのPhaseまでcommitとpushを行わない。
 
 ## 依存
 

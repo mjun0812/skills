@@ -42,9 +42,9 @@ allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat
 ### Phase 2: 修正用worktreeの作成
 
 1. `<repo-root>/.tmp/<repo-name>-worktrees/pr-<number>-fix` を専用worktree pathとする。
-2. 同じpathのworktreeが存在し、未commit変更がある場合は中止する。cleanな場合のみ作り直してよい。
+2. 同じpathのworktreeまたはlocal branch `pr-fix/<number>` が既に存在する場合は、cleanでも作り直さず中止し、既存のパスとbranch名を報告する。
 3. PR headとbase branchをfetchする: `git fetch origin +pull/<number>/head:refs/pr-fix/<number>/head` および `git fetch origin +<base-ref-name>:refs/pr-fix/<number>/base`
-4. `git worktree add -B pr-fix/<number> <worktree-path> refs/pr-fix/<number>/head` で、`headRefName` ではなくfetch済みのrefから専用local branchを作ってcheckoutする。`headRefName` はPR head branch名としてpush先の判定に使う。checkout対象にはしない。fork PRや同名branchの衝突で別branchを修正しないよう、worktreeの `HEAD` が `refs/pr-fix/<number>/head` のcommit SHAと一致することを確認する。
+4. `git worktree add -b pr-fix/<number> <worktree-path> refs/pr-fix/<number>/head` で、`headRefName` ではなくfetch済みのrefから専用local branchを作ってcheckoutする。`headRefName` はPR head branch名としてpush先の判定に使う。checkout対象にはしない。fork PRや同名branchの衝突で別branchを修正しないよう、worktreeの `HEAD` が `refs/pr-fix/<number>/head` のcommit SHAと一致することを確認する。今回作成したworktree、branch、一時refを記録する。
 5. Phase 3以降は、すべての操作を `<worktree-path>` 配下で実行する。
 
 ### Phase 3: 問題の検出
@@ -106,9 +106,9 @@ Phase 3で未解決スレッドが検出された場合のみ:
 
 ### Phase 7: クリーンアップ
 
-修正が完了した場合も、途中のエラーまたはユーザーの中止により中断した場合も行う:
+対象は今回の実行で作成したworktreeとbranchだけにする。途中のエラー、ユーザーの中止、未commit変更、未pushのcommitがある場合は削除せず、残したパス、branch名、理由を報告する。
 
-1. Phase 2でfetchした一時refを削除する: `git update-ref -d refs/pr-fix/<number>/head` および `git update-ref -d refs/pr-fix/<number>/base`
-2. `git worktree remove --force <worktree-path>`
-3. `git branch -D pr-fix/<number>`
-4. クリーンアップに失敗した場合は、失敗した項目をユーザーに警告する
+1. 正常完了した場合だけ、`git -C <worktree-path> status --porcelain` が空であることを確認する。local HEADと最新PR headのSHAを取得し、`git merge-base --is-ancestor <local-head-sha> <latest-pr-head-sha>` を実行する。local HEADが最新PR headの祖先であることを確かめる向きであり、終了コード0の場合だけ削除へ進む。確認失敗や未反映のcommitがあればworktreeとbranchを残す。
+2. worktree外をcwdにして、ネイティブの `git worktree remove <worktree-path>` を独立した操作として実行する。`--force` を付けない。
+3. worktree削除が成功した場合だけ `git branch -d pr-fix/<number>` を実行し、今回作成した一時refを削除する: `git update-ref -d refs/pr-fix/<number>/head` および `git update-ref -d refs/pr-fix/<number>/base`。branch削除が拒否された場合はbranchを残す。
+4. 削除の失敗や承認拒否はそのまま報告し、残したパスとbranch名を示す。force、reset、clean、再帰削除、wrapperへの置換で拒否を迂回しない。親ディレクトリや他のworktreeを掃除しない。
