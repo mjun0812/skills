@@ -219,10 +219,10 @@ Hunk: <applied>件を表示, <omitted>件はhunk外, 以前のnote <kept>件を�
 
 ### Phase 6: cleanup
 
-終了、中断、snapshot無効、agent失敗のいずれの場合も、metadataが作成済みなら`cleanup`を実行する。
+終了、中断、snapshot無効、agent失敗のいずれの場合も、metadataが作成済みなら`cleanup`を実行する。scriptは作成時とHEAD、ファイル内容、indexが一致し、新しいuntracked fileもない場合だけ、初期入力のコピーをsnapshot内でrestoreしてからネイティブの`git worktree remove`で削除する。初期入力以外の変更は捨てない。
 
 ```bash
 bash "<skill-dir>/scripts/self_review_snapshot.sh" cleanup --metadata "$metadata_path"
 ```
 
-cleanup対象はscriptが作成した`/tmp/self-review.*`だけとし、元のrepositoryへreset、restore、stash、checkout、cleanを実行しない。hunkのsessionとnote、scriptが開いたherdrのpaneは残す。
+cleanup対象は今回scriptが作成したworktreeだけとする。変更があった場合や削除に失敗した場合はworktreeを残し、パスと理由を報告する。承認拒否をforce、reset、clean、再帰削除、wrapperへの置換で迂回しない。metadata作成前の失敗では部分的なworktreeを残し、scriptが報告したパスを伝える。親ディレクトリとレビュー資料、他のworktreeは削除しない。元のrepositoryへreset、restore、stash、checkout、cleanを実行しない。hunkのsessionとnote、scriptが開いたherdrのpaneは残す。

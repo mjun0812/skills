@@ -70,14 +70,15 @@ allowed-tools: Bash(gh:*), Bash(git:*), Bash(mkdir:*), Bash(rm:*), Bash(cd:*), B
 
 `--skip-trial` 指定時はこのPhaseを省略する。修正方針の実現可能性を一時worktreeで検証する:
 
-1. worktreeを作成する: branch名は `polish/<issue-number>-trial`、パスは `<repo-root>/.tmp/<repo-name>-worktrees/<branch-name>`。既存branch・worktreeと衝突する場合は末尾に `-2`, `-3` を付ける
+1. worktreeを作成する: branch名は `polish/<issue-number>-trial`、パスは `<repo-root>/.tmp/<repo-name>-worktrees/<branch-name>`。既存branch・worktreeと衝突する場合は末尾に `-2`, `-3` を付ける。今回作成したworktreeのパス、branch名、作成時のHEAD SHAを記録する
    - `git worktree add -b <branch-name> <worktree-path> <default-branch>`
 2. worktree内で修正方針の最小実装を行い、テスト方針に沿ったテストを実行して結果を確認する
 3. 検証結果 (実行したテスト・結果・気付いた落とし穴・方針の修正点) を「検証メモ」用に要約する。diff全文はissueに載せず、鍵になる数行のスニペットのみ許可する
 4. 検証で方針の問題が見つかった場合はPhase 3に戻り、意思決定ログを更新する
-5. **worktreeとbranchは検証後必ず削除する**。途中でエラーが出た場合やユーザーが中止した場合も同様:
-   - `git worktree remove --force <worktree-path>` → `git branch -D <branch-name>`
-   - 削除に失敗した場合はユーザーに警告する
+5. 今回作成したworktreeとbranchだけをcleanupの対象にする。試行の編集は検証メモへの要約だけでは保存済みと見なさない。
+   - 正常完了し、`git -C <worktree-path> status --porcelain` が空で、HEADが作成時のSHAと一致する場合だけ削除へ進む。未commit変更や試行中のcommitがあればworktreeとbranchを残す。cleanupのために編集を捨てたり、保存済みと偽って扱ったりしない。
+   - worktree外をcwdにして、ネイティブの `git worktree remove <worktree-path>` を独立した操作として実行する。成功した場合だけ `git branch -d <branch-name>` を実行する。
+   - エラー、中止、削除失敗、承認拒否の場合は削除を進めず、残したパス、branch名、理由を報告する。force、reset、clean、再帰削除、wrapperへの置換で拒否を迂回しない。親ディレクトリや他のworktreeを掃除しない。
 
 ### Phase 5: 本文生成と全文提示
 
