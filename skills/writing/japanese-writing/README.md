@@ -36,6 +36,7 @@ An AI-sounding expression is rewritten when its content can be written out from 
 The references contain the following.
 
 - `references/argument.md`: paragraph and argument structure, rigor, reader load, restraint in rhetoric
+- `references/paragraph.md`: paragraph writing for documents that state claims and grounds
 - `references/rewriting.md`: rules that decide what to fix and what to keep in existing text
 - `references/doc-types.md`: what to keep and what to fix for each of the 13 finer kinds
 - `references/markup.md`: when to use tables, lists, diagrams, or prose

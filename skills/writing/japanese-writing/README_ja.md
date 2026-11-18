@@ -36,6 +36,7 @@ AI臭のある表現は、中身を原文から書けるなら書き直し、書
 referenceの内容は次のとおり。
 
 - `references/argument.md`: 段落と論証の構成、論証の厳密さ、読み手の負荷、演出の抑制
+- `references/paragraph.md`: 主張と根拠を述べる文書のパラグラフライティング
 - `references/rewriting.md`: 既にある文章のどこを直し、どこを残すかを決める規則
 - `references/doc-types.md`: 13の細かい種類ごとの、残す書き方と直すもの
 - `references/markup.md`: 表、箇条書き、図、散文の使い分け
