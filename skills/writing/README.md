@@ -13,4 +13,4 @@ Skills for Japanese prose. The guideline skills carry no arguments and produce n
 
 `japanese-tech-writing` is the baseline for new writing and is what `exhtml`, `exmd`, and `deep-research` defer to for prose style. `cognitive-rhythm-writing` layers on top of it for pieces meant to be read through rather than looked up. `stop-ai-slop-jp` is a revision tool and has no rules for writing from scratch.
 
-`japanese-writing` merges the rules of the other three and bundles every reference, so it works when installed alone. It picks the rules by the kind of document (reference, explanation, or personal account) and does not load the other skills.
+`japanese-writing` merges the rules of `japanese-tech-writing` and `stop-ai-slop-jp`, adds revision rules drawn from yomiyasu, and bundles every reference, so it works when installed alone. It picks the rules by the kind of document (reference, explanation, or personal account) and does not load the other skills.

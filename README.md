@@ -79,7 +79,7 @@ The `cognitive-rhythm-writing` skill is adapted from [k16shikano's original gist
 
 The `japanese-tech-writing` skill is adapted from [k16shikano's original gist](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d). The original is released under the Unlicense.
 
-The `japanese-writing` skill merges the rules of the three skills above and draws on the same originals.
+The `japanese-writing` skill merges the rules of `japanese-tech-writing` and `stop-ai-slop-jp`, and draws on [nanaism/yomiyasu](https://github.com/nanaism/yomiyasu).
 
 ### [docs](skills/docs)
 

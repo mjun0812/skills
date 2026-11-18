@@ -79,7 +79,7 @@ My [Agent Skills](https://agentskills.io).
 
 `japanese-tech-writing` skillは、[k16shikano氏の原文](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)をもとに改変した。原文はUnlicenseで公開されている。
 
-`japanese-writing` skillは、上の3つのskillの規範を1つにまとめたもので、同じ原文を参考にした。
+`japanese-writing` skillは、`japanese-tech-writing`と`stop-ai-slop-jp`の規範を1つにまとめ、[nanaism/yomiyasu](https://github.com/nanaism/yomiyasu)を参考にした。
 
 ### [docs](skills/docs)
 
