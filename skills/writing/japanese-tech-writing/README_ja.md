@@ -4,7 +4,7 @@
 
 日本語の技術文書・書籍原稿の文章規範。規範を定めるskillで、引数を取らず、単体ではファイルを出力しない。agentが日本語で章、草稿、記事、解説文を書く、または推敲するときに読み込み、その規則に従う。
 
-日本語を新しく書くときの基準であり、[`exhtml`](../../docs/exhtml/README_ja.md)と[`exmd`](../../docs/exmd/README_ja.md)は文章の規範としてこれに従う。調べ物ではなく読み物として通読させたい文章には、これに加えて[`cognitive-rhythm-writing`](../cognitive-rhythm-writing/README_ja.md)を使う。既にあるAI臭い文章を直すには[`stop-ai-slop-jp`](../stop-ai-slop-jp/README_ja.md)を使う。
+日本語を新しく書くときの基準であり、[`exhtml`](../../docs/exhtml/README_ja.md)と[`exmd`](../../docs/exmd/README_ja.md)は、`japanese-writing`がinstallされていないときに、文章の規範としてこれに従う。調べ物ではなく読み物として通読させたい文章には、これに加えて[`cognitive-rhythm-writing`](../cognitive-rhythm-writing/README_ja.md)を使う。既にあるAI臭い文章を直すには[`stop-ai-slop-jp`](../stop-ai-slop-jp/README_ja.md)を使う。
 
 ## 使い方
 

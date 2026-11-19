@@ -105,8 +105,8 @@ flowchart LR
     github-pr-create --> git-commit
     github-pr-fix --> git-fix-conflict & github-fix-ci & github-resolve-pr-comment
     cognitive-rhythm-writing --> japanese-tech-writing
-    exhtml -.-> japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
-    exmd -.-> japanese-tech-writing
+    exhtml -.-> japanese-writing & japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
+    exmd -.-> japanese-writing & japanese-tech-writing
 ```
 
 実線は必須の呼び出し、点線は任意の呼び出し(installされていれば読み込む)を表す。

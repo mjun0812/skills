@@ -19,7 +19,8 @@ exhtmlのMarkdown版で、GitHubにそのまま貼って読める形 (GFM) を�
 
 ## 併用推奨
 
-文章の規範は `japanese-tech-writing` skillに従う。インストールされていれば、Skill toolで `japanese-tech-writing` を呼んで読み込む。
+文章の規範は `japanese-writing` skillに従う。インストールされていれば、Skill toolで `japanese-writing` を呼んで読み込む。
+`japanese-writing` が無く `japanese-tech-writing` がインストールされていれば、代わりにSkill toolで `japanese-tech-writing` を呼んで読み込む。
 exmdは構成と記法だけを定め、文章の書き方は再定義しない。
 
 ## 成果物

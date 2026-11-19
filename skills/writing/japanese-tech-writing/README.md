@@ -4,7 +4,7 @@
 
 Writing rules for Japanese technical documents and book manuscripts. It is a guideline skill: it takes no arguments and produces no files. An agent loads it while writing or revising a chapter, draft, article, or explanation in Japanese and follows its rules.
 
-It is the baseline for new Japanese writing and is what [`exhtml`](../../docs/exhtml/README.md) and [`exmd`](../../docs/exmd/README.md) defer to for prose style. For pieces meant to be read through rather than looked up, layer [`cognitive-rhythm-writing`](../cognitive-rhythm-writing/README.md) on top. To clean up AI-sounding text that already exists, use [`stop-ai-slop-jp`](../stop-ai-slop-jp/README.md).
+It is the baseline for new Japanese writing. [`exhtml`](../../docs/exhtml/README.md) and [`exmd`](../../docs/exmd/README.md) defer to it for prose style when `japanese-writing` is not installed. For pieces meant to be read through rather than looked up, layer [`cognitive-rhythm-writing`](../cognitive-rhythm-writing/README.md) on top. To clean up AI-sounding text that already exists, use [`stop-ai-slop-jp`](../stop-ai-slop-jp/README.md).
 
 ## Usage
 

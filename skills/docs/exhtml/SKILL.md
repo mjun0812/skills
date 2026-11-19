@@ -16,8 +16,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash(python3:*), Bash(date:*), Bas
 
 ## 併用推奨
 
-文章の規範は `japanese-tech-writing`, `cognitive-rhythm-writing`, `stop-ai-slop-jp` skillに従う。
-インストールされていれば、Skill toolで `japanese-tech-writing`、`cognitive-rhythm-writing`、`stop-ai-slop-jp` を呼んで読み込む。
+文章の規範は `japanese-writing` skillに従う。インストールされていれば、Skill toolで `japanese-writing` を呼んで読み込む。
+`japanese-writing` が無いときは、`japanese-tech-writing`、`cognitive-rhythm-writing`、`stop-ai-slop-jp` のうちインストールされているものを、Skill toolでそれぞれ呼んで読み込む。
 exhtmlは構成と見た目だけを定め、文章の書き方は再定義しない。
 
 ## 成果物

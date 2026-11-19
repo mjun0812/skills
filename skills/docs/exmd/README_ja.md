@@ -23,7 +23,7 @@
 
 ## 依存
 
-- `japanese-tech-writing` skill: インストールされていれば、文章の規範としてSkill toolで呼ぶ。exmdは構成と記法だけを定める。
+- `japanese-writing` skill: インストールされていれば、文章の規範としてSkill toolで呼ぶ。無ければ `japanese-tech-writing` skillを呼ぶ。exmdは構成と記法だけを定める。
 - `python3`: チェックscriptの実行に使う。
 
 手順の詳細は[SKILL.md](SKILL.md)を参照。
