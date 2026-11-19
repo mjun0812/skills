@@ -23,7 +23,7 @@ It is the Markdown counterpart of [`exhtml`](../exhtml/README.md); use that one 
 
 ## Dependencies
 
-- The `japanese-tech-writing` skill is called for prose style when it is installed. exmd defines only structure and notation.
+- The `japanese-writing` skill is called for prose style when it is installed. Without it, the `japanese-tech-writing` skill is called. exmd defines only structure and notation.
 - `python3` runs the check script.
 
 The full procedure lives in [SKILL.md](SKILL.md).

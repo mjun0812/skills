@@ -25,7 +25,7 @@ The look is fixed by a bundled template; the agent writes only the content. For 
 
 ## Dependencies
 
-- The `japanese-tech-writing`, `cognitive-rhythm-writing`, and `stop-ai-slop-jp` skills are called for prose style when they are installed. exhtml defines only structure and appearance.
+- The `japanese-writing` skill is called for prose style when it is installed. Without it, the installed ones among `japanese-tech-writing`, `cognitive-rhythm-writing`, and `stop-ai-slop-jp` are called. exhtml defines only structure and appearance.
 - `python3` runs the check script.
 
 The full procedure lives in [SKILL.md](SKILL.md).

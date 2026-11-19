@@ -7,6 +7,7 @@
 既にある文章を直すときの規則は、[yomiyasu](https://github.com/nanaism/yomiyasu)を参考にした。
 
 必要な資料はすべて`references/`に同梱しており、単独でinstallしても動作する。
+[`exhtml`](../../docs/exhtml/README_ja.md)と[`exmd`](../../docs/exmd/README_ja.md)は、installされていれば文章の規範としてこのskillを呼ぶ。
 
 ## 使い方
 

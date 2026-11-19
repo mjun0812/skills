@@ -7,6 +7,7 @@ It merges the rules of [`japanese-tech-writing`](../japanese-tech-writing/README
 The rules for revising existing text draw on [yomiyasu](https://github.com/nanaism/yomiyasu).
 
 Every reference it needs is bundled in `references/`, so the skill works when installed alone.
+[`exhtml`](../../docs/exhtml/README.md) and [`exmd`](../../docs/exmd/README.md) call this skill for prose style when it is installed.
 
 ## Usage
 

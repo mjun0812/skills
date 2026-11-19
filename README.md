@@ -105,8 +105,8 @@ flowchart LR
     github-pr-create --> git-commit
     github-pr-fix --> git-fix-conflict & github-fix-ci & github-resolve-pr-comment
     cognitive-rhythm-writing --> japanese-tech-writing
-    exhtml -.-> japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
-    exmd -.-> japanese-tech-writing
+    exhtml -.-> japanese-writing & japanese-tech-writing & cognitive-rhythm-writing & stop-ai-slop-jp
+    exmd -.-> japanese-writing & japanese-tech-writing
 ```
 
 Solid lines are required calls; dotted lines are optional calls, loaded when installed.
