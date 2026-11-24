@@ -8,7 +8,7 @@ skill本体、配布用manifest、英日READMEの一覧を常に一致させる�
 ## ディレクトリ構成
 
 - `skills/<category>/<name>/`: skillの定義。`SKILL.md`、詳細資料、script、templateを含む。
-- `agents/`: agentの定義。
+- `agents/`: agentだけを配布するapm package。`apm.yml`がmanifestで、agentの定義は`.apm/agents/`に置く。
 - `.claude-plugin/`と`.codex-plugin/`: plugin配布用manifest。
 - `.claude/skills/`と`.agents/skills/`: repo内でClaude CodeとCodexにskillを読み込ませるsymlink。`scripts/link_skills.py`が生成し、手で編集しない。
 - `scripts/`: このrepoで管理しているskillのためのscript集。layout、manifestの検証、symlinkの生成、releaseを行う。
@@ -31,6 +31,7 @@ skill本体、配布用manifest、英日READMEの一覧を常に一致させる�
 - 手順の中で他のskillを読み込ませる場合は「Skill toolで`<name>`を呼ぶ」と明示する。`disable-model-invocation: true`のskillは呼べないため、ユーザーに実行を依頼させる。
 - skillを追加、削除、改名した場合は`.claude-plugin/plugin.json`の`skills`一覧を更新する。
 - `.codex-plugin/plugin.json`は`./skills`全体を参照するため、個別skillの追加だけでは変更しない。
+- agentを追加、削除、改名した場合は`.claude-plugin/plugin.json`の`agents`一覧を更新する。
 - 各skillには`README.md`(英語)と`README_ja.md`(日本語)を置き、引数・動作・依存などskill単位の説明はここに書く。categoryの`README.md`にはskillの使い分けと各skill READMEへのリンクだけを書く。
 - skill一覧を変更した場合は`README.md`と`README_ja.md`を同時に更新する。categoryに`README.md`がある場合はそれも更新する。
 - 外部素材をもとにしたskillの出典は両READMEへ記載し、`SKILL.md`には追加しない。

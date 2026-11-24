@@ -13,16 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Verify tag matches plugin manifest versions
+      - name: Verify tag matches manifest versions
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          for manifest in .claude-plugin/plugin.json .codex-plugin/plugin.json; do
-            version=$(python -c "import json; print(json.load(open('$manifest'))['version'])")
-            if [ "$tag" != "$version" ]; then
-              echo "::error file=$manifest::tag v$tag does not match $manifest version $version"
-              exit 1
-            fi
-          done
+          python scripts/check_plugin_manifest.py
+          version=$(python -c "import json; print(json.load(open('.claude-plugin/plugin.json'))['version'])")
+          if [ "$tag" != "$version" ]; then
+            echo "::error::tag v$tag does not match manifest version $version"
+            exit 1
+          fi
 
       - name: Create GitHub Release
         run: gh release create "$GITHUB_REF_NAME" --generate-notes

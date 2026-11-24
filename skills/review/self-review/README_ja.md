@@ -55,7 +55,7 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 
 ## 依存
 
-- agent: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md)、[`code-reviewer-contract`](../../../agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
+- agent: [`code-reviewer-finder`](../../../agents/.apm/agents/code-reviewer-finder.md)、[`code-reviewer-contract`](../../../agents/.apm/agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/.apm/agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
 - `git`、`jq`、bash。`--base`を省略したときのbaseの解決、PRの情報や`--spec`のIssueの取得には`gh`
 - 任意: [`hunk`](https://github.com/modem-dev/hunk)。hunk sessionが無いときにpaneを開くには[Herdr](https://github.com/herdrdev/herdr)
 

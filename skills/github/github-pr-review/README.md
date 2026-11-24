@@ -44,7 +44,7 @@ The spec is resolved from `--spec` or from the issue in the PR's `Closes #N`, wi
 
 ## Dependencies
 
-- Agents: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md), [`code-reviewer-contract`](../../../agents/code-reviewer-contract.md), [`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md). They ship through the Claude Code plugin and apm; with `apm install -t codex` they are converted to Codex agent format and the `tools` restriction is dropped. On other install methods, generic subagents receive the same prompts.
+- Agents: [`code-reviewer-finder`](../../../agents/.apm/agents/code-reviewer-finder.md), [`code-reviewer-contract`](../../../agents/.apm/agents/code-reviewer-contract.md), [`code-reviewer-verifier`](../../../agents/.apm/agents/code-reviewer-verifier.md). They ship through the Claude Code plugin and apm; with `apm install -t codex` they are converted to Codex agent format and the `tools` restriction is dropped. On other install methods, generic subagents receive the same prompts.
 - `git`, `gh`, `jq`, and Python
 
 The full procedure lives in [SKILL.md](SKILL.md).

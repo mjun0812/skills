@@ -3,16 +3,19 @@
 
 - the skills list in .claude-plugin/plugin.json exactly matches the filesystem
 - the skills path in .codex-plugin/plugin.json points to an existing directory
-- the version fields of both plugin.json files match
+- the agents list in .claude-plugin/plugin.json exactly matches agents/.apm/agents/
+- the version fields of both plugin.json files and agents/apm.yml match
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CLAUDE_MANIFEST = ".claude-plugin/plugin.json"
 CODEX_MANIFEST = ".codex-plugin/plugin.json"
+AGENTS_MANIFEST = "agents/apm.yml"
 
 errors: list[str] = []
 
@@ -36,9 +39,26 @@ codex_skills = codex.get("skills", "")
 if not (ROOT / codex_skills.removeprefix("./")).is_dir():
     errors.append(f"{CODEX_MANIFEST}: skills path '{codex_skills}' does not exist")
 
-if claude.get("version") != codex.get("version"):
+actual_agents = {
+    f"./{p.relative_to(ROOT).as_posix()}" for p in ROOT.glob("agents/.apm/agents/*.md")
+}
+listed_agents = set(claude.get("agents", []))
+
+for path in sorted(actual_agents - listed_agents):
+    errors.append(f"{CLAUDE_MANIFEST}: {path} is not listed in agents")
+for path in sorted(listed_agents - actual_agents):
+    errors.append(f"{CLAUDE_MANIFEST}: {path} points to a nonexistent agent")
+
+versions = {
+    CLAUDE_MANIFEST: claude.get("version"),
+    CODEX_MANIFEST: codex.get("version"),
+    AGENTS_MANIFEST: re.search(
+        r"(?m)^version: (.*)$", (ROOT / AGENTS_MANIFEST).read_text()
+    ).group(1),
+}
+if len(set(versions.values())) != 1:
     errors.append(
-        f"version mismatch: {CLAUDE_MANIFEST}={claude.get('version')} {CODEX_MANIFEST}={codex.get('version')}"
+        "version mismatch: " + " ".join(f"{k}={v}" for k, v in versions.items())
     )
 
 if errors:
