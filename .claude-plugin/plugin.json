@@ -43,5 +43,10 @@
     "./skills/writing/japanese-tech-writing",
     "./skills/writing/japanese-writing",
     "./skills/writing/stop-ai-slop-jp"
+  ],
+  "agents": [
+    "./agents/.apm/agents/code-reviewer-contract.md",
+    "./agents/.apm/agents/code-reviewer-finder.md",
+    "./agents/.apm/agents/code-reviewer-verifier.md"
   ]
 }

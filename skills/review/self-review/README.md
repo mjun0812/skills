@@ -55,7 +55,7 @@ Even when a PR exists, nothing is posted to GitHub as a review or comment. To re
 
 ## Dependencies
 
-- Agents: [`code-reviewer-finder`](../../../agents/code-reviewer-finder.md), [`code-reviewer-contract`](../../../agents/code-reviewer-contract.md), [`code-reviewer-verifier`](../../../agents/code-reviewer-verifier.md). They ship through the Claude Code plugin and apm. `apm install -t codex` converts them to Codex agent format, dropping the `tools` restriction. On other install methods, the same prompts are given to generic subagents instead.
+- Agents: [`code-reviewer-finder`](../../../agents/.apm/agents/code-reviewer-finder.md), [`code-reviewer-contract`](../../../agents/.apm/agents/code-reviewer-contract.md), [`code-reviewer-verifier`](../../../agents/.apm/agents/code-reviewer-verifier.md). They ship through the Claude Code plugin and apm. `apm install -t codex` converts them to Codex agent format, dropping the `tools` restriction. On other install methods, the same prompts are given to generic subagents instead.
 - `git`, `jq`, bash, and `gh` to resolve the base when `--base` is omitted and to read the PR or a `--spec` issue
 - Optional: [`hunk`](https://github.com/modem-dev/hunk), and [Herdr](https://github.com/herdrdev/herdr) to open a pane when no Hunk session exists
 

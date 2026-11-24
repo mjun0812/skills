@@ -143,13 +143,13 @@ flowchart LR
 
 ### Agents
 
-github-pr-review skillとself-review skillは、[agents/](agents/) に定義された次の3つのレビュー用agentを使う。
+github-pr-review skillとself-review skillは、[agents/.apm/agents/](agents/.apm/agents/) に定義された次の3つのレビュー用agentを使う。
 
-| agent                                                        | 役割                                                                                                        |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探す                                                            |
-| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
-| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
+| agent                                                                    | 役割                                                                                                        |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探す                                                            |
+| [`code-reviewer-contract`](agents/.apm/agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
+| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
 
 agentはClaude Code pluginとapmで配布される。agentごとの`tools`制限は指定せず、利用できるtoolと権限は各実行環境の設定に従う。OpenCodeでは`mode: subagent`によりsubagentとして読み込まれる。`apm install -t codex` ではCodexのagent形式へ変換される。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 
@@ -228,6 +228,12 @@ apm install mjun0812/skills
 # Install specific skills (persisted to apm.yml / apm.lock.yaml)
 apm install mjun0812/skills --skill git-commit
 
+# Install a single skill by subpath
+apm install mjun0812/skills/skills/git/git-commit
+
+# Install the reviewer agents only (use with skills installed by subpath)
+apm install mjun0812/skills/agents
+
 # Specify target harnesses
 apm install mjun0812/skills -t claude,codex
 
@@ -237,6 +243,16 @@ apm install mjun0812/skills#v1.0.0
 # Update
 apm update
 ```
+
+apm 0.37以降は、このrepoをClaude Code向けにはpluginとして扱う。そのためClaude Codeへのinstall結果は、指定方法とscopeで変わる(apm 0.38.0で確認)。
+
+| 指定方法                     | project scope                                               | user scope (`-g`)                                    |
+| ---------------------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| repo全体                     | pluginとして登録され、skill名は `mjun-skills:<name>` になる | 同じ                                                 |
+| `--skill` / `skills:` で選択 | `.claude/skills/` へcopyされる                              | installされない(`Parked native plugin` と警告が出る) |
+| subpath                      | `.claude/skills/` へcopyされる                              | `~/.claude/skills/` へcopyされる                     |
+
+`-g` でskillを選んでClaude Codeへ入れる場合は、subpathで1件ずつ指定する。subpathの指定ではagentが入らないため、`mjun0812/skills/agents` も指定する。Claude Code以外のtargetには、どの指定方法でもfileがcopyされる。
 
 ### 廃止されたskillの扱い
 

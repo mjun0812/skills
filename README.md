@@ -143,13 +143,13 @@ External tools each skill depends on are listed below. Without an optional tool,
 
 ### Agents
 
-The github-pr-review and self-review skills use the following three reviewer agents defined in [agents/](agents/).
+The github-pr-review and self-review skills use the following three reviewer agents defined in [agents/.apm/agents/](agents/.apm/agents/).
 
-| Agent                                                        | Role                                                                                                                                      |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [`code-reviewer-finder`](agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized                                                      |
-| [`code-reviewer-contract`](agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
-| [`code-reviewer-verifier`](agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
+| Agent                                                                    | Role                                                                                                                                      |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized                                                      |
+| [`code-reviewer-contract`](agents/.apm/agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
+| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
 
 Agents ship through the Claude Code plugin and through apm. They do not specify per-agent `tools` restrictions; available tools and permissions follow each runtime's configuration. In OpenCode, `mode: subagent` makes them load as subagents. With `apm install -t codex` they are converted to Codex agent format. On other install methods the skills fall back to generic subagents given the same prompts.
 
@@ -228,6 +228,12 @@ apm install mjun0812/skills
 # Install specific skills (persisted to apm.yml / apm.lock.yaml)
 apm install mjun0812/skills --skill git-commit
 
+# Install a single skill by subpath
+apm install mjun0812/skills/skills/git/git-commit
+
+# Install the reviewer agents only (use with skills installed by subpath)
+apm install mjun0812/skills/agents
+
 # Specify target harnesses
 apm install mjun0812/skills -t claude,codex
 
@@ -237,6 +243,16 @@ apm install mjun0812/skills#v1.0.0
 # Update
 apm update
 ```
+
+Since apm 0.37, apm treats this repo as a plugin for Claude Code. What gets installed into Claude Code therefore depends on how you specify the dependency and on the scope (confirmed with apm 0.38.0).
+
+| Specification                     | project scope                                                 | user scope (`-g`)                            |
+| --------------------------------- | ------------------------------------------------------------- | -------------------------------------------- |
+| Whole repo                        | Registered as a plugin; skills are named `mjun-skills:<name>` | Same                                         |
+| Selected by `--skill` / `skills:` | Copied into `.claude/skills/`                                 | Not installed (warns `Parked native plugin`) |
+| Subpath                           | Copied into `.claude/skills/`                                 | Copied into `~/.claude/skills/`              |
+
+To install selected skills into Claude Code with `-g`, specify each skill by subpath. A subpath install does not include the agents, so add `mjun0812/skills/agents` as well. For targets other than Claude Code, files are copied regardless of the specification.
 
 ### Removed skills
 

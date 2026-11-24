@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Release: sync the version into both plugin manifests, commit, tag, and push.
+# Release: sync the version into the plugin manifests and agents/apm.yml, commit, tag, and push.
 # Usage: mise run release <version>   (e.g. mise run release 0.2.0)
 set -euo pipefail
 
@@ -24,9 +24,14 @@ import sys
 from pathlib import Path
 
 version = sys.argv[1]
-for manifest in (".claude-plugin/plugin.json", ".codex-plugin/plugin.json"):
+manifests = {
+    ".claude-plugin/plugin.json": (r'"version": "[^"]*"', f'"version": "{version}"'),
+    ".codex-plugin/plugin.json": (r'"version": "[^"]*"', f'"version": "{version}"'),
+    "agents/apm.yml": (r"(?m)^version: .*$", f"version: {version}"),
+}
+for manifest, (pattern, replacement) in manifests.items():
     path = Path(manifest)
-    text, count = re.subn(r'"version": "[^"]*"', f'"version": "{version}"', path.read_text())
+    text, count = re.subn(pattern, replacement, path.read_text())
     if count != 1:
         sys.exit(f"{manifest}: expected exactly one version field, found {count}")
     path.write_text(text)
