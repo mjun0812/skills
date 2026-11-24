@@ -12,47 +12,57 @@
   ページ作成時・更新時に書き換えない。検査scriptがテンプレートとの一致を確認する。
 -->
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap");
+
       :root {
-        --ex-bg: #141414;
-        --ex-surface: #1c1c1c;
-        --ex-ink: #e8e8e8;
-        --ex-ink-body: #d4d4d4;
-        --ex-muted: #9a9a9a;
-        --ex-faint: #6a6a6a;
-        --ex-rule: #333333;
-        --ex-border: #e8e8e8;
-        --ex-link: #6cb2f5;
-        --ex-accent: #ef6a5e;
-        --ex-code-bg: #101010;
-        --ex-diff-ins: #6fbf73;
-        --ex-diff-del: #ef6a5e;
+        --ex-bg: #09090b;
+        --ex-surface: #111114;
+        --ex-ink: #f4f4f5;
+        --ex-ink-body: #d4d4d8;
+        --ex-muted: #a1a1aa;
+        --ex-faint: #71717a;
+        --ex-rule: #27272a;
+        --ex-border: #303036;
+        --ex-link: #f4f4f5;
+        --ex-accent: #38bdf8;
+        --ex-code-bg: #0c0c0f;
+        --ex-code-inline: #18181b;
+        --ex-diff-ins: #4ade80;
+        --ex-diff-del: #f87171;
+        --ex-diff-ins-bg: rgb(74 222 128 / 0.1);
+        --ex-diff-del-bg: rgb(248 113 113 / 0.1);
+        --ex-fig-line: #8f8f99;
         --ex-fig-1: #243d63;
-        --ex-fig-2: #5a4210;
+        --ex-fig-2: #5c4f17;
         --ex-fig-3: #1f4630;
         --ex-fig-4: #452b5e;
         --ex-font-sans:
-          "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", -apple-system,
-          BlinkMacSystemFont, sans-serif;
+          "Geist", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic",
+          -apple-system, BlinkMacSystemFont, sans-serif;
         --ex-font-mono:
-          ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono CJK JP", monospace;
+          "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, "Noto Sans Mono CJK JP", monospace;
         --ex-radius: 0;
         --ex-chip-radius: 999px;
-        --ex-border-w: 1.5px;
+        --ex-border-w: 1px;
       }
       :root[data-theme="light"] {
-        --ex-bg: #faf9f6;
-        --ex-surface: #ffffff;
-        --ex-ink: #111110;
-        --ex-ink-body: #1a1a1a;
-        --ex-muted: #595959;
-        --ex-faint: #a5a5a5;
-        --ex-rule: #dfdfdf;
-        --ex-border: #111110;
-        --ex-link: #2990da;
-        --ex-accent: #d63a2f;
-        --ex-code-bg: #f3f3f0;
-        --ex-diff-ins: #2e7d32;
-        --ex-diff-del: #d63a2f;
+        --ex-bg: #ffffff;
+        --ex-surface: #fafafa;
+        --ex-ink: #09090b;
+        --ex-ink-body: #27272a;
+        --ex-muted: #71717a;
+        --ex-faint: #a1a1aa;
+        --ex-rule: #e4e4e7;
+        --ex-border: #d4d4d8;
+        --ex-link: #09090b;
+        --ex-accent: #0369a1;
+        --ex-code-bg: #fafafa;
+        --ex-code-inline: #f4f4f5;
+        --ex-diff-ins: #15803d;
+        --ex-diff-del: #dc2626;
+        --ex-diff-ins-bg: rgb(21 128 61 / 0.08);
+        --ex-diff-del-bg: rgb(220 38 38 / 0.08);
+        --ex-fig-line: #71717a;
         --ex-fig-1: #d3e2f7;
         --ex-fig-2: #f6e4b8;
         --ex-fig-3: #cfe9d6;
@@ -71,23 +81,26 @@
         color: var(--ex-ink-body);
         font-family: var(--ex-font-sans);
         font-size: 16px;
-        line-height: 1.9;
+        line-height: 1.85;
         font-feature-settings: "palt";
         -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
       }
 
       /* ---- ページ骨格: 左目次 / 本文 / 右用語集 ---------------------------- */
       .ex-page {
         max-width: 1600px;
         margin: 0 auto;
-        padding: 40px 48px 64px;
+        padding: 56px 48px 72px;
       }
       .ex-wrap {
         display: grid;
         grid-template-columns: 220px minmax(0, 1fr) 300px;
-        gap: 48px;
+        gap: 56px;
         align-items: start;
-        margin-top: 56px;
+        margin-top: 40px;
+        padding-top: 40px;
+        border-top: var(--ex-border-w) solid var(--ex-rule);
       }
       .ex-main {
         min-width: 0;
@@ -101,16 +114,10 @@
         top: 24px;
         max-height: calc(100vh - 48px);
         overflow-y: auto;
-        font-size: 14px;
+        font-size: 13.5px;
         line-height: 1.7;
-      }
-      .ex-toc {
-        padding-right: 16px;
-        border-right: var(--ex-border-w) solid var(--ex-rule);
-      }
-      .ex-glossary {
-        padding-left: 24px;
-        border-left: var(--ex-border-w) solid var(--ex-rule);
+        scrollbar-width: thin;
+        scrollbar-color: var(--ex-rule) transparent;
       }
       @media (max-width: 1100px) {
         .ex-page {
@@ -124,8 +131,6 @@
           position: static;
           max-height: none;
           overflow: visible;
-          padding: 0;
-          border: none;
           margin-bottom: 32px;
         }
       }
@@ -138,30 +143,36 @@
         gap: 24px;
       }
       .ex-meta {
-        margin: 8px 0 0;
+        margin: 12px 0 0;
         font-family: var(--ex-font-mono);
-        font-size: 13px;
-        color: var(--ex-muted);
+        font-size: 12.5px;
+        color: var(--ex-faint);
       }
       .ex-lede {
-        margin: 16px 0 0;
-        font-size: 16.5px;
+        margin: 20px 0 0;
+        max-width: 880px;
+        font-size: 17px;
+        color: var(--ex-muted);
       }
       .ex-theme-toggle {
         flex: none;
         font: inherit;
-        font-size: 13px;
+        font-size: 12.5px;
         font-family: var(--ex-font-mono);
-        color: var(--ex-ink);
-        background: var(--ex-surface);
+        color: var(--ex-muted);
+        background: transparent;
         border: var(--ex-border-w) solid var(--ex-border);
         border-radius: var(--ex-radius);
         padding: 4px 12px;
         cursor: pointer;
       }
+      .ex-theme-toggle:hover {
+        color: var(--ex-ink);
+        background: var(--ex-surface);
+      }
       .ex-summary {
-        margin: 24px 0 0;
-        padding: 12px 20px;
+        margin: 28px 0 0;
+        padding: 14px 20px;
         background: var(--ex-surface);
         border: var(--ex-border-w) solid var(--ex-border);
         border-radius: var(--ex-radius);
@@ -171,7 +182,10 @@
         padding-left: 1.2em;
       }
       .ex-footer {
-        margin-top: 64px;
+        margin-top: 72px;
+        padding-top: 16px;
+        border-top: var(--ex-border-w) solid var(--ex-rule);
+        font-family: var(--ex-font-mono);
         font-size: 12px;
         color: var(--ex-faint);
       }
@@ -182,31 +196,40 @@
       h3,
       h4 {
         color: var(--ex-ink);
-        font-weight: 700;
-        line-height: 1.45;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
         margin: 0;
       }
       h1 {
-        font-size: 28px;
-        border-left: 12px solid var(--ex-ink);
-        padding-left: 18px;
+        font-size: 34px;
+        line-height: 1.3;
+        letter-spacing: -0.02em;
       }
       h2 {
-        font-size: 22px;
-        border-left: 10px solid var(--ex-ink);
-        padding-left: 14px;
-        margin: 56px 0 16px;
+        font-size: 23px;
+        margin: 64px 0 20px;
+        padding-bottom: 10px;
+        border-bottom: var(--ex-border-w) solid var(--ex-rule);
       }
       h3 {
         font-size: 18px;
-        margin: 36px 0 12px;
+        margin: 40px 0 12px;
       }
       h4 {
-        font-size: 16px;
-        margin: 24px 0 8px;
+        font-size: 15.5px;
+        margin: 28px 0 8px;
       }
 
       /* ---- 目次 ----------------------------------------------------------- */
+      .ex-toc::before {
+        content: "目次";
+        display: block;
+        margin-bottom: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ex-ink);
+      }
       .ex-toc ol {
         list-style: none;
         margin: 0;
@@ -215,27 +238,33 @@
       .ex-toc li {
         margin: 0;
       }
-      .ex-toc li.ex-toc-h3 {
-        padding-left: 14px;
-        font-size: 13px;
-      }
       .ex-toc a {
         display: block;
-        padding: 2px 0;
+        padding: 4px 0 4px 14px;
+        border-left: 1px solid var(--ex-rule);
         color: var(--ex-muted);
         text-decoration: none;
+      }
+      .ex-toc li.ex-toc-h3 a {
+        padding-left: 28px;
+        font-size: 13px;
       }
       .ex-toc a:hover {
         color: var(--ex-ink);
       }
       .ex-toc a.is-active {
         color: var(--ex-ink);
-        font-weight: 700;
+        border-left: 2px solid var(--ex-accent);
+        padding-left: 13px;
+      }
+      .ex-toc li.ex-toc-h3 a.is-active {
+        padding-left: 27px;
       }
 
       /* ---- 用語集 --------------------------------------------------------- */
       .ex-glossary h2 {
-        font-size: 15px;
+        font-size: 13px;
+        letter-spacing: 0;
         border: none;
         padding: 0;
         margin: 0 0 12px;
@@ -244,14 +273,17 @@
         margin: 0;
       }
       .ex-glossary dt {
-        font-weight: 700;
+        font-weight: 600;
         color: var(--ex-ink);
-        margin-top: 10px;
+        margin-top: 14px;
+      }
+      .ex-glossary dt:first-child {
+        margin-top: 0;
       }
       .ex-glossary dd {
-        margin: 0 0 4px;
-        font-size: 13.5px;
-        color: var(--ex-ink-body);
+        margin: 2px 0 0;
+        font-size: 13px;
+        color: var(--ex-muted);
       }
       .ex-glossary dt:target,
       .ex-glossary dt.is-target {
@@ -259,27 +291,31 @@
       }
       a.ex-term {
         color: inherit;
-        text-decoration: underline dotted var(--ex-muted);
-        text-underline-offset: 3px;
+        text-decoration: underline dotted var(--ex-faint);
+        text-underline-offset: 4px;
       }
 
       /* ---- 本文要素 -------------------------------------------------------- */
       p {
-        margin: 12px 0;
+        margin: 14px 0;
       }
       a {
         color: var(--ex-link);
-        text-decoration: none;
+        text-decoration: underline;
+        text-decoration-color: var(--ex-faint);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
       }
       a:hover {
-        text-decoration: underline;
+        text-decoration-color: var(--ex-accent);
       }
       strong {
         color: var(--ex-ink);
+        font-weight: 600;
       }
       em {
         font-style: normal;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--ex-accent);
       }
       ul,
@@ -287,7 +323,10 @@
         padding-left: 1.4em;
       }
       li {
-        margin: 4px 0;
+        margin: 6px 0;
+      }
+      li::marker {
+        color: var(--ex-faint);
       }
       hr {
         border: none;
@@ -299,24 +338,23 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 14.5px;
-        margin: 16px 0;
-        background: var(--ex-surface);
+        margin: 20px 0;
       }
       th,
       td {
         text-align: left;
-        padding: 8px 12px;
-        border: 1px solid var(--ex-rule);
+        padding: 10px 14px 10px 0;
+        border-bottom: 1px solid var(--ex-rule);
         vertical-align: top;
       }
       th {
-        color: var(--ex-ink);
-        font-weight: 700;
-        border-bottom: var(--ex-border-w) solid var(--ex-border);
+        color: var(--ex-muted);
+        font-size: 13px;
+        font-weight: 500;
       }
       .ex-rowlabel {
         white-space: nowrap;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--ex-ink);
       }
 
@@ -324,20 +362,26 @@
         background: var(--ex-surface);
         border: var(--ex-border-w) solid var(--ex-border);
         border-radius: var(--ex-radius);
-        padding: 14px 18px;
-        margin: 16px 0;
+        padding: 16px 20px;
+        margin: 20px 0;
+      }
+      .ex-card > :last-child {
+        margin-bottom: 0;
       }
       .ex-card-label {
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--ex-muted);
-        letter-spacing: 0.06em;
+        letter-spacing: 0.04em;
         margin-bottom: 6px;
       }
       .ex-grid-2 {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px;
+      }
+      .ex-grid-2 > .ex-card {
+        margin: 0;
       }
       @media (max-width: 720px) {
         .ex-grid-2 {
@@ -346,27 +390,31 @@
       }
       .ex-chip {
         display: inline-block;
-        font-size: 12.5px;
+        font-family: var(--ex-font-mono);
+        font-size: 12px;
         line-height: 1.5;
         padding: 1px 10px;
+        background: var(--ex-surface);
         border: 1px solid var(--ex-border);
         border-radius: var(--ex-chip-radius);
         color: var(--ex-ink);
         margin-right: 4px;
       }
       .ex-note {
-        border-left: 4px solid var(--ex-rule);
-        padding: 4px 16px;
-        margin: 16px 0;
+        border-left: 2px solid var(--ex-border);
+        padding: 2px 18px;
+        margin: 20px 0;
         color: var(--ex-muted);
       }
       .ex-note.is-important {
         border-left-color: var(--ex-accent);
+        background: var(--ex-surface);
+        padding: 6px 18px;
         color: var(--ex-ink-body);
       }
       blockquote.ex-quote {
-        margin: 16px 0;
-        padding: 12px 20px;
+        margin: 20px 0;
+        padding: 14px 20px;
         background: var(--ex-surface);
         border: var(--ex-border-w) solid var(--ex-border);
       }
@@ -375,27 +423,30 @@
       }
       .ex-quote-source {
         font-family: var(--ex-font-mono);
-        font-size: 12.5px;
-        color: var(--ex-muted);
+        font-size: 12px;
+        color: var(--ex-faint);
       }
       details {
-        margin: 12px 0;
+        margin: 20px 0;
+        padding: 10px 18px;
+        border: var(--ex-border-w) solid var(--ex-border);
       }
       summary {
         cursor: pointer;
         color: var(--ex-ink);
-        font-weight: 700;
+        font-size: 14.5px;
+        font-weight: 600;
       }
 
       /* ---- 図 ------------------------------------------------------------- */
       .ex-figure {
-        margin: 24px 0;
+        margin: 28px 0;
       }
       .ex-figure-frame {
-        background: var(--ex-surface);
-        border: var(--ex-border-w) solid var(--ex-border);
+        background: var(--ex-code-bg);
+        border: 1px dotted var(--ex-faint);
         border-radius: var(--ex-radius);
-        padding: 20px;
+        padding: 24px;
         overflow-x: auto;
         color: var(--ex-ink);
       }
@@ -407,8 +458,8 @@
         font-family: var(--ex-font-sans);
       }
       .ex-figure figcaption {
-        margin-top: 8px;
-        font-size: 13.5px;
+        margin-top: 10px;
+        font-size: 13px;
         color: var(--ex-muted);
       }
       .ex-defs {
@@ -416,27 +467,28 @@
         width: 0;
         height: 0;
         overflow: hidden;
-        color: var(--ex-ink);
+        color: var(--ex-fig-line);
       }
-      /* 手描きSVGの部品。線と塗りは currentColor でテーマに追従する */
+      /* 手描きSVGの部品。線は --ex-fig-line、文字は currentColor でテーマに追従する */
       .fig-node {
         fill: var(--ex-surface);
-        stroke: currentColor;
-        stroke-width: 1.5;
+        stroke: var(--ex-fig-line);
+        stroke-width: 1;
       }
       .fig-node.is-emphasis {
-        stroke-width: 3;
+        stroke: currentColor;
+        stroke-width: 2;
       }
       .fig-group {
         fill: none;
-        stroke: currentColor;
+        stroke: var(--ex-fig-line);
         stroke-width: 1;
-        stroke-dasharray: 6 4;
+        stroke-dasharray: 2 4;
       }
       .fig-edge {
         fill: none;
-        stroke: currentColor;
-        stroke-width: 1.5;
+        stroke: var(--ex-fig-line);
+        stroke-width: 1;
         marker-end: url(#ex-arrow);
       }
       .fig-edge.is-dashed {
@@ -467,7 +519,7 @@
         text-align: center;
         padding: 6px 8px;
       }
-      /* 図のカテゴリ色。塗りにだけ使い、線と文字は currentColor のまま。意味は figcaption に書く */
+      /* 図のカテゴリ色。塗りにだけ使う。意味は figcaption に書く */
       .fig-node.c1 {
         fill: var(--ex-fig-1);
       }
@@ -519,25 +571,39 @@
 
       /* ---- コード ---------------------------------------------------------- */
       pre {
-        margin: 16px 0;
-        padding: 14px 16px;
+        margin: 20px 0;
+        padding: 16px 18px;
         background: var(--ex-code-bg);
-        border: 1px solid var(--ex-rule);
+        border: 1px solid var(--ex-border);
         border-radius: var(--ex-radius);
         overflow-x: auto;
         font-family: var(--ex-font-mono);
-        font-size: 13.5px;
-        line-height: 1.65;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      pre[data-lang]::before {
+        content: attr(data-lang);
+        display: block;
+        position: sticky;
+        left: 0;
+        width: fit-content;
+        margin-bottom: 10px;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--ex-faint);
       }
       pre code {
         font-family: inherit;
+        font-size: 1em;
         background: none;
+        border: none;
         padding: 0;
       }
       code {
         font-family: var(--ex-font-mono);
-        font-size: 0.9em;
-        background: var(--ex-code-bg);
+        font-size: 0.875em;
+        background: var(--ex-code-inline);
+        border: 1px solid var(--ex-rule);
         padding: 1px 5px;
       }
       pre.shiki,
@@ -554,11 +620,22 @@
         font-style: var(--shiki-light-font-style);
         font-weight: var(--shiki-light-font-weight);
       }
+      /* 行の背景をpreの左右の端まで敷く。長い行では行の幅に合わせて伸びる */
+      pre.ex-diff .ins,
+      pre.ex-diff .del {
+        display: inline-block;
+        vertical-align: top;
+        min-width: calc(100% + 36px);
+        margin: 0 -18px;
+        padding: 0 18px;
+      }
       pre.ex-diff .ins {
         color: var(--ex-diff-ins);
+        background: var(--ex-diff-ins-bg);
       }
       pre.ex-diff .del {
         color: var(--ex-diff-del);
+        background: var(--ex-diff-del-bg);
       }
       pre.ex-diff .ins::before {
         content: "+ ";
@@ -582,15 +659,21 @@
         :root[data-theme="dark"] {
           --ex-bg: #ffffff;
           --ex-surface: #ffffff;
-          --ex-ink: #111110;
-          --ex-ink-body: #1a1a1a;
-          --ex-muted: #595959;
-          --ex-faint: #a5a5a5;
-          --ex-rule: #dfdfdf;
-          --ex-border: #111110;
-          --ex-link: #2990da;
-          --ex-accent: #d63a2f;
-          --ex-code-bg: #f3f3f0;
+          --ex-ink: #09090b;
+          --ex-ink-body: #27272a;
+          --ex-muted: #71717a;
+          --ex-faint: #a1a1aa;
+          --ex-rule: #e4e4e7;
+          --ex-border: #d4d4d8;
+          --ex-link: #09090b;
+          --ex-accent: #0369a1;
+          --ex-code-bg: #fafafa;
+          --ex-code-inline: #f4f4f5;
+          --ex-diff-ins: #15803d;
+          --ex-diff-del: #dc2626;
+          --ex-diff-ins-bg: rgb(21 128 61 / 0.08);
+          --ex-diff-del-bg: rgb(220 38 38 / 0.08);
+          --ex-fig-line: #71717a;
           --ex-fig-1: #d3e2f7;
           --ex-fig-2: #f6e4b8;
           --ex-fig-3: #cfe9d6;
@@ -619,8 +702,6 @@
         .ex-glossary {
           position: static;
           max-height: none;
-          border: none;
-          padding: 0;
           page-break-inside: avoid;
         }
         .ex-figure,
@@ -629,14 +710,11 @@
         table {
           page-break-inside: avoid;
         }
-        a {
-          color: inherit;
-        }
         h2 {
           page-break-after: avoid;
         }
       }
-    </style>
+</style>
     <!-- exhtml:template-end -->
 
     <!-- exhtml:mathjax 数式が無いページでは、このコメントから /exhtml:mathjax までを削除する -->
@@ -777,17 +855,18 @@
           if (links.get(id)) links.get(id).classList.add("is-active");
           current = id;
         };
-        const observer = new IntersectionObserver(
-          (entries) => {
-            const visible = entries
-              .filter((e) => e.isIntersecting)
-              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-            if (visible.length > 0) setActive(visible[0].target.id);
-          },
-          { rootMargin: "0px 0px -70% 0px", threshold: 0 },
-        );
-        headings.forEach((h) => observer.observe(h));
-        setActive(headings[0].id);
+        const update = () => {
+          const line = window.innerHeight * 0.3;
+          let id = headings[0].id;
+          for (const h of headings) {
+            if (h.getBoundingClientRect().top > line) break;
+            id = h.id;
+          }
+          setActive(id);
+        };
+        window.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        update();
       })();
     </script>
     <!-- /exhtml:runtime -->
@@ -801,16 +880,20 @@
           const lang = (code.className.match(/language-([\w-]+)/) || [])[1];
           if (!lang || lang === "plaintext" || lang === "text") continue;
           const pre = code.parentElement;
+          pre.dataset.lang = lang;
           try {
             const html = await codeToHtml(code.textContent, {
               lang,
-              themes: { light: "github-light", dark: "tokyo-night" },
+              themes: { light: "github-light", dark: "github-dark" },
               defaultColor: false,
             });
             const tmp = document.createElement("div");
             tmp.innerHTML = html;
             const rendered = tmp.firstElementChild;
-            if (rendered) pre.replaceWith(rendered);
+            if (rendered) {
+              rendered.dataset.lang = lang;
+              pre.replaceWith(rendered);
+            }
           } catch (_) {
             /* 未対応言語はそのまま表示する */
           }
@@ -857,27 +940,27 @@
               background: cssVar("--ex-surface"),
               primaryColor: cssVar("--ex-surface"),
               primaryTextColor: cssVar("--ex-ink"),
-              primaryBorderColor: cssVar("--ex-ink"),
+              primaryBorderColor: cssVar("--ex-fig-line"),
               secondaryColor: cssVar("--ex-bg"),
               secondaryTextColor: cssVar("--ex-ink"),
-              secondaryBorderColor: cssVar("--ex-ink"),
+              secondaryBorderColor: cssVar("--ex-fig-line"),
               tertiaryColor: cssVar("--ex-bg"),
               tertiaryTextColor: cssVar("--ex-ink"),
-              tertiaryBorderColor: cssVar("--ex-ink"),
-              lineColor: cssVar("--ex-ink"),
+              tertiaryBorderColor: cssVar("--ex-fig-line"),
+              lineColor: cssVar("--ex-fig-line"),
               textColor: cssVar("--ex-ink"),
               mainBkg: cssVar("--ex-surface"),
-              nodeBorder: cssVar("--ex-ink"),
+              nodeBorder: cssVar("--ex-fig-line"),
               clusterBkg: cssVar("--ex-bg"),
               clusterBorder: cssVar("--ex-muted"),
               edgeLabelBackground: cssVar("--ex-surface"),
               actorBkg: cssVar("--ex-surface"),
-              actorBorder: cssVar("--ex-ink"),
+              actorBorder: cssVar("--ex-fig-line"),
               actorTextColor: cssVar("--ex-ink"),
-              signalColor: cssVar("--ex-ink"),
+              signalColor: cssVar("--ex-fig-line"),
               signalTextColor: cssVar("--ex-ink"),
               noteBkgColor: cssVar("--ex-bg"),
-              noteBorderColor: cssVar("--ex-ink"),
+              noteBorderColor: cssVar("--ex-fig-line"),
               noteTextColor: cssVar("--ex-ink"),
               attributeBackgroundColorOdd: cssVar("--ex-surface"),
               attributeBackgroundColorEven: cssVar("--ex-bg"),
