@@ -145,11 +145,11 @@ flowchart LR
 
 github-pr-review skillとself-review skillは、[agents/.apm/agents/](agents/.apm/agents/) に定義された次の3つのレビュー用agentを使う。
 
-| agent                                                                    | 役割                                                                                                        |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探す                                                            |
-| [`code-reviewer-contract`](agents/.apm/agents/code-reviewer-contract.md) | specのrequirements・boundary・acceptance criteriaと変更との食い違いを探す。specを解決できた場合だけ起動する |
-| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | finderとcontractが出した候補を1件ずつ反証し、`confirmed` の候補だけを残す                                   |
+| agent                                                                    | 役割                                                                                                       |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | 変更全体から、確定前に解消すべき問題の候補を探し、再現のコマンド列を添える                                 |
+| [`code-reviewer-claim`](agents/.apm/agents/code-reviewer-claim.md)       | PR本文が述べる検証の結果、範囲、影響範囲を実コードで確かめ、説明と実際の結果との食い違いを探す             |
+| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | finderとclaimが出した候補を1件ずつ実行して反証し、`confirmed` の候補を再現できたものと未証明のものに分ける |
 
 agentはClaude Code pluginとapmで配布される。agentごとの`tools`制限は指定せず、利用できるtoolと権限は各実行環境の設定に従う。OpenCodeでは`mode: subagent`によりsubagentとして読み込まれる。`apm install -t codex` ではCodexのagent形式へ変換される。その他の方法でinstallした場合、skillは同じpromptを汎用のSubAgentへ渡して代替する。
 

@@ -2,9 +2,9 @@
 
 [English](README.md)
 
-GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿する。投稿前に内容を確認し、`--auto`を付けると確認せずに投稿する。PR headのsnapshot worktreeを対象に、重点の異なる2つのFinder SubAgentと、specがあればContract SubAgentが指摘候補を探す。すべての候補は独立したVerifier SubAgentが反証を試み、確定した指摘だけを投稿する。self reviewにも対応する。
+GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿する。投稿前に内容を確認し、`--auto`を付けると確認せずに投稿する。PR headのsnapshot worktreeを対象に、重点の異なる2つのFinder SubAgentが指摘候補を探し、Claim SubAgentがPR本文の主張を実コードで確かめる。すべての候補は独立したVerifier SubAgentが実コードを実行して反証を試みる。再現できた指摘を要修正事項として、再現はできないが反証も無い指摘を未証明の指摘として投稿する。self reviewにも対応する。
 
-specは`--spec`、またはPR本文の`Closes #N`のIssueから解決し、Issue本文の後にmaintainer (owner、member、collaborator) のコメントを加える。どちらも無ければContract軸をスキップする。スキップしたことはPRへ投稿せず、チャットの報告にだけ書く。自分の変更を投稿せずに自己採点するには`self-review`を使う。
+自分の変更を投稿せずに自己採点するには`self-review`を使う。
 
 ## 使い方
 
@@ -13,27 +13,28 @@ specは`--spec`、またはPR本文の`Closes #N`のIssueから解決し、Issue
 ```text
 /github-pr-review
 /github-pr-review 123
-/github-pr-review 123 --spec 45
 /github-pr-review 123 --auto
 ```
 
 ## 引数
 
-| 引数             | 効果                                                               |
-| ---------------- | ------------------------------------------------------------------ |
-| `PR number`      | レビューするPR。省略時は現在のbranchのPR。無ければ確認する。       |
-| `--spec <issue>` | Contract軸のspecとして使うIssue。PRの`Closes`のIssueより優先する。 |
-| `--auto`         | 投稿前の確認を省き、そのまま投稿する。                             |
+| 引数        | 効果                                                         |
+| ----------- | ------------------------------------------------------------ |
+| `PR number` | レビューするPR。省略時は現在のbranchのPR。無ければ確認する。 |
+| `--auto`    | 投稿前の確認を省き、そのまま投稿する。                       |
 
 ## 動作
 
 - 1回の実行で扱うPRは1件だけ。PR headを専用worktreeにdetachedでcheckoutし、レビューはこのsnapshotだけを読む。
 - レビュー範囲は`scripts/resolve_review_range.sh`が決める。base branchとのmerge-baseからPR headまでを対象にし、未mergeの別のopen PRに積み上げたPRでは、そのPRのheadから先だけを対象にする。diffなどの大きな入力は一時directoryのファイルでSubAgentへ渡す。
-- 候補は同じ場所または同じ根本原因のものを統合した後、1件ずつ検証する。`refuted`と`uncertain`は破棄する。確定はFinder、Contractの順で行い、Contractは先に確定した指摘と重複するものを破棄する。
+- 最初に、PRのタイトルと本文、commit、diffから変更の意図を2〜3文で言い直し、SubAgentへ渡す。指摘は、この意図が破られるかどうかで判定される。
+- Finder、Claim、Verifierは、テストや再現コードを実行してよい。実行は、各SubAgentがsnapshotから一時ディレクトリへ書き出した実行用コピーで行い、snapshotのファイルは変更しない。Finderは指摘ごとに、そのまま実行できる再現のコマンド列と出力を添える。
+- Claimは、PR本文が述べる検証の結果、範囲、影響範囲を実行して確かめ、説明と実際の結果との食い違いを候補にする。説明とコードのどちらが正しいかは判定しない。
+- 候補は同じ場所または同じ根本原因のものを統合した後、1件ずつ検証する。Verifierは再現のコマンド列を自分で実行し直す。`refuted`と`uncertain`は破棄し、件数だけをチャットへ報告する。確定した指摘のうち、Verifierが再現できたものを要修正事項、コードを読んで到達を確かめただけのものを未証明の指摘に分ける。確定はFinder、Claimの順で行い、Claimは先に確定した指摘と重複するものを破棄する。
 - SubAgentが起動できない、または結果を返さない場合は、投稿、dismiss、resolveをせずに中止し、原因を報告する。diffを自分で読んで代替レビューはしない。
 - 失敗したCIの結果はFinderの証拠として使い、レポートの概要にも記載する。
 - 同じPRに以前投稿した指摘と返信を、resolve済みも含めて`scripts/fetch_prior_findings.sh`で取得し、SubAgentへ渡す。見送りか却下で決着した指摘と同じ根本原因の候補は、判断の前提が変わったことを示せない限り検証の前に破棄し、蒸し返さない。
-- レポートの言語(`ja`または`en`)は、PRのタイトルと本文から`scripts/render_review.py`が決める。同scriptがfindings JSON(形式は`references/findings.md`)からレビュー本文とinline commentを生成する。Verdictは確定指摘が1件以上なら`REQUEST_CHANGES`、0件なら`APPROVE`になる。
+- レポートの言語(`ja`または`en`)は、PRのタイトルと本文から`scripts/render_review.py`が決める。同scriptがfindings JSON(形式は`references/findings.md`)からレビュー本文とinline commentを生成する。Verdictは要修正事項が1件以上なら`REQUEST_CHANGES`、0件なら`APPROVE`になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。要修正事項には、再現のコマンド列と出力を載せる。
 - 投稿前に、Verdict、レポート本文、inline comment、dismiss・resolveの件数を提示し、投稿・修正して再提示・キャンセルを確認する。`--auto`ではこの確認を省く。
 - 投稿は`scripts/post_review.sh`で行う。diffに含まれない`(path, line, side)`のinline commentは除外される。本文とcommentはファイルで渡す。
 - self reviewでは、自分のPRにはapproveやrequest changesを投稿できないため、`COMMENT` eventで投稿する。本文のVerdict表記は変えない。
@@ -44,7 +45,7 @@ specは`--spec`、またはPR本文の`Closes #N`のIssueから解決し、Issue
 
 ## 依存
 
-- agent: [`code-reviewer-finder`](../../../agents/.apm/agents/code-reviewer-finder.md)、[`code-reviewer-contract`](../../../agents/.apm/agents/code-reviewer-contract.md)、[`code-reviewer-verifier`](../../../agents/.apm/agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
+- agent: [`code-reviewer-finder`](../../../agents/.apm/agents/code-reviewer-finder.md)、[`code-reviewer-claim`](../../../agents/.apm/agents/code-reviewer-claim.md)、[`code-reviewer-verifier`](../../../agents/.apm/agents/code-reviewer-verifier.md)。Claude Code pluginとapmで配布される。`apm install -t codex`ではCodexのagent形式へ変換され、tools制限は失われる。その他の方法でinstallした場合は、同じpromptを汎用のSubAgentへ渡して代替する。
 - `git`、`gh`、`jq`、Python
 
 手順の詳細は[SKILL.md](SKILL.md)を参照。

@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-現在のbranchをpushしてPull Requestを作成する。タイトルと本文は、base branchとの差分とcommitから生成する。本文には概要と検証を必ず書き、変更内容と設計判断は書くことがあるときだけ置く。labelはrepositoryの既存labelから選び、assigneeは常に`@me`にする。
+現在のbranchをpushしてPull Requestを作成する。タイトルと本文は、base branchとの差分とcommitから生成する。本文には概要と検証を必ず書き、変更内容、範囲、設計判断、影響範囲は書くことがあるときだけ置く。labelはrepositoryの既存labelから選び、assigneeは常に`@me`にする。
 
 Issueの起票や磨き上げには[`github-issue-create`](../github-issue-create/README_ja.md)を使う。Issueの実装からPR作成までを一気通貫で行うには、最後に本skillを呼ぶ[`github-issue-resolve`](../github-issue-resolve/README_ja.md)を使う。
 
@@ -32,6 +32,7 @@ Issueの起票や磨き上げには[`github-issue-create`](../github-issue-creat
 - 現在のbranchのPRが既にある場合は、URLと状態を表示して中止する。
 - repositoryのPR templateがあれば見出しと順序をそのまま使い、書くことが無い項目には`該当なし`と明記する。無ければ`references/pr_template.md`または`pr_template_ja.md`を使い、任意の見出しは書くことが無ければ省く。
 - 1つの事実は1つの見出しにだけ書く。変更内容には変わる挙動を、設計判断には他の方法を選べた箇所の理由を書く。
+- 既存の関数、型、データ形式、設定、コマンドの挙動を変えた場合は、それをdiffの外から使う箇所を検索し、影響範囲の表に書く。このPRで扱わないと決めた関連作業は、範囲に書く。
 - 本文はcommit一覧とdiffを根拠に書く。推測で事実を補わず、public repositoryへ投稿するときはprivate repositoryの情報を書かない。
 - 検証と複数の設計判断は表に、ログは`<details>`に書く。破壊的変更は変更内容の「破壊的変更:」で始まる行に、未検証の範囲は検証の表の下の「未検証:」で始まる1文に書く。
 - 文章だけで伝わりにくい箇所には、`references/visuals.md`に従い、`diff`やtreeのコードブロック、Mermaid、画像を加える。

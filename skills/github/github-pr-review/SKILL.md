@@ -1,7 +1,7 @@
 ---
 name: github-pr-review
 description: >-
-  GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿するSkill。`--spec` またはPRに紐づくIssueからspecを解決できる場合は、specとの整合も検査する。self reviewにも対応する。
+  GitHubのPull Requestを敵対的にコードレビューし、検証を通過した指摘だけをレビューレポートとinline commentで投稿するSkill。self reviewにも対応する。
   ユーザーが「このPRをレビューして」のように依頼したら使うこと。
 allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash(jq:*), Bash(mkdir:*), Bash(mktemp:*), Bash(rm:*), Bash(bash:*), Bash(python:*)
 ---
@@ -9,19 +9,18 @@ allowed-tools: Task, Read, Write, AskUserQuestion, Bash(git:*), Bash(gh:*), Bash
 # Pull Request Review
 
 PRのhead commitをworktreeにチェックアウトし、重点の異なる2つのFinder SubAgentが指摘候補を探す。
-Finder SubAgentが出した指摘候補は、1件ずつVerifier SubAgentが反証を試み、
-検証を通過したものだけを要修正事項としてレビューレポートとinline commentに投稿する。
-spec sourceを解決できる場合は、Contract SubAgentがspecとの不整合の指摘候補を第2の軸として探し、同じくVerifierの検証を経たものだけをレビューに含める。
+Claim SubAgentは、PR本文が述べる検証の結果、範囲、影響範囲を実コードで確かめ、説明と実際の結果との食い違いを第2の軸として探す。
+指摘候補は、1件ずつVerifier SubAgentが実コードを実行して反証を試みる。
+再現できた指摘を要修正事項として、再現はできないが反証も無い指摘を未証明の指摘として、レビューレポートとinline commentに投稿する。
 
 ## Arguments
 
 - `PR number`: レビューするPR番号 (optional, defaults to PR for current branch)
-- `--spec <issue-number>`: Contract reviewに使うspecのGitHub Issue番号。指定時は関連Issueより優先する
 - `--auto`: Phase 2.4の投稿前の確認を省き、生成したレビューをそのまま投稿する
 
 ## Task
 
-1回の実行で扱うPRは1件だけとする。複数のPRのレビューを依頼された場合は、同じcontextで並行させず、1件のPhase 4が終わってから次のPRを始める。並行させると、別のPRのdiffやcontractが入力に混ざる。
+1回の実行で扱うPRは1件だけとする。複数のPRのレビューを依頼された場合は、同じcontextで並行させず、1件のPhase 4が終わってから次のPRを始める。並行させると、別のPRのdiffや本文を入力として渡してしまう。
 
 ### Phase 1: 準備
 
@@ -50,20 +49,6 @@ bash "<skill-dir>/scripts/fetch_prior_findings.sh" --repo "<owner/repo>" --pr "<
 
 出力はPhase 1.3で `<review-temp-dir>/prior-findings.json` に書き出す。このうち `is_resolved` がfalseのthread IDを `<existing-thread-ids>`、レビューIDを `<existing-review-ids>` として保持する。
 
-さらに、Contract review用のspec contractを次の順で解決する。
-
-1. `--spec` が指定されていれば、そのIssueを使う
-2. PR本文に `Closes #N` があれば、Issue #Nを使う
-
-Issueは `gh issue view <N> --json title,body,comments` で取得し、次をこの順に並べてspec contractとする。
-
-- 本文のcontractセクション群 (Context〜Out of Scope、Decision Log)。contractセクション群を持たない普通のIssueでは本文全体
-- `authorAssociation` が `OWNER` / `MEMBER` / `COLLABORATOR` のコメント。投稿日時と投稿者を付け、古い順に並べる。本文の後に合意した判断やscopeの変更は、ここに記録されていることが多い
-
-明文に無い期待を検査しない原則は変わらないため、記述の薄いIssueではContract指摘は自然に少なくなる。
-
-どちらでも解決できない場合はContract軸をスキップする。スキップしたことはレポート本文にもinline commentにも書かず、Phase 4のチャット報告にだけ含める。解決したspec contractは、Phase 1.3で `<review-temp-dir>/spec-contract.md` に書き出す。
-
 他のレビュワーのレビューやthreadは参照しない。初回レビューではどちらのID一覧も空になる。
 
 #### Phase 1.3: worktreeとレビュー環境の準備
@@ -84,16 +69,18 @@ Issueは `gh issue view <N> --json title,body,comments` で取得し、次をこ
 
    標準出力のJSONの `baseline` を `<baseline-sha>` として保持する。baselineはbase branchとのmerge-baseで、base branchに後から入った変更をdiffに含めない。PRのcommitに未mergeの別のopen PRのheadが含まれる積み上げPRでは、そのheadがbaselineになる。このとき `dependencyPr` のPRの変更はレビュー対象外とし、その旨を `<pr-title-and-body>` の末尾に1行追記してSubAgentへ伝える。
 
-7. spec contractを解決できた場合は `<review-temp-dir>/spec-contract.md` に書き出す。
-8. Phase 1.2で取得した以前の指摘を `<review-temp-dir>/prior-findings.json` に書き出す。
+7. Phase 1.2で取得した以前の指摘を `<review-temp-dir>/prior-findings.json` に書き出す。
 
 ### Phase 2: レビュー
 
-#### Phase 2.1: FinderとContract SubAgentの実行
+#### Phase 2.1: FinderとClaim SubAgentの実行
 
-`code-reviewer-finder` を2つ並列に起動する。`<spec-contract>` を解決できた場合は `code-reviewer-contract` も並列に起動する。
-Finderはmergeを止める問題の指摘候補を、Contractはspec contractとの食い違い (未充足・boundary違反・scope creep) の指摘候補を収集する。specとコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
-レビュー方法、実行制約、出力形式はそれぞれのagent定義に従う。
+最初に、変更の意図を自分の言葉で言い直す。PRのタイトルと本文、`commits.txt`、`diff.patch`から、このPRが実現しようとしていることと、変えないと述べていることを2〜3文にまとめ、`<intent>`とする。指摘は、この意図が破られるかどうかで判定される。
+
+`code-reviewer-finder` を2つと、`code-reviewer-claim` を1つ、並列に起動する。
+Finderはmergeを止める問題の指摘候補を、ClaimはPR本文の主張と実際の結果との食い違いの指摘候補を収集する。Claimは、説明とコードのどちらが正しいかは判定せず、どちらかを直して一致させることを完了条件にする。
+FinderとClaimには、テストや再現コードの実行を許可する。実行は各SubAgentがsnapshotから書き出した実行用コピーで行わせ、snapshotのファイルは変更させない。
+レビュー方法、実行の規則、出力形式はそれぞれのagent定義に従う。
 次のprompt templateを使用する。
 
 ```text
@@ -107,6 +94,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - 対象種別: GitHub PR
 - PR番号: <pr-number>
 - 変更目的・説明: <pr-title-and-body>
+- 変更の意図: <intent>
 - 変更ファイル一覧: <review-temp-dir>/changed-files.txt
 - diff: <review-temp-dir>/diff.patch
 - 変更履歴: <review-temp-dir>/commits.txt
@@ -116,7 +104,6 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - snapshot識別子: <head-sha>
 - 追加証拠: <ci-evidence>
 - 以前の指摘と対応: <review-temp-dir>/prior-findings.json
-- spec contract: <spec-contract>
 
 ファイルで渡した入力は、レビューを始める前に全文を読む。
 ```
@@ -125,9 +112,8 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 
 - Finder 1: `Finder` / 期待される振る舞い、契約、不変条件、呼び出し経路、状態・データの流れ、同時に更新すべきdiff外の箇所
 - Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
-- Contract: `Contract` / spec contractとの整合 (逸脱、未充足、boundary違反、scope creep)
+- Claim: `Claim` / PR本文が述べる検証の結果、範囲、影響範囲と、実際の変更との食い違い
 
-`<spec-contract>` にはContract起動時のみ `<review-temp-dir>/spec-contract.md` を指定し、Finderでは `なし` とする。
 `<change-summary>` には `<review-temp-dir>/diff.patch` の変更ファイル数・追加行数・削除行数を、`<ci-evidence>` には失敗したCI結果のサマリとcheckの名前・URL・関連ログを指定する。
 該当するCI結果がなければ `なし` とする。
 
@@ -135,11 +121,12 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 
 #### Phase 2.2: 候補の選別と検証
 
-各SubAgentの出力から候補を選別し、候補ごとに独立した `code-reviewer-verifier` を並列に起動して反証を試みる。verdictが `confirmed` の候補だけを確定指摘とし、`refuted` / `uncertain` は破棄する。候補が0件ならこのステップをスキップする。
+各SubAgentの出力から候補を選別し、候補ごとに独立した `code-reviewer-verifier` を並列に起動して反証を試みる。verdictが `confirmed` の候補だけを確定指摘とし、`refuted` / `uncertain` は破棄して、verdictごとの件数を数える。確定指摘は、verifierの `証明` で2つに分ける。`再現` の指摘は要修正事項とし、`追跡` の指摘は未証明の指摘とする。候補が0件ならこのステップをスキップする。
 
 - 各SubAgentが出力した指摘をすべて候補とする。verifierの起動前に、同じ `filepath:line` または同じ根本原因の候補を1件にまとめる。重複統合はこの1回だけとする
 - 候補を `prior-findings.json` の以前の指摘と照合する。同じ根本原因の以前の指摘が見送りか却下で決着している候補は、その判断の前提が対象変更で崩れたことを候補自身が `file:line` で示していない限り、verifierの前で破棄する。修正済みとされた指摘と同じ根本原因の候補は、修正が不十分だという主張としてverifierへ渡す。照合した以前の指摘と返信は `<related-thread>` としてverifierの反証材料にする
-- Contract候補は、先に確定したFinder由来の指摘と同じ行または同じ根本原因のものを破棄する (要修正事項を優先するため、Finder → Contractの順に確定する)
+- Claim候補は、先に確定したFinder由来の指摘と同じ行または同じ根本原因のものを破棄する。Finder、Claimの順に確定する
+- Claimの出力の `一致` と `未確認` は候補にせず、主張の件数としてPhase 4の報告に使う
 
 次のprompt templateを使用する。
 
@@ -161,19 +148,13 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 - 追加証拠:
   - CI: <ci-evidence>
   - 同じ根本原因の以前の指摘と返信: <related-thread>
-  - spec contract: <spec-contract>
 
 ファイルで渡した入力は、検証を始める前に全文を読む。
 ```
 
-`<candidate>` には候補1件の全文を指定し、由来ごとに次の値を指定する。その他のplaceholderにはPhase 2.1と同じ値を指定する。
+`<candidate>` には候補1件の全文を、`<candidate-type>` には由来に応じて `Finder` か `Claim` を、`<related-thread>` には同じ根本原因の以前の指摘と返信を指定し、無ければ `なし` とする。その他のplaceholderにはPhase 2.1と同じ値を指定する。
 
-| 由来     | `<candidate-type>` | `<related-thread>`                              | `<spec-contract>`                    |
-| -------- | ------------------ | ----------------------------------------------- | ------------------------------------ |
-| Finder   | `Finder`           | 同じ根本原因の以前の指摘と返信。無ければ `なし` | `なし`                               |
-| Contract | `Contract`         | 同じ根本原因の以前の指摘と返信。無ければ `なし` | `<review-temp-dir>/spec-contract.md` |
-
-確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力した `証拠` (Finder) または `根拠` (Contract)、verifierの `根拠` と `実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
+確定指摘は、由来、`path` / `line` / `side`、`カテゴリ`、`要約`、`問題`、`完了条件`、SubAgentが出力したFinderの `証拠` またはClaimの `根拠`、verifierの `証明`、`根拠`、`実行結果` を内部レコードとして保持する。verifierの「完了条件の評価」を反映し、実装方法を指定せず、問題が解消されたと判断できる状態を `完了条件` に残す。
 
 #### Phase 2.3: 確定指摘の校正とレポートの生成
 
@@ -195,7 +176,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
      --out-dir "<review-temp-dir>"
    ```
 
-   `<review-temp-dir>/body.md` と `<review-temp-dir>/comments.json` が生成され、標準出力にVerdict (`APPROVE` または `REQUEST_CHANGES`) が出力される。指摘が1件以上なら `REQUEST_CHANGES`、0件なら `APPROVE` になる。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
+   `<review-temp-dir>/body.md` と `<review-temp-dir>/comments.json` が生成され、標準出力にVerdictとして `APPROVE` または `REQUEST_CHANGES` が出力される。要修正事項が1件以上なら `REQUEST_CHANGES`、0件なら `APPROVE` になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
 
 確定指摘の内部レコードは校正後も保持する。
 
@@ -217,7 +198,7 @@ Finderはmergeを止める問題の指摘候補を、Contractはspec contractと
 `--auto` が指定されているか、Phase 2.4で投稿が承認された場合のみ実行する。
 最初にPRの現在のhead commit SHAを再取得し、Phase 1で保持した`<latest-commit-sha>`と比較する。一致しない場合は次のとおりにしてPhase 4に進む。
 
-- 確定指摘が1件以上: Phase 3.2の手順で `<latest-commit-sha>` に対して `--event COMMENT` で投稿する。古いcommitに対するVerdictで現在のPRを承認・差し戻ししないためにCOMMENTを使い、確定した指摘はPR上に残す。Phase 3.3は実行しない
+- 要修正事項か未証明の指摘が1件以上: Phase 3.2の手順で `<latest-commit-sha>` に対して `--event COMMENT` で投稿する。古いcommitに対するVerdictで現在のPRを承認・差し戻ししないためにCOMMENTを使い、確定した指摘はPR上に残す。Phase 3.3は実行しない
 - 確定指摘が0件: 投稿、dismiss、resolveをすべてスキップする
 
 #### Phase 3.1: event種別の決定
@@ -279,6 +260,6 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
-- Verdict、Finder由来・Contract由来の指摘件数 (Contract軸をスキップした場合はその旨)、以前の判断と同じ根本原因として破棄した候補の件数、レポート本文
+- Verdict、言い直した変更の意図、要修正事項と未証明の指摘の件数とその由来の内訳、PR本文の主張のうち実行して一致した件数と実行できなかった件数、verifierが `refuted` と `uncertain` で破棄した候補のそれぞれの件数、以前の判断と同じ根本原因として破棄した候補の件数、レポート本文
 - レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。Phase 2.4でのキャンセル、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)

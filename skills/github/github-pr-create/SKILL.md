@@ -38,6 +38,8 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 `origin/<base-branch>..HEAD` のcommit一覧とdiffを取得し、この出力を本文の根拠にする。同じ会話で実装した場合でも省略しない。記憶から書くと、途中で捨てた変更や別branchの作業が本文に混ざり、投稿前のdiffとの照合が空振りするため。lockfileの更新やformatterの一括適用のような機械的な差分は、statだけで済ませてよい。
 
+diffが既存の関数、型、データ形式、設定、コマンドの挙動を変えている場合は、変えたものをdiffの外から使う箇所をrepositoryから検索して読み、影響範囲の根拠にする。追加だけの変更では検索しない。挙動を変えた変更は、diffに現れない呼び出し元の挙動も変えるが、reviewerはdiffの外を見ないためである。
+
 ## 3. PRタイトル、関連Issue、Labelの生成
 
 「2. 変更内容の取得」で得た差分とcommitを根拠に、以下を決定する。
@@ -52,14 +54,14 @@ allowed-tools: Read, Write, Task, AskUserQuestion, Skill(git-commit), Bash(git:*
 
 - **PR template**: 「0. 事前チェック」で選択したtemplateの見出し・順序・言語に従う(repositoryのtemplateは指定言語では翻訳しない)。各見出しの書き方は同梱templateのコメントに従う。repositoryのtemplateでも、意図が同じ見出しには同じ書き方を当てる
 - **見出しの有無**: 同梱templateでは、コメントが必須とする見出しを常に置き、任意とする見出しはコメントの条件に当てはまるときだけ置く。repositoryのtemplateでは見出しをすべて残し、該当する内容がない項目には指定言語で該当なし(英語は `N/A`)と書く
-- **1つの事実は1つの見出しに書く**: 概要には結果と動機、変更内容には変わる挙動、設計判断には方法を選んだ理由と受け入れた制約、検証には確かめたことを書く
+- **1つの事実は1つの見出しに書く**: 概要には結果と動機、変更内容には変わる挙動、範囲にはこのPRが扱うものと扱わないもの、設計判断には方法を選んだ理由と受け入れた制約、影響範囲にはdiffの外で挙動が変わりうる箇所、検証には確かめたことを書く
 - 箇条書きは1行1変更とし、指定言語に応じて以下の文体で書く
   - 日本語: 体言止めで終える。ですます調は使わない
     - GOOD: `- ログイン失敗時のリトライ処理を追加`
     - BAD: `- ログイン失敗時のリトライ処理を追加しました`
   - 英語: Conventional Commitsのdescriptionと同じ命令形の断片で書く (例: `- Add retry on login failure`)
 - CIで自動実行されるlint・format・型チェックは記載しない (そのチェック設定自体を変更したPRを除く)。記載するのはCIが検証しない動作確認の手順と結果
-- diff、commit、関連Issueから確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
+- diff、commit、関連Issue、影響範囲の検索結果から確認できない事実を推測で補わない。本文の理解に必要な情報が不足する場合はユーザーに確認する
 - public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
 - 投稿前に本文を見直す: タイトルのdescriptionが本文と同じ言語であること、置いた見出しがすべて埋まりコメントやplaceholderが残っていないこと、同じ事実を複数の見出しに書いていないこと、各箇条書きがdiffにあり文体規則を守ること、private repositoryの情報が残っていないこと
 
