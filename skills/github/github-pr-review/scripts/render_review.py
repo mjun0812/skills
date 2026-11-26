@@ -8,8 +8,10 @@ Usage:
 <pr.md> holds the PR title and body. Without --findings, prints the output
 language (ja or en) decided from it. With --findings, writes <dir>/body.md
 and <dir>/comments.json, then prints the verdict (APPROVE or REQUEST_CHANGES)
-to stdout. Validation errors, including a language that does not match the
-PR text, are printed to stderr, one per line, with exit code 2.
+to stdout. Only findings reproduced by running the code decide the verdict;
+findings that were only traced through the code are listed as unproven.
+Validation errors, including a language that does not match the PR text, are
+printed to stderr, one per line, with exit code 2.
 
 The findings JSON is documented in references/findings.md. Every layout
 decision (ordering, numbering, field labels, footers) lives here so the
@@ -23,7 +25,8 @@ import sys
 from pathlib import Path
 from typing import NotRequired, TypedDict, cast
 
-ORIGINS = ("finder", "contract")
+ORIGINS = ("finder", "claim")
+PROOFS = ("reproduced", "traced")
 SIDES = ("RIGHT", "LEFT")
 
 # Code and URLs are English in both languages, so they do not count as prose.
@@ -39,10 +42,19 @@ class Condition(TypedDict):
     note: NotRequired[str]
 
 
+class Reproduction(TypedDict):
+    """The command that showed the problem and what it printed."""
+
+    command: str
+    output: str
+
+
 class Finding(TypedDict):
     """One confirmed finding as written by the reviewer."""
 
     origin: str
+    proof: str
+    reproduction: NotRequired[Reproduction]
     path: str
     line: int
     side: NotRequired[str]
@@ -73,10 +85,14 @@ LABELS = {
         "summary": "概要",
         "verdict": "判定",
         "findings": "指摘事項",
+        "unproven": "未証明の指摘",
+        "unproven_note": "実行では再現できていない指摘。到達できることはコードで確かめている。判定には含めない。",
+        "unproven_inline": "未証明: 実行では再現できていない",
         "none": "なし",
         "location": "場所",
         "problem": "問題",
         "execution_path": "発生経路",
+        "reproduction": "再現",
         "basis": "根拠",
         "other_locations": "他の該当箇所",
         "notes": "補足",
@@ -87,10 +103,14 @@ LABELS = {
         "summary": "Summary",
         "verdict": "Verdict",
         "findings": "Findings",
+        "unproven": "Unproven findings",
+        "unproven_note": "Not reproduced by running the code. Reachability was confirmed by reading it. These do not affect the verdict.",
+        "unproven_inline": "Unproven: not reproduced by running the code",
         "none": "N/A",
         "location": "Location",
         "problem": "Problem",
         "execution_path": "Execution path",
+        "reproduction": "Reproduction",
         "basis": "Basis",
         "other_locations": "Other locations",
         "notes": "Notes",
@@ -185,6 +205,26 @@ def validate(data: object, language: str) -> list[str]:
         origin = f.get("origin")
         if origin not in ORIGINS:
             errors.append(f"{where}.origin: must be one of {list(ORIGINS)}")
+        proof = f.get("proof")
+        if proof not in PROOFS:
+            errors.append(f"{where}.proof: must be one of {list(PROOFS)}")
+        if origin == "claim" and proof == "traced":
+            errors.append(
+                f"{where}.proof: must be reproduced for origin claim, "
+                "a claim is confirmed only by command output"
+            )
+        reproduction = f.get("reproduction")
+        if proof == "reproduced" and not (
+            isinstance(reproduction, dict)
+            and all(
+                isinstance(reproduction.get(key), str) and reproduction[key].strip()
+                for key in ("command", "output")
+            )
+        ):
+            errors.append(
+                f"{where}.reproduction: required for proof reproduced, "
+                "an object with non-empty command and output"
+            )
         for key in ("path", "category", "summary", "problem"):
             if not (isinstance(f.get(key), str) and f[key].strip()):
                 errors.append(f"{where}.{key}: must be a non-empty string")
@@ -198,9 +238,9 @@ def validate(data: object, language: str) -> list[str]:
             errors.append(
                 f"{where}.execution_path: required for origin finder, one hop per entry"
             )
-        if origin == "contract" and not (_is_str_list(f.get("basis")) and f["basis"]):
+        if origin == "claim" and not (_is_str_list(f.get("basis")) and f["basis"]):
             errors.append(
-                f"{where}.basis: required for origin contract, one item per entry"
+                f"{where}.basis: required for origin claim, one item per entry"
             )
         for key in ("other_locations", "notes"):
             if key in f and not _is_str_list(f[key]):
@@ -245,6 +285,21 @@ def _conditions(finding: Finding, with_notes: bool) -> str:
     return "\n".join(lines)
 
 
+def _reproduction(reproduction: Reproduction) -> str:
+    """Render the command and its output as one fenced block.
+
+    The fence is longer than any backtick run inside, so quoted output cannot
+    close it early.
+
+    Args:
+        reproduction: The command and the output it printed.
+    """
+    text = f"$ {reproduction['command'].strip()}\n{reproduction['output'].strip()}"
+    longest = max((len(run) for run in re.findall(r"`+", text)), default=0)
+    fence = "`" * max(3, longest + 1)
+    return f"{fence}text\n{text}\n{fence}"
+
+
 def _location(finding: Finding) -> str:
     """Render the finding's location, marking LEFT-side lines.
 
@@ -260,7 +315,8 @@ def render_body(data: Document, findings: list[Finding], verdict: str) -> str:
 
     Args:
         data: The validated findings document.
-        findings: Findings already ordered and numbered by position.
+        findings: Findings already ordered and numbered by position, with the
+            reproduced ones first.
         verdict: APPROVE or REQUEST_CHANGES.
 
     Returns:
@@ -276,9 +332,13 @@ def render_body(data: Document, findings: list[Finding], verdict: str) -> str:
         verdict,
         f"## {lb['findings']}",
     ]
-    if not findings:
+    if not any(f["proof"] == "reproduced" for f in findings):
         parts.append(lb["none"])
+    unproven_started = False
     for n, f in enumerate(findings, start=1):
+        if f["proof"] == "traced" and not unproven_started:
+            parts.extend([f"## {lb['unproven']}", lb["unproven_note"]])
+            unproven_started = True
         section = [
             f"### {n}. [{f['category']}] {f['summary']}",
             f"**{lb['location']}**: {_location(f)}",
@@ -291,6 +351,10 @@ def render_body(data: Document, findings: list[Finding], verdict: str) -> str:
             section.append(f"**{lb['execution_path']}**:\n\n{hops}")
         else:
             section.append(f"**{lb['basis']}**:\n\n{_bullets(f['basis'])}")
+        if f["proof"] == "reproduced":
+            section.append(
+                f"**{lb['reproduction']}**:\n\n{_reproduction(f['reproduction'])}"
+            )
         for key in ("other_locations", "notes"):
             if f.get(key):
                 section.append(f"**{lb[key]}**:\n\n{_bullets(f[key])}")
@@ -317,9 +381,16 @@ def render_comments(
     lb = LABELS[data["language"]]
     comments: list[dict[str, str | int]] = []
     for n, f in enumerate(findings, start=1):
+        if f["proof"] == "reproduced":
+            heading = [f"🔴 {n}: **[{f['category']}] {f['summary']}**"]
+        else:
+            heading = [
+                f"🟡 {n}: **[{f['category']}] {f['summary']}**",
+                f"_{lb['unproven_inline']}_",
+            ]
         body = "\n\n".join(
             [
-                f"🔴 {n}: **[{f['category']}] {f['summary']}**",
+                *heading,
                 f"**{lb['problem']}**:\n{f['problem'].strip()}",
                 f"**{lb['completion_conditions']}**:\n\n{_conditions(f, with_notes=False)}",
                 "---",
@@ -373,8 +444,12 @@ def main() -> int:
         return 2
     data = cast(Document, raw)
 
-    findings = sorted(data["findings"], key=lambda f: ORIGINS.index(f["origin"]))
-    verdict = "REQUEST_CHANGES" if findings else "APPROVE"
+    findings = sorted(
+        data["findings"],
+        key=lambda f: (PROOFS.index(f["proof"]), ORIGINS.index(f["origin"])),
+    )
+    reproduced = any(f["proof"] == "reproduced" for f in findings)
+    verdict = "REQUEST_CHANGES" if reproduced else "APPROVE"
     args.out_dir.mkdir(parents=True, exist_ok=True)
     (args.out_dir / "body.md").write_text(
         render_body(data, findings, verdict), encoding="utf-8"

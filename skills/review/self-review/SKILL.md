@@ -1,20 +1,19 @@
 ---
 name: self-review
-description: 自分で書いた変更 (現在のbranchの変更と未commit変更、または指定した1 commit) を敵対的にコードレビューし、検証を通過した指摘だけをチャットへ返すSkill。PRの作成前後に自己採点として使い、GitHubへは投稿しない。`--spec` でspec (GitHub Issue番号、またはspec contractを書いたMarkdownファイル) を渡すと、specとの整合も検査する。ユーザーが「自分の変更を厳しくレビューして」「PRを出す前にself reviewして」「このcommitをself reviewして」のように依頼したら使うこと。
+description: 自分で書いた変更 (現在のbranchの変更と未commit変更、または指定した1 commit) を敵対的にコードレビューし、検証を通過した指摘だけをチャットへ返すSkill。PRの作成前後に自己採点として使い、GitHubへは投稿しない。ユーザーが「自分の変更を厳しくレビューして」「PRを出す前にself reviewして」「このcommitをself reviewして」のように依頼したら使うこと。
 ---
 
 # Self Review
 
 自分のbranchの変更または指定commitを一時worktreeへ固定し、ユーザーのworking treeを変更せずにレビューする。
-Finderが出した候補を1件ずつVerifierで検証し、`confirmed`の指摘だけをlocalへ出力する。
+Finderが出した候補を、1件ずつVerifierが実コードを実行して確かめる。再現できた指摘を要修正として、再現はできないが反証も無い指摘を未証明として、localへ出力する。
 変更目的や作者の想定を未検証の仮説として扱い、変更を壊す入力・状態・実行順序を積極的に探す。厳しさは探索範囲と反証の深さに使い、指摘の証拠基準は下げない。
-PRがあってもレビューやcommentは投稿しない。GitHubからはPRのタイトル・本文・base branchとspecのIssueを読むだけとする。
+PRがあってもレビューやcommentは投稿しない。GitHubからはPRのタイトル、本文、base branchを読むだけとする。
 
 ## Arguments
 
 - `commit`: reviewするcommit-ish。指定時は対象を提案せず、そのcommitだけをレビューする
 - `--base <ref>`: branchの変更の起点にするref。指定時は対象を提案せず、このbaseからのbranchの変更をレビューする。省略時は現在のbranchのopen PRのbase branch、PRが無ければ`gh`が解決するrepositoryのdefault branchを使う。`commit`指定時は使わない
-- `--spec <source>`: spec source(GitHub Issue番号、またはspec contractを書いたMarkdownファイルのパス)。指定時はContract軸(specとの整合)のレビューを追加する。省略した場合、対象がbranchの変更で、`--base`を省略したかPRのbaseと同じ値を指定したなら、現在のbranchのopen PR本文の`Closes #N`のIssueを使い、それも無ければFinderだけで行う。対象が未commit変更のみか1 commitなら、PRの一部だけを見るためFinderだけで行う
 
 ## 対象
 
@@ -37,7 +36,6 @@ branchの変更は、PRの作成前と作成後のどちらでも、PRに載る�
    - 標準出力のJSONの`base`をbaseとして保持する
    - 以下のPRの情報は、`--base`を省略したか、PRのbase(`origin/<baseRefName>`のような`base`の値)と同じ値を指定したときだけ使う。別のbaseを指定した範囲はPR全体と一致しないためである
    - `pr`がnullでなければ、手順3で対象がbranchの変更に決まったときだけ、PRのタイトルと本文を`<change-description>`に使う。PR全体の説明を一部の差分の目的として渡すと、対象外の振る舞いに照らした指摘が出るためである
-   - `--spec`未指定でPR本文に`Closes #N`がある場合は、手順3で対象がbranchの変更に決まったときだけIssue #Nをspec sourceにする。未commit変更のみや1 commitに当てはめると、対象外の部分で満たしている要件を未充足と誤って報告するためである
 3. `--base`指定時はbranchの変更を対象にする。それ以外は、JSONの`commits`(merge-base以降のcommit数)と`hasUncommitted`から対象を決める。
 
    | `commits` | `hasUncommitted` | 対象                                                                                           |
@@ -82,14 +80,13 @@ Phase 2以降では、Phase 4のhunk表示を除いて元のrepositoryを読ま�
 
 ### Phase 2: 敵対的review agentの実行
 
-#### Phase 2.1: FinderとContract
+#### Phase 2.1: FinderとClaim
 
-`code-reviewer-finder`を2つ並列に起動する。
-spec sourceがある場合は、spec contract(Requirements / Boundaries / Acceptance Criteria / Out of Scope)をsourceから読み込み、`metadata.json`と同じdirectoryの`spec-contract.md`へ書き出してから、`code-reviewer-contract`も並列に起動する。specを解決できない場合はContract軸をスキップし、その旨をPhase 5の出力に含める。
+最初に、変更の意図を自分の言葉で言い直す。`<change-description>`、`commitsFile`、`diffFile`から、この変更が実現しようとしていることと、変えないと述べていることを2〜3文にまとめ、`<intent>`とする。指摘は、この意図が破られるかどうかで判定される。説明が無く、diffからも目的を1つに決められない場合は、推測で補わない。`AskUserQuestion`を使ってユーザーに確認する。
 
-- Markdownファイル: snapshotではなく元のrepositoryを基準にパスを解決して読む (git管理外のファイルはsnapshotに存在しない)
-- GitHub Issue: `gh issue view <N> --json title,body,comments`で取得し、本文のcontractセクション群 (contractセクション群が無ければ本文全体) の後に、`authorAssociation`が`OWNER` / `MEMBER` / `COLLABORATOR`のコメントを投稿日時と投稿者付きで古い順に並べる。本文の後に合意した判断やscopeの変更は、コメントに記録されていることが多い
-  各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する。
+`code-reviewer-finder`を2つ並列に起動する。PRのタイトルと本文を`<change-description>`に使う場合は、`code-reviewer-claim`も並列に起動する。Claimは、PR本文が述べる検証の結果、範囲、影響範囲を実コードで確かめ、説明と実際の結果との食い違いを探す。PRの本文を使わない場合は、確かめる主張が無いのでClaim軸をスキップし、その旨をPhase 5の出力に含める。
+
+各SubAgentのpromptは次のtemplateをplaceholderへ値を埋めて生成する。
 
 ```text
 作者自身の変更に対する敵対的self-reviewを行う。
@@ -104,6 +101,7 @@ spec sourceがある場合は、spec contract(Requirements / Boundaries / Accept
 対象変更:
 - 対象種別: <target-kind>
 - 変更目的・説明: <change-description>
+- 変更の意図: <intent>
 - 変更ファイル一覧: <changed-files-file>
 - diff: <diff-file>
 - 変更履歴: <change-history>
@@ -119,11 +117,11 @@ spec sourceがある場合は、spec contract(Requirements / Boundaries / Accept
 
 - Finder 1: `Finder` / 期待される振る舞い、契約、不変条件、呼び出し経路、状態・データの流れ、同時に更新すべきdiff外の箇所
 - Finder 2: `Finder` / 境界値、失敗、並行実行、互換性、信頼できない入力、回復不能な状態
-- Contract (spec sourceがある場合のみ): `Contract` / spec contractとの整合(逸脱、未充足、boundary違反、scope creep)。`<additional-evidence>`に`spec-contract.md`のパスを指定する
+- Claim: `Claim` / 変更の説明が述べる検証の結果、範囲、影響範囲と、実際の変更との食い違い。PRの本文を`<change-description>`に使う場合だけ起動する
 
-branch modeでは`<target-kind>`を`Local branch changes`とする。未commit変更のみを選んだ場合は`Local uncommitted changes`とする。`<change-description>`はユーザー指定の目的、PRのタイトルと本文(対象がbranchの変更の場合のみ)、「`<baseRef>`からの変更」の順に、最初に得られたものとする。`<change-history>`は`commitsFile`のパスとし、`hasUncommitted`がtrueなら「未commit変更を含む」と添える。commit modeでは順に`Local commit`、commit message、`commitsFile`のパスとする。`<baseline-id>`にはmetadataの`baselineSha`を指定する。`<head-id>`には、commit modeでは`headSha`を、branch modeでは「HEAD `<headSha>`に未commit変更を重ねたsnapshotのindex。baselineとの比較にはsnapshot内で`git diff --cached <baselineSha>`を使う」と指定する。branch modeの変更はsnapshotのindexにだけあり、`headSha`と比べると未commit変更が抜けるためである。その他のplaceholderはPhase 1のmetadataと対象差分から埋め、`<changed-files-file>`と`<diff-file>`にはmetadataの`changedFilesFile`と`diffFile`を指定し、`<additional-evidence>`は`なし`とする(例外: Contract roleの起動時は`spec-contract.md`のパスとする)。
+branch modeでは`<target-kind>`を`Local branch changes`とする。未commit変更のみを選んだ場合は`Local uncommitted changes`とする。`<change-description>`はユーザー指定の目的、PRのタイトルと本文(対象がbranchの変更の場合のみ)、「`<baseRef>`からの変更」の順に、最初に得られたものとする。`<change-history>`は`commitsFile`のパスとし、`hasUncommitted`がtrueなら「未commit変更を含む」と添える。commit modeでは順に`Local commit`、commit message、`commitsFile`のパスとする。`<baseline-id>`にはmetadataの`baselineSha`を指定する。`<head-id>`には、commit modeでは`headSha`を、branch modeでは「HEAD `<headSha>`に未commit変更を重ねたsnapshotのindex。baselineとの比較にはsnapshot内で`git diff --cached <baselineSha>`を使う」と指定する。branch modeの変更はsnapshotのindexにだけあり、`headSha`と比べると未commit変更が抜けるためである。その他のplaceholderはPhase 1のmetadataと対象差分から埋め、`<changed-files-file>`と`<diff-file>`にはmetadataの`changedFilesFile`と`diffFile`を指定し、`<additional-evidence>`は`なし`とする。
 
-Finderにはsnapshotの検索と読み取りだけを許可し、コード、テスト、ビルド、lint、型チェック、package script、再現コードを実行させない。
+FinderとClaimには、テストや再現コードの実行を許可する。実行は各SubAgentがsnapshotから書き出した実行用コピーで行わせ、snapshotのファイルは変更させない。snapshotの中で実行すると、生成物がPhase 3の有効性確認とPhase 6のcleanupを止めるためである。
 
 起動したSubAgent(専用agentを使えない環境では、同じpromptを渡した汎用SubAgent)のいずれかが起動できない、または結果を返さない場合は、diffを自分で読んで代わりにレビューしない。同時実行数の上限による失敗も同じとする。Phase 6のcleanupを実行し、レビューできなかったことと原因だけを報告して終了する。Phase 2.2〜2.3の`code-reviewer-verifier`も同じとする。
 
@@ -155,14 +153,14 @@ Finderにはsnapshotの検索と読み取りだけを許可し、コード、テ
 
 Finder候補では`<candidate-type>`を`Finder`、`<candidate>`を候補全文とする。他のplaceholderはPhase 2.1と同じ値を使用する。
 
-Verifierにはsnapshot内で必要なコマンドと、関連する最小のテストや再現コードの実行を許可する。コードを変更させない。
-verdictが`confirmed`の候補だけを確定指摘とし、`refuted`と`uncertain`は破棄する。
+Verifierには、候補の`再現`のコマンド列と、関連する最小のテストや再現コードの実行を許可する。実行は実行用コピーで行わせ、snapshotのファイルは変更させない。
+verdictが`confirmed`の候補だけを確定指摘とし、`refuted`と`uncertain`は破棄して、verdictごとの件数を数える。確定指摘は、Verifierの`証明`で2つに分ける。`再現`の指摘は要修正とし、Verifierの`実行結果`のコマンド列と出力を添える。`追跡`の指摘は未証明とする。
 
-#### Phase 2.3: Contract候補の検証
+#### Phase 2.3: Claim候補の検証
 
-Contractを起動した場合のみ実行する。Contractの出力から形式 (`問題` / `根拠` / `完了条件`) を満たす候補だけを採用し、確定指摘と同じ行または同じ根本原因の候補を破棄した上で、残りを1件ずつ`code-reviewer-verifier`で検証する。
-VerifierにはPhase 2.2のprompt templateを使用し、`<candidate-type>`を`Contract`、`<candidate>`を候補全文とし、`<additional-evidence>`に`spec-contract.md`のパスを指定する。
-verdictが`confirmed`の候補だけを確定契約指摘とし、`refuted`と`uncertain`は破棄する。
+Claimを起動した場合のみ実行する。Claimの出力から、形式(`問題` / `根拠` / `完了条件`)を満たす候補だけを採用する。確定指摘と同じ行または同じ根本原因の候補を破棄した上で、残りを1件ずつ`code-reviewer-verifier`で検証する。
+VerifierにはPhase 2.2のprompt templateを使用し、`<candidate-type>`を`Claim`、`<candidate>`を候補全文とする。
+verdictが`confirmed`の候補だけを確定指摘とし、`refuted`と`uncertain`は破棄して件数に加える。Claimの出力の`一致`と`未確認`は、主張の件数としてPhase 5の出力に使う。
 
 ### Phase 3: snapshotの有効性確認
 
@@ -176,13 +174,13 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 
 ### Phase 4: hunkへの表示
 
-`hunk`があれば、確定指摘と確定契約指摘をhunkのnoteとして対象差分の上に表示する。このrepositoryのhunk sessionがあればそれを使い、無ければherdrのpaneでhunkを起動する。どちらもできない環境ではscriptが終了コード3を返すので、このPhaseをスキップしてPhase 5へ進む。
+`hunk`があれば、要修正の指摘と未証明の指摘をhunkのnoteとして対象差分の上に表示する。このrepositoryのhunk sessionがあればそれを使い、無ければherdrのpaneでhunkを起動する。どちらもできない環境ではscriptが終了コード3を返すので、このPhaseをスキップしてPhase 5へ進む。
 
 1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する。このrepositoryのhunk sessionが無く指摘も0件の場合、scriptはpaneを開かずに終了コード3を返す
    - `filePath`: `path:line`のpath
    - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く。renameしたファイルの削除行への指摘では`filePath`に変更前のpathを、追加行への指摘では変更後のpathを使う。`git mv`していない未commitのrenameを、hunkは削除と追加の2ファイルとして表示するためである
-   - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`
-   - `rationale`: 問題と完了条件を改行で区切った文。契約指摘では根拠も含める
+   - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`。未証明の指摘は`[カテゴリ]`の前に`[未証明]`を付ける
+   - `rationale`: 問題と完了条件を改行で区切った文。Claim由来の指摘では根拠も含める
 2. scriptを実行する。scriptは以前のself-reviewが付けたnoteのうち返信が付いていないものを消し、sessionの内容をbranch modeでは`diff <baselineSha>`、commit modeでは`diff <baselineSha> <headSha>`へ切り替えてから、作成者`self-review`としてnoteを付ける。他のagentやユーザーが付けたnoteは消さない
 
 ```bash
@@ -195,25 +193,38 @@ bash "<skill-dir>/scripts/self_review_hunk.sh" show --metadata "$metadata_path" 
 
 結果はユーザーの言語に合わせ、チャットまたはterminalへ出力する。hunkへ表示した場合も、すべての指摘をチャットへ出力する。ファイルへの保存やGitHubへの投稿は行わない。
 
-- 確定指摘、確定契約指摘のいずれかが1件以上: `CHANGES_REQUIRED`
-- すべて0件: `PASS`
+- 要修正の指摘が1件以上: `CHANGES_REQUIRED`
+- 要修正の指摘が0件: `PASS`。未証明の指摘が何件あっても、Verdictは変えない
 
-冒頭にVerdict、対象範囲、指摘件数、hunkへの表示結果を記載する。対象範囲はbaseline SHAとhead SHAの先頭7文字で示し、branch modeではbaseのref、PRがあればPR番号、`hasUncommitted`がtrueなら未commit変更を含むことを添える。
-確定指摘には`path:line`、カテゴリ、要約、問題、発生経路、完了条件を含める。
-確定契約指摘には`path:line`、カテゴリ、要約、問題、根拠(specの該当記述の引用)、完了条件を含める。
-Contract軸をスキップした場合(spec sourceが無い、またはspec解決失敗)は、件数の代わりにその旨を記載する。
+冒頭にVerdict、対象範囲、言い直した変更の意図、指摘件数、hunkへの表示結果を記載する。対象範囲はbaseline SHAとhead SHAの先頭7文字で示し、branch modeではbaseのref、PRがあればPR番号、`hasUncommitted`がtrueなら未commit変更を含むことを添える。
+要修正の指摘は、下の形式の項目をすべて埋める。再現には、Verifierが実行したコマンド列と出力を書く。Claim由来の指摘では、`file:line`の連鎖の代わりに根拠として、説明の該当記述の引用を書く。
+未証明の指摘は、要修正の指摘の後に見出しを分けて並べ、再現の代わりに、実行で確かめられなかった理由を書く。連番は要修正の指摘から通して付ける。
+Claim軸をスキップした場合は、件数の代わりにその旨を記載する。起動した場合は、説明の主張のうち実行して一致した件数と、実行できなかった件数を添える。
 hunkへの表示をスキップした場合はその理由を、hunk外のため表示できなかった指摘があればその件数を、返信が付いているため残した以前のnoteがあればその件数を記載する。
-Verifierの検証過程、破棄した候補、内部証拠は出力しない。
+Verifierが破棄した候補は、`refuted`と`uncertain`の件数だけを記載する。Verifierの検証過程、破棄した候補の内容、内部証拠は出力しない。
 
 ```text
 Verdict: CHANGES_REQUIRED
 Range: <baseline-short-sha>..<head-short-sha> (base: <baseRef>, PR #<N>, 未commit変更を含む)
-Findings: <finder-count>, Contract: <contract-count | skipped>
+Intent: <言い直した変更の意図>
+Findings: 要修正 <n>, 未証明 <n>, Claim: 不一致 <n> / 一致 <n> / 未確認 <n> | skipped
+Dropped: refuted <n>, uncertain <n>
 Hunk: <applied>件を表示, <omitted>件はhunk外, 以前のnote <kept>件を残した | skipped (<理由>)
+
+## 要修正
 
 1. `path:line` [カテゴリ] 要約
    - 問題: ...
    - 発生経路: `file:line` -> `file:line`
+   - 再現: `<コマンド列>` → <出力>
+   - 完了条件: ...
+
+## 未証明
+
+2. `path:line` [カテゴリ] 要約
+   - 問題: ...
+   - 発生経路: `file:line` -> `file:line`
+   - 再現できなかった理由: ...
    - 完了条件: ...
 ```
 

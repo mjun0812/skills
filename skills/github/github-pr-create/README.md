@@ -2,7 +2,7 @@
 
 [日本語](README_ja.md)
 
-Push the current branch and open a Pull Request. The title and body are generated from the commits and diff against the base branch. The body always has an overview and validation; changes and design decisions appear only when there is something to say. Labels are chosen from the repository's existing ones, and the PR is always assigned to `@me`.
+Push the current branch and open a Pull Request. The title and body are generated from the commits and diff against the base branch. The body always has an overview and validation; changes, scope, design decisions, and blast radius appear only when there is something to say. Labels are chosen from the repository's existing ones, and the PR is always assigned to `@me`.
 
 To file or polish an issue instead, use [`github-issue-create`](../github-issue-create/README.md). To implement an issue and open the PR in one run, use [`github-issue-resolve`](../github-issue-resolve/README.md), which calls this skill at the end.
 
@@ -32,6 +32,7 @@ To file or polish an issue instead, use [`github-issue-create`](../github-issue-
 - Stops and shows the URL and state when a PR already exists for the current branch.
 - Uses the repository's PR template when present (headings and order kept as is), marking sections with nothing to say as `N/A`. Otherwise uses `references/pr_template.md` or `pr_template_ja.md`, omitting optional sections with nothing to say.
 - Each fact is written under one heading only. Changes state what behaves differently, and design decisions give the reason wherever another approach could have been chosen.
+- When the PR changes the behavior of something that already exists, it searches for the code outside the diff that uses it. Those locations go in the blast radius table. Related work deliberately left out of the PR goes under scope.
 - The body is written from the commit list and diff, not from memory. It does not invent facts and does not mention private repositories when posting to a public one.
 - Validation and multiple design decisions go in tables, and logs in `<details>`. A breaking change goes on a line of the changes starting with "Breaking change:", and unvalidated scope in one sentence starting with "Not validated:" below the validation table.
 - Where text alone is unclear, it follows `references/visuals.md` and adds a `diff` or tree block, Mermaid, or an image.

@@ -145,11 +145,11 @@ External tools each skill depends on are listed below. Without an optional tool,
 
 The github-pr-review and self-review skills use the following three reviewer agents defined in [agents/.apm/agents/](agents/.apm/agents/).
 
-| Agent                                                                    | Role                                                                                                                                      |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized                                                      |
-| [`code-reviewer-contract`](agents/.apm/agents/code-reviewer-contract.md) | Looks for gaps between the change and the spec's requirements, boundaries, and acceptance criteria. Launched only when a spec is resolved |
-| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | Tries to refute each candidate from finder and contract one at a time, keeping only the `confirmed` ones                                  |
+| Agent                                                                    | Role                                                                                                                                     |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [`code-reviewer-finder`](agents/.apm/agents/code-reviewer-finder.md)     | Looks across the whole change for candidate issues to resolve before it is finalized, attaching a reproduction to each                   |
+| [`code-reviewer-claim`](agents/.apm/agents/code-reviewer-claim.md)       | Runs the validation, scope, and blast radius statements in the PR body against the real code and looks for mismatches                    |
+| [`code-reviewer-verifier`](agents/.apm/agents/code-reviewer-verifier.md) | Runs the code to refute each candidate from finder and claim one at a time, and splits the `confirmed` ones into reproduced and unproven |
 
 Agents ship through the Claude Code plugin and through apm. They do not specify per-agent `tools` restrictions; available tools and permissions follow each runtime's configuration. In OpenCode, `mode: subagent` makes them load as subagents. With `apm install -t codex` they are converted to Codex agent format. On other install methods the skills fall back to generic subagents given the same prompts.
 
