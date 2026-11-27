@@ -12,9 +12,9 @@ Skills for the GitHub side of a change: issues, pull requests, CI, and review. T
 | Triage all open issues: close, comment, relabel in bulk                   | [`github-issue-update`](github-issue-update/README.md)             |
 | Open a PR from the current branch                                         | [`github-pr-create`](github-pr-create/README.md)                   |
 | Review a PR and post findings                                             | [`github-pr-review`](github-pr-review/README.md)                   |
-| Reply to and act on review comments                                       | [`github-resolve-pr-comment`](github-resolve-pr-comment/README.md) |
+| Act on review comments only, in the current working tree                  | [`github-resolve-pr-comment`](github-resolve-pr-comment/README.md) |
 | Fix failing CI                                                            | [`github-fix-ci`](github-fix-ci/README.md)                         |
-| Fix everything blocking a PR (conflicts, CI, comments) in one go          | [`github-pr-fix`](github-pr-fix/README.md)                         |
+| Fix everything blocking a PR (conflicts, CI, review comments) in one go   | [`github-pr-fix`](github-pr-fix/README.md)                         |
 | Report one user's PR, issue, review, and coding agent work for a period   | [`work-report`](work-report/README.md)                             |
 
-`github-pr-fix` orchestrates `git-fix-conflict`, `github-fix-ci`, and `github-resolve-pr-comment`, so use it only when more than one kind of problem needs fixing. `github-issue-resolve` chains into `git-commit` and `github-pr-create` for the final steps.
+`github-pr-fix` orchestrates `git-fix-conflict`, `github-fix-ci`, and `github-resolve-pr-comment`. It is the default for a request to handle review comments; go to `git-fix-conflict` or `github-fix-ci` directly when only conflicts or only CI need fixing. `github-issue-resolve` chains into `git-commit` and `github-pr-create` for the final steps.
