@@ -4,12 +4,13 @@
 
 Bring a PR back to a mergeable state. It detects merge conflicts, failing CI, and unresolved review comments, and runs only the sub-skills that match what it found. All work happens in a dedicated worktree created from the PR head, and the fixes are pushed to the PR head branch.
 
-If only one kind of problem needs fixing, use that skill directly: [`git-fix-conflict`](../../git/git-fix-conflict/README.md), [`github-fix-ci`](../github-fix-ci/README.md), or [`github-resolve-pr-comment`](../github-resolve-pr-comment/README.md).
+To fix only conflicts or only CI, use [`git-fix-conflict`](../../git/git-fix-conflict/README.md) or [`github-fix-ci`](../github-fix-ci/README.md) directly. Requests to handle review comments come to this skill. To handle only review comments in the worktree you are already working in, name [`github-resolve-pr-comment`](../github-resolve-pr-comment/README.md) explicitly.
 
 ## Usage
 
 - "PRの問題を全部直して"
 - "PRをまとめて修正して"
+- "レビューコメントが来たので対応して"
 
 ```text
 /github-pr-fix
@@ -27,10 +28,10 @@ If only one kind of problem needs fixing, use that skill directly: [`git-fix-con
 - Stops with an error when no PR is found, or when the PR comes from a fork the user cannot push to.
 - Creates the worktree at `<repo-root>/.tmp/<repo-name>-worktrees/pr-<number>-fix` on a local branch `pr-fix/<number>`, taken from the fetched PR head ref. An existing worktree or local branch with that name is preserved and aborts the run.
 - The PR's language is detected once from its title and body (English when ambiguous) and passed to every sub-skill and the final summary.
-- Detection runs in parallel. Conflicts are handled when the PR is `CONFLICTING`. CI is handled when any check is `FAILURE`, `CANCELLED`, or `TIMED_OUT`. Review comments are handled when there is at least one unresolved inline thread, counted with `scripts/fetch_review_threads.sh --only-unresolved`.
+- Detection runs in parallel. Conflicts are handled when the PR is `CONFLICTING`. CI is handled when any check is `FAILURE`, `CANCELLED`, or `TIMED_OUT`. Review comments are handled when there is at least one unresolved inline thread, or when a review summary body or PR-level issue comment from another user is still unaddressed. Threads are counted with `scripts/fetch_review_threads.sh --only-unresolved`. A review summary body or PR-level issue comment counts as unaddressed when it contains a request or question that no later commit or comment of your own has dealt with.
 - Sub-skills run in this order, and a failure in one does not stop the next: `git-fix-conflict`, `github-fix-ci`, `github-resolve-pr-comment`. It asks the user before large changes.
 - Pushes go explicitly to the PR head branch with `git push <push-remote> HEAD:<head-ref-name>`. For cross-repository PRs, the head repository is the push remote rather than `origin`.
-- The original working tree is never edited. At the end, uncommitted changes and unpushed commits are checked, and the PR's final state is shown with a summary (templates in `references/summary_template.md` and `_ja`).
+- The original working tree is never edited. At the end, uncommitted changes and unpushed commits are checked, and the PR's final state is shown with a summary (templates in `references/summary_template.md` and `_ja`). The summary is followed by the full report returned by each sub-skill that was called.
 - Only after successful completion with all changes pushed to the PR head is this invocation's worktree removed with `git worktree remove`. After removal succeeds, the local branch is deleted with `git branch -d` and temporary refs are cleaned up. Errors or cancellation, uncommitted changes, unpushed commits, or denied removal preserve the worktree and branch; their paths and the reason are reported. Parent directories and other worktrees are preserved, and denied deletion is never retried through another method.
 
 ## Dependencies

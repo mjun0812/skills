@@ -1,14 +1,15 @@
 ---
 name: github-resolve-pr-comment
 description: >-
-  PRのレビューコメントを確認し、対応・返信するSkill。
-  ユーザーが「レビューコメントに対応して」「PRコメントに返信して」のように依頼したら使うこと。
+  PRのレビューコメントだけを、現在の作業ツリーで確認して対応・返信するSkill。
+  ユーザーがこのSkillを名前で指定したときや、github-pr-fixなどの呼び出し元から渡されたとき、現在の作業ツリーでレビューコメントだけに対応するよう指示されたときに使うこと。
+  「レビューコメントが来たので対応して」のように、名前も作業場所も指定しない依頼には使わない(github-pr-fixを使う)。
 allowed-tools: Read, Edit, Write, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(bash:*)
 ---
 
 # Resolve PR Review Comments
 
-PRに付いた3種類のレビューコメント (inline review thread、review summary body、PR-level issue comment) を横断して取得し、重要度を判断して修正・返信するSkill。修正はcommit・pushし、対応した各コメントには必ずリプライを投稿する。
+PRに付いた3種類のレビューコメント(inline review thread、review summary body、PR-level issue comment)を横断して取得し、重要度を判断して修正・返信するSkill。修正はcommit・pushする。GitHubへ投稿するのはinline review threadへのリプライだけで、全コメントの対応結果は対応サマリーとしてチャットに表示する。
 
 ## 引数
 
@@ -20,7 +21,7 @@ review全体のstateや `isOutdated` だけで対応対象から除外しない�
 
 ## コメントの種類と扱い
 
-PRには性質の異なる3種類のコメントがある。**それぞれ取得方法もリプライ方法も違う**ので混同しないこと。
+PRには性質の異なる3種類のコメントがある。**それぞれ取得方法と対応結果の伝え方が違う**ので混同しないこと。
 
 - **Review thread (inline)**: コードの行に紐づくスレッド。最も一般的なレビューコメント。
   - 取得方法: GraphQL `reviewThreads` ([fetch_review_threads.sh](scripts/fetch_review_threads.sh))
@@ -28,10 +29,10 @@ PRには性質の異なる3種類のコメントがある。**それぞれ取得
   - **重要**: inlineスレッドへのリプライには **スレッドの先頭コメントの `databaseId`**(root comment id)を使うこと。スレッド内の途中コメントのIDだと404になる。`fetch_review_threads.sh` は `root_comment_id` フィールドにこのIDを入れて返す。
 - **Review summary body**: レビュー全体に付く本文。`COMMENTED` / `CHANGES_REQUESTED` などのstateを持つ。
   - 取得方法: `gh pr view <pr> --json reviews`
-  - リプライ先: ネイティブなスレッド機構はないため、引用形式のissue commentとして投稿
+  - 対応結果の伝え方: GitHubには投稿せず、チャットの対応サマリーに記載する
 - **Issue comment (PR-level)**: コード行に紐づかないPR全体への一般コメント。
   - 取得方法: `gh pr view <pr> --json comments` または `gh api /issues/{pr}/comments`
-  - リプライ先: `repos/{owner/repo}/issues/{pr}/comments` に新規issue commentとして投稿
+  - 対応結果の伝え方: GitHubには投稿せず、チャットの対応サマリーに記載する
 
 ## タスク
 
@@ -147,14 +148,10 @@ PRには性質の異なる3種類のコメントがある。**それぞれ取得
 
 ### Phase 6: リプライの投稿
 
-対応した各コメントへのリプライを**常に**投稿する。
-リプライ先により使用するスクリプトが異なる。
+GitHubへ投稿するのは、inline review threadへのリプライだけにする。**全unresolved threadに常にリプライする**。
+review summary bodyとPR-level issue commentへの対応結果は、Phase 7の対応サマリーに記載する。
 
-#### 6-A. Inline review thread へのリプライ
-
-コード行に紐づくreview threadに対するリプライ。**全 unresolved thread にリプライする**。
-
-スレッド内コメントとして追記される。使用するスクリプトは [post_review_reply.sh](scripts/post_review_reply.sh)。
+リプライはスレッド内コメントとして追記される。使用するスクリプトは [post_review_reply.sh](scripts/post_review_reply.sh)。
 
 リプライ本文はアクションに応じて内容を変える:
 
@@ -183,43 +180,22 @@ bash <skill-dir>/scripts/post_review_reply.sh \
   --body-file /tmp/pr-reply-<root-comment-id>.md
 ```
 
-#### 6-B. PR-level コメントの投稿
+### Phase 7: 対応サマリーの表示
 
-PR全体への対応サマリーを**1つの issue comment として投稿する**。使用するスクリプトは [post_issue_comment.sh](scripts/post_issue_comment.sh)。
+3種類のコメントすべての対応結果を、対応サマリーとして最終出力でチャットに表示する。
 
 本文の構成:
 
-- **概要**: 対応した未解決スレッド総数、修正件数、不採用件数、結果状態を1〜2文で記述
-- **対応した内容の箇条書き**: Must Fix / Should Fix / 質問 / 情報共有 ごとに、対応したinline review threadを1件ずつ列挙する
-  - 各項目は対応したinline review commentへのURLリンク(`[filename:line](review-comment-url)` 形式)で参照する
-  - 採用・不採用・修正コミットSHA・理由などの事実を客観的に記述する
+- **概要**: 対応したコメントの総数、修正件数、不採用件数、結果状態を1〜2文で記述
+- **対応した内容の箇条書き**: Must Fix / Should Fix / 質問 / 情報共有 ごとに、対応したコメントを1件ずつ列挙する
+  - inline review threadは、コメントへのURLリンク(`[filename:line](review-comment-url)` 形式)で参照する
+  - review summary bodyとPR-level issue commentは、投稿者と種類(`@<author> のreview` / `@<author> のPRコメント` 形式)で参照する。GitHubにリプライが残らないため、質問への回答や不採用の理由は要約せずに全文を書く
+  - 採用・不採用・修正コミットSHA・理由などの事実を記述する
 
 template:
 
 - English: [`references/comment_summary_template.md`](references/comment_summary_template.md)
 - Japanese: [`references/comment_summary_template_ja.md`](references/comment_summary_template_ja.md)
-
-記述ルール:
-
-- **人間との対話を意識しない**。「ご指摘の通り」「ありがとうございます」などの対話的な表現は使わず、事実と内容のみを客観的に書く
-- Review summary body / PR-level issue commentへの個別リプライ(引用＋回答)はこのコメントには含めない。サマリーのみを投稿する
-
-手順:
-
-1. 上記内容を1つのMarkdownファイルに書き出す
-   - 出力先: `/tmp/pr-summary-<number>.md`
-2. `post_issue_comment.sh` で投稿する
-
-```bash
-bash <skill-dir>/scripts/post_issue_comment.sh \
-  --repo "<owner/repo>" \
-  --pr <number> \
-  --body-file /tmp/pr-summary-<number>.md
-```
-
-### Phase 7: 結果を返す
-
-Phase 6-Bで投稿したPR-levelコメント(コメントサマリー)の本文をそのまま出力する。
 
 ## 注意事項
 

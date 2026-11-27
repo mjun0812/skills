@@ -1,6 +1,6 @@
 ---
 name: github-pr-fix
-description: PRの全問題 (コンフリクト、CI失敗、レビューコメント) を自動検出してgit worktree内で修正するSkill。ユーザーが「PRの問題を全部直して」「PRをまとめて修正して」のように依頼したら使うこと。コンフリクト解消・CI修正・レビューコメント対応のうち1種類だけの依頼には使わない。
+description: PRの全問題(コンフリクト、CI失敗、レビューコメント)を自動検出してgit worktree内で修正するSkill。ユーザーが「PRの問題を全部直して」「PRをまとめて修正して」「レビューコメントが来たので対応して」「レビューが返ってきたので修正して」のように依頼したら使うこと。コンフリクト解消だけ、CI修正だけの依頼には使わない。
 allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat:*), Bash(eza:*), Bash(grep:*), Bash(head:*), Bash(tail:*), Bash(jq:*), Bash(bash:*)
 ---
 
@@ -54,7 +54,9 @@ allowed-tools: Skill, Bash(git:*), Bash(gh:*), Bash(cat:*), Bash(ls:*), Bash(bat
 
 - **1. コンフリクト**: `mergeable` が `CONFLICTING` の場合のみ対応する。`MERGEABLE` / `UNKNOWN` はスキップする。
 - **2. CI失敗**: `FAILURE` / `CANCELLED` / `TIMED_OUT` のcheckがある場合のみ対応する。全て実行中の場合はステータスを報告し、Phase 4のStep 2はスキップする。
-- **3. 未対応レビューコメント**: inline review threadのunresolved数が1件以上の場合のみ対応する。unresolved数は [`scripts/fetch_review_threads.sh`](scripts/fetch_review_threads.sh) の `--only-unresolved` で取得し、review全体のstateだけでは判定しない (stateベースの判定はunresolved threadを取りこぼす)。
+- **3. 未対応レビューコメント**: 次のどちらかに該当する場合のみ対応する。
+  - inline review threadのunresolved数が1件以上ある。unresolved数は[`scripts/fetch_review_threads.sh`](scripts/fetch_review_threads.sh)の`--only-unresolved`で取得し、review全体のstateだけでは判定しない(stateベースの判定はunresolved threadを取りこぼす)。
+  - 認証ユーザー以外が投稿したreview summary body(`APPROVED`以外で本文があるもの)またはPR-level issue commentのうち、未対応のものが1件以上ある。`gh pr view <number> --json reviews,comments`で取得する。これらにはネイティブな解決機構がないため、依頼や質問を含み、投稿より後のcommitや認証ユーザーのコメントで対応されていないものを未対応と判断する。
 
 ### Phase 4: 検出した問題への対応
 
@@ -88,7 +90,7 @@ Phase 3で失敗チェックが検出された場合のみ:
 
 #### Step 3: レビューコメントへの対応
 
-Phase 3で未解決スレッドが検出された場合のみ:
+Phase 3で未対応レビューコメントが検出された場合のみ、次を行う。
 
 - `<worktree-path>` 内でSkill toolで `github-resolve-pr-comment` を呼ぶ (同Skillにはレビューコメントへのリプライを常に投稿させる)
 - 完了後、再度 [`scripts/fetch_review_threads.sh`](scripts/fetch_review_threads.sh) の `--only-unresolved` でunresolved数の差分を取って報告する
@@ -102,7 +104,10 @@ Phase 3で未解決スレッドが検出された場合のみ:
 
 ### Phase 6: 最終サマリー
 
-検出された問題に応じて、Phase 1で決定したテンプレートを使用して表示する。
+Phase 1で決定したテンプレートを使い、最終出力として表示する。
+
+- 「対応内容」には、Phase 3で検出した問題の行だけを載せる
+- その下に、Phase 4で呼び出した各サブSkillが返した報告の全文を、呼び出した順に載せる
 
 ### Phase 7: クリーンアップ
 
