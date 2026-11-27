@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Post a new PR review (with optional inline comments) via GitHub API.
+# Post a new PR review via GitHub API. Each finding's details go into an inline
+# comment, and the review body lists the findings in tables that link to them.
 #
 # Usage:
 #   post_review.sh \
@@ -7,25 +8,26 @@
 #     --pr <number> \
 #     --commit <sha> \
 #     --event <APPROVE|REQUEST_CHANGES|COMMENT> \
-#     --body-file <path-to-markdown-body> \
-#     [--comments-file <path-to-comments-json>]
+#     --pr-text <path-to-pr.md> \
+#     --findings <path-to-findings.json> \
+#     --out-dir <dir>
+#
+# Pass the same --pr-text, --findings, and --out-dir that render_review.py was
+# run with. <dir> must hold the comments.json it wrote; this script writes
+# posted.json and body.md there.
 #
 # To dismiss existing reviews, use scripts/dismiss_my_reviews.sh separately.
 # To resolve threads replaced by this review, use scripts/resolve_review_threads.sh.
 #
-# Comments JSON shape (array):
-#   [
-#     {"path": "src/foo.ts", "line": 42, "body": "...", "side": "RIGHT"},
-#     ...
-#   ]
+# - The inline comments are created in a pending review first, so their URLs
+#   exist when the body is rendered. Submitting the pending review with that
+#   body publishes the body and the comments at once.
+# - A finding whose (path, line, side) is not part of the PR diff cannot get an
+#   inline comment. The review body carries its details instead.
+# - A user can hold only one pending review per PR, so the pending review is
+#   deleted when anything fails before it is submitted.
 #
-# - "side" is optional. Default is "RIGHT" (post-change). Use "LEFT" to comment
-#   on a deleted line in the original file.
-# - Comments whose (path, line, side) is not part of the PR diff are omitted
-#   from inline comments. The review body is not modified because it already
-#   contains every finding.
-#
-# On success, prints the PR HTML URL to stdout.
+# On success, prints the review's HTML URL to stdout.
 
 set -euo pipefail
 
@@ -33,8 +35,9 @@ REPO=""
 PR=""
 COMMIT=""
 EVENT=""
-BODY_FILE=""
-COMMENTS_FILE=""
+PR_TEXT=""
+FINDINGS=""
+OUT_DIR=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -54,12 +57,16 @@ while [[ $# -gt 0 ]]; do
         EVENT="$2"
         shift 2
         ;;
-    --body-file)
-        BODY_FILE="$2"
+    --pr-text)
+        PR_TEXT="$2"
         shift 2
         ;;
-    --comments-file)
-        COMMENTS_FILE="$2"
+    --findings)
+        FINDINGS="$2"
+        shift 2
+        ;;
+    --out-dir)
+        OUT_DIR="$2"
         shift 2
         ;;
     *)
@@ -80,7 +87,9 @@ require "$REPO" --repo
 require "$PR" --pr
 require "$COMMIT" --commit
 require "$EVENT" --event
-require "$BODY_FILE" --body-file
+require "$PR_TEXT" --pr-text
+require "$FINDINGS" --findings
+require "$OUT_DIR" --out-dir
 
 case "$EVENT" in
 APPROVE | REQUEST_CHANGES | COMMENT) ;;
@@ -90,29 +99,28 @@ APPROVE | REQUEST_CHANGES | COMMENT) ;;
     ;;
 esac
 
-if [[ ! -f $BODY_FILE ]]; then
-    echo "Body file not found: $BODY_FILE" >&2
-    exit 2
-fi
+COMMENTS_FILE="${OUT_DIR}/comments.json"
+POSTED_FILE="${OUT_DIR}/posted.json"
+BODY_FILE="${OUT_DIR}/body.md"
 
-if [[ -n $COMMENTS_FILE && ! -f $COMMENTS_FILE ]]; then
-    echo "Comments file not found: $COMMENTS_FILE" >&2
-    exit 2
-fi
+for file in "$PR_TEXT" "$FINDINGS" "$COMMENTS_FILE"; do
+    if [[ ! -f $file ]]; then
+        echo "File not found: $file" >&2
+        exit 2
+    fi
+done
 
 PAYLOAD_FILE=$(mktemp)
 PR_FILES_FILE=$(mktemp)
-SPLIT_FILE=$(mktemp)
 VALID_COMMENTS_FILE=$(mktemp)
-trap 'rm -f "$PAYLOAD_FILE" "$PR_FILES_FILE" "$SPLIT_FILE" "$VALID_COMMENTS_FILE"' EXIT
+PENDING_REVIEW_ID=""
+trap 'rm -f "$PAYLOAD_FILE" "$PR_FILES_FILE" "$VALID_COMMENTS_FILE"; [[ -z $PENDING_REVIEW_ID ]] || gh api -X DELETE "repos/${REPO}/pulls/${PR}/reviews/${PENDING_REVIEW_ID}" > /dev/null' EXIT
 
-# Preflight: split inline comments into (valid, invalid) by checking whether
-# (path, line, side) is part of the PR diff. Invalid entries are omitted from
-# inline comments without changing the review body.
-if [[ -n $COMMENTS_FILE ]]; then
-    gh api "repos/${REPO}/pulls/${PR}/files" --paginate > "$PR_FILES_FILE"
+# Keep only the comments whose (path, line, side) is part of the PR diff;
+# the others cannot be posted inline.
+gh api "repos/${REPO}/pulls/${PR}/files?per_page=100" --paginate --jq '.[]' | jq -s '.' > "$PR_FILES_FILE"
 
-    jq --slurpfile comments "$COMMENTS_FILE" '
+jq --slurpfile comments "$COMMENTS_FILE" '
     def parse_patch:
       if . == null or . == "" then []
       else
@@ -146,40 +154,44 @@ if [[ -n $COMMENTS_FILE ]]; then
       | map("\(.path):\(.line):\(.side)")
       | unique
     ) as $valid_set
-    |
-    ( $comments[0] | map(. + {_key: "\(.path):\(.line):\(.side // "RIGHT")"}) ) as $annotated
-    | {
-        valid:   [ $annotated[] | . as $c | select($valid_set | index($c._key) != null) | del(._key) ],
-        invalid: [ $annotated[] | . as $c | select($valid_set | index($c._key) == null) | del(._key) ]
-      }
-  ' "$PR_FILES_FILE" > "$SPLIT_FILE"
+    | [ $comments[0][] | select(("\(.path):\(.line):\(.side // "RIGHT")") as $key | $valid_set | index($key) != null) ]
+  ' "$PR_FILES_FILE" > "$VALID_COMMENTS_FILE"
 
-    jq '.valid' "$SPLIT_FILE" > "$VALID_COMMENTS_FILE"
+VALID_COUNT=$(jq 'length' "$VALID_COMMENTS_FILE")
+INVALID_COUNT=$(($(jq 'length' "$COMMENTS_FILE") - VALID_COUNT))
 
-    INVALID_COUNT=$(jq '.invalid | length' "$SPLIT_FILE")
-    VALID_COUNT=$(jq 'length' "$VALID_COMMENTS_FILE")
-
-    if [[ $INVALID_COUNT -gt 0 ]]; then
-        echo "Warning: ${INVALID_COUNT} inline comment(s) target lines not in the PR diff; omitting them from inline comments. Findings remain in the review body." >&2
-    fi
-
-    if [[ $VALID_COUNT -eq 0 ]]; then
-        COMMENTS_FILE=""
-    else
-        COMMENTS_FILE="$VALID_COMMENTS_FILE"
-    fi
+if [[ $INVALID_COUNT -gt 0 ]]; then
+    echo "Warning: ${INVALID_COUNT} finding(s) target lines not in the PR diff; the review body carries their details instead of an inline comment." >&2
 fi
 
-# Build the request payload via jq so the body is properly escaped.
+if [[ $VALID_COUNT -gt 0 ]]; then
+    # No event: the review stays pending and invisible until it is submitted.
+    jq -n \
+        --arg commit_id "$COMMIT" \
+        --slurpfile comments "$VALID_COMMENTS_FILE" \
+        '{commit_id: $commit_id, comments: $comments[0]}' \
+        > "$PAYLOAD_FILE"
+    PENDING_REVIEW_ID=$(gh api -X POST "repos/${REPO}/pulls/${PR}/reviews" --input "$PAYLOAD_FILE" --jq '.id')
+    gh api "repos/${REPO}/pulls/${PR}/reviews/${PENDING_REVIEW_ID}/comments?per_page=100" --paginate --jq '.[]' | jq -s '.' > "$POSTED_FILE"
+else
+    echo '[]' > "$POSTED_FILE"
+fi
 
-if [[ -n $COMMENTS_FILE ]]; then
+python "$(dirname "$0")/render_review.py" \
+    --pr-text "$PR_TEXT" \
+    --findings "$FINDINGS" \
+    --out-dir "$OUT_DIR" \
+    --posted "$POSTED_FILE" \
+    > /dev/null
+
+if [[ -n $PENDING_REVIEW_ID ]]; then
     jq -n \
         --rawfile body "$BODY_FILE" \
-        --arg commit_id "$COMMIT" \
         --arg event "$EVENT" \
-        --slurpfile comments "$COMMENTS_FILE" \
-        '{body: $body, commit_id: $commit_id, event: $event, comments: $comments[0]}' \
+        '{body: $body, event: $event}' \
         > "$PAYLOAD_FILE"
+    gh api -X POST "repos/${REPO}/pulls/${PR}/reviews/${PENDING_REVIEW_ID}/events" --input "$PAYLOAD_FILE" --jq '.html_url'
+    PENDING_REVIEW_ID=""
 else
     jq -n \
         --rawfile body "$BODY_FILE" \
@@ -187,10 +199,5 @@ else
         --arg event "$EVENT" \
         '{body: $body, commit_id: $commit_id, event: $event}' \
         > "$PAYLOAD_FILE"
+    gh api -X POST "repos/${REPO}/pulls/${PR}/reviews" --input "$PAYLOAD_FILE" --jq '.html_url'
 fi
-
-RESPONSE=$(gh api -X POST \
-    "repos/${REPO}/pulls/${PR}/reviews" \
-    --input "$PAYLOAD_FILE")
-
-echo "$RESPONSE" | jq -r '.html_url'

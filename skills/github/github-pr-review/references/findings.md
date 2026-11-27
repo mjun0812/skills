@@ -1,6 +1,6 @@
 # 確定指摘の書き方と findings.json
 
-校正した確定指摘は1つのJSONに書き出し、`scripts/render_review.py` がレポート本文 (`body.md`) とinline comments (`comments.json`) の両方を生成する。並び順、連番、項目名の表記、フッターはscriptが付けるので、ここには内容だけを書く。
+校正した確定指摘は1つのJSONに書き出し、`scripts/render_review.py`がチャット用の全文レポート(`report.md`)、inline comments(`comments.json`)、GitHubへ投稿するreview本文(`body.md`)を生成する。並び順、連番、項目名の表記、フッターはscriptが付けるので、ここには内容だけを書く。
 
 ## 文書の項目
 
@@ -28,7 +28,7 @@
 | `basis`                 | string[]                    | `claim` で必須。PR本文の該当記述の引用                                                                                                                                                          |
 | `other_locations`       | string[]                    | 任意。同じ問題を持つ他の `file:line`                                                                                                                                                            |
 | `notes`                 | string[]                    | 任意。変更前や踏襲元との比較など、核心ではないが判断に役立つ事実                                                                                                                                |
-| `completion_conditions` | (string \| {text, note})[]  | 1件以上。実装方法ではなく、解消を判断できる状態を1条件1文で書く。補足が必要な条件だけ `{"text": ..., "note": ...}` にする。`note` は本文にだけ出る                                              |
+| `completion_conditions` | (string \| {text, note})[]  | 1件以上。実装方法ではなく、解消を判断できる状態を1条件1文で書く。補足が必要な条件だけ `{"text": ..., "note": ...}` にする。`note`は条件の次の行に出る                                           |
 
 ## 内容の規則
 
