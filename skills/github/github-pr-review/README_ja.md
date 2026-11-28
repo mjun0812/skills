@@ -34,9 +34,9 @@ GitHubのPull Requestを敵対的にコードレビューし、検証を通過�
 - SubAgentが起動できない、または結果を返さない場合は、投稿、dismiss、resolveをせずに中止し、原因を報告する。diffを自分で読んで代替レビューはしない。
 - 失敗したCIの結果はFinderの証拠として使い、レポートの概要にも記載する。
 - 同じPRに以前投稿した指摘と返信を、resolve済みも含めて`scripts/fetch_prior_findings.sh`で取得し、SubAgentへ渡す。見送りか却下で決着した指摘と同じ根本原因の候補は、判断の前提が変わったことを示せない限り検証の前に破棄し、蒸し返さない。
-- レポートの言語(`ja`または`en`)は、PRのタイトルと本文から`scripts/render_review.py`が決める。同scriptがfindings JSON(形式は`references/findings.md`)からレビュー本文とinline commentを生成する。Verdictは要修正事項が1件以上なら`REQUEST_CHANGES`、0件なら`APPROVE`になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。要修正事項には、再現のコマンド列と出力を載せる。
-- 投稿前に、Verdict、レポート本文、inline comment、dismiss・resolveの件数を提示し、投稿・修正して再提示・キャンセルを確認する。`--auto`ではこの確認を省く。
-- 投稿は`scripts/post_review.sh`で行う。diffに含まれない`(path, line, side)`のinline commentは除外される。本文とcommentはファイルで渡す。
+- レポートの言語(`ja`または`en`)は、PRのタイトルと本文から`scripts/render_review.py`が決める。同scriptがfindings JSON(形式は`references/findings.md`)から、チャット用の全文レポート、inline comment、GitHubへ投稿するreview本文を生成する。review本文は指摘の一覧表で、各行が詳細を載せたinline commentへリンクする。再現できた指摘かどうかは、表の「再現」の列で示す。Verdictは要修正事項が1件以上なら`REQUEST_CHANGES`、0件なら`APPROVE`になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。要修正事項には、再現のコマンド列と出力を載せる。
+- 投稿前に、Verdict、全文レポート、dismiss・resolveの件数を提示し、投稿・修正して再提示・キャンセルを確認する。`--auto`ではこの確認を省く。
+- 投稿は`scripts/post_review.sh`で行う。inline commentを下書きのreviewとして先に作り、そのURLへリンクする一覧表を本文にして公開する。公開前に失敗した場合は下書きを削除する。diffに含まれない`(path, line, side)`の指摘はinline commentにできないため、詳細をreview本文に載せる。
 - self reviewでは、自分のPRにはapproveやrequest changesを投稿できないため、`COMMENT` eventで投稿する。本文のVerdict表記は変えない。
 - 投稿に成功した後に限り、同じreviewerの以前のreviewをdismiss(`scripts/dismiss_my_reviews.sh`)し、そのthreadをresolve(`scripts/resolve_review_threads.sh`)する。投稿に失敗した場合は何もしない。
 - レビュー中にPRのheadが進んだ場合は、確定指摘をレビューしたcommitに対する`COMMENT`として投稿し、以前のreviewには手を付けない。指摘が0件なら何も投稿しない。

@@ -1,21 +1,30 @@
 #!/usr/bin/env python
-"""Render a review body and inline comments from a findings JSON file.
+"""Render a review report, inline comments, and review body from a findings JSON file.
 
 Usage:
     render_review.py --pr-text <pr.md>
     render_review.py --pr-text <pr.md> --findings <findings.json> --out-dir <dir>
+    render_review.py --pr-text <pr.md> --findings <findings.json> --out-dir <dir> \
+        --posted <posted.json>
 
 <pr.md> holds the PR title and body. Without --findings, prints the output
-language (ja or en) decided from it. With --findings, writes <dir>/body.md
-and <dir>/comments.json, then prints the verdict (APPROVE or REQUEST_CHANGES)
-to stdout. Only findings reproduced by running the code decide the verdict;
-findings that were only traced through the code are listed as unproven.
-Validation errors, including a language that does not match the PR text, are
-printed to stderr, one per line, with exit code 2.
+language (ja or en) decided from it. With --findings, writes <dir>/report.md
+and <dir>/comments.json. report.md shows every finding in full for the chat;
+comments.json holds the inline comments, which carry the same details on
+GitHub with the evidence folded. Adding --posted writes <dir>/body.md instead:
+the review body, which lists the findings in a table that links to the inline
+comments in <posted.json>. A finding without a posted inline comment keeps its
+details in the body, below the table.
+
+Each run prints the verdict (APPROVE or REQUEST_CHANGES) to stdout. Only
+findings reproduced by running the code decide the verdict; the table marks
+the findings that were only traced through the code. Validation errors,
+including a language that does not match the PR text, are printed to stderr,
+one per line, with exit code 2.
 
 The findings JSON is documented in references/findings.md. Every layout
 decision (ordering, numbering, field labels, footers) lives here so the
-review body and the inline comments cannot disagree.
+report, the inline comments, and the review body cannot disagree.
 """
 
 import argparse
@@ -33,10 +42,12 @@ SIDES = ("RIGHT", "LEFT")
 _NON_PROSE = re.compile(r"```.*?```|`[^`\n]*`|https?://\S+", re.DOTALL)
 _JAPANESE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]")
 _LATIN = re.compile(r"[A-Za-z]")
+# The heading render_comments writes: a mark, the finding number, a colon.
+_COMMENT_NUMBER = re.compile(r"\S+ (\d+): ")
 
 
 class Condition(TypedDict):
-    """A completion condition with an optional note shown only in the body."""
+    """A completion condition with an optional note shown on the next line."""
 
     text: str
     note: NotRequired[str]
@@ -73,6 +84,7 @@ class Document(TypedDict):
 
     language: str
     reviewer: str
+    model: str
     commit: str
     summary: str
     notes: NotRequired[list[str]]
@@ -85,15 +97,17 @@ LABELS = {
         "summary": "概要",
         "verdict": "判定",
         "findings": "指摘事項",
-        "unproven": "未証明の指摘",
-        "unproven_note": "実行では再現できていない指摘。到達できることはコードで確かめている。判定には含めない。",
-        "unproven_inline": "未証明: 実行では再現できていない",
         "none": "なし",
+        "finding_heading": "指摘{number}.",
+        "reproduced": "再現",
+        "not_reproduced": "未再現",
+        "category": "種別",
         "location": "場所",
-        "problem": "問題",
+        "finding": "指摘",
         "execution_path": "発生経路",
-        "reproduction": "再現",
         "basis": "根拠",
+        "reproduction": "再現",
+        "and": "と",
         "other_locations": "他の該当箇所",
         "notes": "補足",
         "completion_conditions": "完了条件",
@@ -103,15 +117,17 @@ LABELS = {
         "summary": "Summary",
         "verdict": "Verdict",
         "findings": "Findings",
-        "unproven": "Unproven findings",
-        "unproven_note": "Not reproduced by running the code. Reachability was confirmed by reading it. These do not affect the verdict.",
-        "unproven_inline": "Unproven: not reproduced by running the code",
         "none": "N/A",
+        "finding_heading": "Finding {number}.",
+        "reproduced": "Reproduced",
+        "not_reproduced": "Not reproduced",
+        "category": "Category",
         "location": "Location",
-        "problem": "Problem",
+        "finding": "Finding",
         "execution_path": "Execution path",
-        "reproduction": "Reproduction",
         "basis": "Basis",
+        "reproduction": "Reproduction",
+        "and": " and ",
         "other_locations": "Other locations",
         "notes": "Notes",
         "completion_conditions": "Completion condition",
@@ -188,7 +204,7 @@ def validate(data: object, language: str) -> list[str]:
             f"language: must be {language!r}, decided from the PR title and body; "
             "rewrite every text field in that language"
         )
-    for key in ("reviewer", "commit", "summary"):
+    for key in ("reviewer", "model", "commit", "summary"):
         if not (isinstance(data.get(key), str) and data[key].strip()):
             errors.append(f"{key}: must be a non-empty string")
     if "notes" in data and not _is_str_list(data["notes"]):
@@ -266,12 +282,11 @@ def _bullets(items: list[str]) -> str:
     return "\n".join(f"- {item}" for item in items)
 
 
-def _conditions(finding: Finding, with_notes: bool) -> str:
+def _conditions(finding: Finding) -> str:
     """Render the completion conditions of a finding as a bullet list.
 
     Args:
         finding: A validated finding.
-        with_notes: Whether to add each condition's note on the following line.
     """
     lines: list[str] = []
     for raw in finding["completion_conditions"]:
@@ -280,7 +295,7 @@ def _conditions(finding: Finding, with_notes: bool) -> str:
             continue
         text, note = normalized
         lines.append(f"- {text}")
-        if with_notes and note:
+        if note:
             lines.append(f"  {note}")
     return "\n".join(lines)
 
@@ -310,60 +325,55 @@ def _location(finding: Finding) -> str:
     return f"{loc} (LEFT)" if finding.get("side") == "LEFT" else loc
 
 
-def render_body(data: Document, findings: list[Finding], verdict: str) -> str:
-    """Render the review body in the document's language.
+def _details(finding: Finding, lb: dict[str, str], fold: bool) -> list[str]:
+    """Render the detail fields of a finding, in the order all outputs share.
+
+    The problem, the completion conditions, and the other locations are what
+    a fix needs, so they always show. The evidence behind the finding comes
+    after them.
 
     Args:
-        data: The validated findings document.
-        findings: Findings already ordered and numbered by position, with the
-            reproduced ones first.
-        verdict: APPROVE or REQUEST_CHANGES.
-
-    Returns:
-        The Markdown review body.
+        finding: A validated finding.
+        lb: The labels of the output language.
+        fold: Whether to fold the evidence into a collapsed block, for GitHub.
     """
-    lb = LABELS[data["language"]]
-    summary_lines = [data["summary"].strip(), *data.get("notes", [])]
     parts = [
-        f"# {data['reviewer']} {lb['title']}",
-        f"## {lb['summary']}",
-        "\n".join(summary_lines),
-        f"## {lb['verdict']}",
-        verdict,
-        f"## {lb['findings']}",
+        finding["problem"].strip(),
+        f"**{lb['completion_conditions']}**\n\n{_conditions(finding)}",
     ]
-    if not any(f["proof"] == "reproduced" for f in findings):
-        parts.append(lb["none"])
-    unproven_started = False
-    for n, f in enumerate(findings, start=1):
-        if f["proof"] == "traced" and not unproven_started:
-            parts.extend([f"## {lb['unproven']}", lb["unproven_note"]])
-            unproven_started = True
-        section = [
-            f"### {n}. [{f['category']}] {f['summary']}",
-            f"**{lb['location']}**: {_location(f)}",
-            f"**{lb['problem']}**:\n{f['problem'].strip()}",
-        ]
-        if f["origin"] == "finder":
-            hops = "\n".join(
-                f"{i}. {hop}" for i, hop in enumerate(f["execution_path"], start=1)
-            )
-            section.append(f"**{lb['execution_path']}**:\n\n{hops}")
-        else:
-            section.append(f"**{lb['basis']}**:\n\n{_bullets(f['basis'])}")
-        if f["proof"] == "reproduced":
-            section.append(
-                f"**{lb['reproduction']}**:\n\n{_reproduction(f['reproduction'])}"
-            )
-        for key in ("other_locations", "notes"):
-            if f.get(key):
-                section.append(f"**{lb[key]}**:\n\n{_bullets(f[key])}")
-        section.append(
-            f"**{lb['completion_conditions']}**:\n\n{_conditions(f, with_notes=True)}"
+    if finding.get("other_locations"):
+        locations = ", ".join(f"`{loc}`" for loc in finding["other_locations"])
+        parts.append(f"**{lb['other_locations']}**: {locations}")
+
+    if finding["origin"] == "finder":
+        label = lb["execution_path"]
+        evidence = "\n".join(
+            f"{i}. {hop}" for i, hop in enumerate(finding["execution_path"], start=1)
         )
-        parts.append("\n\n".join(section))
-    parts.append(f"---\n\nReviewed by {data['reviewer']} at `{data['commit'][:7]}`")
-    return "\n\n".join(parts) + "\n"
+    else:
+        label = lb["basis"]
+        evidence = _bullets(finding["basis"])
+    reproduced = finding["proof"] == "reproduced"
+    notes = [f"{lb['notes']}: {note}" for note in finding.get("notes", [])]
+    if not fold:
+        parts.append(f"**{label}**\n\n{evidence}")
+        if reproduced:
+            parts.append(
+                f"**{lb['reproduction']}**\n\n{_reproduction(finding['reproduction'])}"
+            )
+        return [*parts, *notes]
+
+    folded = [evidence]
+    if reproduced:
+        label += lb["and"] + lb["reproduction"].lower()
+        folded.append(_reproduction(finding["reproduction"]))
+    folded.extend(notes)
+    return [
+        *parts,
+        f"<details>\n<summary>{label}</summary>\n\n"
+        + "\n\n".join(folded)
+        + "\n\n</details>",
+    ]
 
 
 def render_comments(
@@ -386,15 +396,14 @@ def render_comments(
         else:
             heading = [
                 f"🟡 {n}: **[{f['category']}] {f['summary']}**",
-                f"_{lb['unproven_inline']}_",
+                f"_{lb['not_reproduced']}_",
             ]
         body = "\n\n".join(
             [
                 *heading,
-                f"**{lb['problem']}**:\n{f['problem'].strip()}",
-                f"**{lb['completion_conditions']}**:\n\n{_conditions(f, with_notes=False)}",
+                *_details(f, lb, fold=True),
                 "---",
-                f"Commented by {data['reviewer']}",
+                f"Commented by {data['reviewer']} ({data['model']})",
             ]
         )
         comments.append(
@@ -408,8 +417,100 @@ def render_comments(
     return comments
 
 
+def inline_urls(posted: list[dict[str, str]]) -> dict[int, str]:
+    """Map finding numbers to the URLs of their posted inline comments.
+
+    The number is read from the heading render_comments wrote, because the
+    comments of a pending review carry no line to match on.
+
+    Args:
+        posted: The review comments the GitHub API returned.
+    """
+    urls: dict[int, str] = {}
+    for comment in posted:
+        match = _COMMENT_NUMBER.match(comment["body"])
+        if match:
+            urls[int(match[1])] = comment["html_url"]
+    return urls
+
+
+def _table(
+    rows: list[tuple[int, Finding]], urls: dict[int, str], lb: dict[str, str]
+) -> str:
+    """Render findings as a table whose numbers link to their inline comments.
+
+    Args:
+        rows: Findings with their numbers.
+        urls: Inline comment URLs by finding number.
+        lb: The labels of the output language.
+    """
+    lines = [
+        f"| # | {lb['reproduced']} | {lb['category']} | {lb['location']} | {lb['finding']} |",
+        "| --- | :---: | --- | --- | --- |",
+    ]
+    for n, f in rows:
+        number = f"[{n}]({urls[n]})" if n in urls else str(n)
+        mark = "✓" if f["proof"] == "reproduced" else "–"
+        # A pipe or a line break in a cell would end it early.
+        category, summary = (
+            " ".join(f[key].split()).replace("|", "\\|")
+            for key in ("category", "summary")
+        )
+        lines.append(f"| {number} | {mark} | {category} | {_location(f)} | {summary} |")
+    return "\n".join(lines)
+
+
+def render_body(
+    data: Document,
+    findings: list[Finding],
+    verdict: str,
+    urls: dict[int, str],
+    fold: bool,
+) -> str:
+    """Render the findings table followed by the findings that need their details here.
+
+    This is the review body posted to GitHub, and with no URLs and nothing
+    folded, the full report shown in the chat.
+
+    Args:
+        data: The validated findings document.
+        findings: Findings already ordered and numbered by position, with the
+            reproduced ones first.
+        verdict: APPROVE or REQUEST_CHANGES.
+        urls: Inline comment URLs by finding number. A finding missing here
+            has no inline comment, so its details follow the table.
+        fold: Whether to fold the evidence of those details, for GitHub.
+
+    Returns:
+        The Markdown body.
+    """
+    lb = LABELS[data["language"]]
+    numbered = list(enumerate(findings, start=1))
+    parts = [
+        f"# {data['reviewer']} {lb['title']}",
+        f"## {lb['summary']}",
+        "\n".join([data["summary"].strip(), *data.get("notes", [])]),
+        f"## {lb['verdict']}",
+        verdict,
+        f"## {lb['findings']}",
+        _table(numbered, urls, lb) if numbered else lb["none"],
+    ]
+    for n, f in numbered:
+        if n in urls:
+            continue
+        heading = lb["finding_heading"].format(number=n)
+        parts.extend(
+            [f"### {heading} {f['summary']}", _location(f), *_details(f, lb, fold)]
+        )
+    parts.append(
+        f"---\n\nReviewed by {data['reviewer']} ({data['model']})"
+        f" at `{data['commit'][:7]}`"
+    )
+    return "\n\n".join(parts) + "\n"
+
+
 def main() -> int:
-    """Parse arguments, validate the findings, and write both outputs."""
+    """Parse arguments, validate the findings, and write the requested outputs."""
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -417,12 +518,17 @@ def main() -> int:
         "--pr-text", required=True, type=Path, help="file with the PR title and body"
     )
     parser.add_argument("--findings", type=Path, help="findings JSON file")
+    parser.add_argument("--out-dir", type=Path, help="directory for the outputs")
     parser.add_argument(
-        "--out-dir", type=Path, help="directory for body.md and comments.json"
+        "--posted",
+        type=Path,
+        help="review comments the GitHub API returned for the posted inline comments",
     )
     args = parser.parse_args()
     if (args.findings is None) != (args.out_dir is None):
         parser.error("--findings and --out-dir must be given together")
+    if args.posted is not None and args.findings is None:
+        parser.error("--posted requires --findings")
 
     try:
         language = detect_language(args.pr_text.read_text(encoding="utf-8"))
@@ -451,14 +557,28 @@ def main() -> int:
     reproduced = any(f["proof"] == "reproduced" for f in findings)
     verdict = "REQUEST_CHANGES" if reproduced else "APPROVE"
     args.out_dir.mkdir(parents=True, exist_ok=True)
-    (args.out_dir / "body.md").write_text(
-        render_body(data, findings, verdict), encoding="utf-8"
-    )
-    (args.out_dir / "comments.json").write_text(
-        json.dumps(render_comments(data, findings), ensure_ascii=False, indent=2)
-        + "\n",
-        encoding="utf-8",
-    )
+    if args.posted is None:
+        (args.out_dir / "report.md").write_text(
+            render_body(data, findings, verdict, {}, fold=False), encoding="utf-8"
+        )
+        (args.out_dir / "comments.json").write_text(
+            json.dumps(render_comments(data, findings), ensure_ascii=False, indent=2)
+            + "\n",
+            encoding="utf-8",
+        )
+    else:
+        try:
+            posted = cast(
+                list[dict[str, str]],
+                json.loads(args.posted.read_text(encoding="utf-8")),
+            )
+        except (OSError, ValueError) as exc:
+            print(f"{args.posted}: {exc}", file=sys.stderr)
+            return 2
+        (args.out_dir / "body.md").write_text(
+            render_body(data, findings, verdict, inline_urls(posted), fold=True),
+            encoding="utf-8",
+        )
     print(verdict)
     return 0
 

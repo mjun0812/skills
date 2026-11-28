@@ -167,7 +167,7 @@ FinderとClaimには、テストや再現コードの実行を許可する。実
 
 3. [確定指摘の書き方と findings.json](references/findings.md) に従い、確定指摘を出力言語で校正して `<review-temp-dir>/findings.json` に書き出す。件数、順序、採否、技術的な意味、対象範囲、`path` / `line` / `side` は変えない
 4. public repositoryへ投稿するとき、private (internalを含む) repositoryの情報を書かない。参照先の公開状態は書く前に確認し、確認できなければprivateとして扱う。伏せるときはrepository名、Issue/PR番号、URL、branch名、参照先固有のファイルパスや固有名詞を書かず、参照先で確認した事実だけを残す
-5. レポート本文とinline commentsを生成する。並び順、連番、項目名、Verdict、フッターはscriptが決める。検証エラーが出た場合は `findings.json` を直して再実行する
+5. 全文のレポートとinline commentsを生成する。並び順、連番、項目名、Verdict、フッターはscriptが決める。検証エラーが出た場合は`findings.json`を直して再実行する
 
    ```bash
    python "<skill-dir>/scripts/render_review.py" \
@@ -176,7 +176,7 @@ FinderとClaimには、テストや再現コードの実行を許可する。実
      --out-dir "<review-temp-dir>"
    ```
 
-   `<review-temp-dir>/body.md` と `<review-temp-dir>/comments.json` が生成され、標準出力にVerdictとして `APPROVE` または `REQUEST_CHANGES` が出力される。要修正事項が1件以上なら `REQUEST_CHANGES`、0件なら `APPROVE` になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
+   `<review-temp-dir>/report.md`と`<review-temp-dir>/comments.json`が生成され、標準出力にVerdictとして`APPROVE`または`REQUEST_CHANGES`が出力される。`report.md`は全指摘の詳細を載せたチャット用のレポートで、GitHubへは投稿しない。GitHubへ投稿するreview本文は指摘の一覧表だけで、Phase 3.2で`post_review.sh`が生成する。指摘の詳細はinline commentに載る。要修正事項が1件以上なら `REQUEST_CHANGES`、0件なら `APPROVE` になる。未証明の指摘は、レポートとinline commentに載るが、Verdictを変えない。self reviewを含め、レポート内では `COMMENT` を使用しない。GitHub APIへ渡すeventはPhase 3.1で決める
 
 確定指摘の内部レコードは校正後も保持する。
 
@@ -187,8 +187,7 @@ FinderとClaimには、テストや再現コードの実行を許可する。実
 次をチャットに提示し、`AskUserQuestion` で「投稿する / 修正して再提示 / キャンセル」を確認する。承認されるまでPhase 3へ進まない。
 
 - Verdictと、Phase 3.1で決まるGitHub APIのevent
-- `<review-temp-dir>/body.md` の全文
-- `<review-temp-dir>/comments.json` の各inline commentの `path:line` と本文
+- `<review-temp-dir>/report.md`の全文
 - 投稿後にdismissする既存レビューとresolveする以前のthreadの件数
 
 「修正して再提示」の場合は、指示を `findings.json` に反映してPhase 2.3の手順5から再実行し、再び確認する。「キャンセル」の場合はPhase 3を実行せずPhase 4へ進む。
@@ -209,7 +208,7 @@ FinderとClaimには、テストや再現コードの実行を許可する。実
 
 #### Phase 3.2: レビューの投稿
 
-Phase 2.3で生成した `body.md` と `comments.json` を `scripts/post_review.sh` に渡してGitHub API経由でレビューを投稿する。
+Phase 2.3の手順5と同じ`--pr-text`、`--findings`、`--out-dir`を`scripts/post_review.sh`に渡して、GitHub API経由でレビューを投稿する。
 
 ```bash
 bash "<skill-dir>/scripts/post_review.sh" \
@@ -217,13 +216,15 @@ bash "<skill-dir>/scripts/post_review.sh" \
   --pr "<number>" \
   --commit "<latest-commit-sha>" \
   --event "<APPROVE|REQUEST_CHANGES|COMMENT>" \
-  --body-file "<review-temp-dir>/body.md" \
-  --comments-file "<review-temp-dir>/comments.json"
+  --pr-text "<review-temp-dir>/pr.md" \
+  --findings "<review-temp-dir>/findings.json" \
+  --out-dir "<review-temp-dir>"
 ```
 
 - 成功時はPRレビューのURLが標準出力に出力される
-- レビュー本文とinline commentはファイルで渡す。`gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てたJSON文字列の直接渡しは、引用符やJSONのエスケープが崩れるため使わない
-- diffに含まれない `(path, line, side)` のentryは `post_review.sh` がinline対象から除外して標準エラーに `Warning:` を出力する。レポート本文は変わらない
+- scriptは`comments.json`のinline commentを下書きのreviewとして作り、そのURLへリンクする一覧表をreview本文(`<review-temp-dir>/body.md`)にして公開する。公開前に失敗した場合は、scriptが下書きを削除する
+- レビュー本文とinline commentはscriptに生成・投稿させる。`gh pr review --body ...`、`gh api -f body=...`、シェル上で組み立てたJSON文字列の直接渡しは、引用符やJSONのエスケープが崩れるため使わない
+- diffに含まれない`(path, line, side)`の指摘はinline commentにできない。`post_review.sh`は標準エラーに`Warning:`を出力し、その指摘の詳細をreview本文に載せる
 
 #### Phase 3.3: 以前のレビューの後始末
 
@@ -260,6 +261,6 @@ bash "<skill-dir>/scripts/resolve_review_threads.sh" \
 
 開始時の`<latest-commit-sha>`に対するレビューとして、以下をまとめてユーザーに提示して終了する。
 
-- Verdict、言い直した変更の意図、要修正事項と未証明の指摘の件数とその由来の内訳、PR本文の主張のうち実行して一致した件数と実行できなかった件数、verifierが `refuted` と `uncertain` で破棄した候補のそれぞれの件数、以前の判断と同じ根本原因として破棄した候補の件数、レポート本文
+- Verdict、言い直した変更の意図、要修正事項と未証明の指摘の件数とその由来の内訳、PR本文の主張のうち実行して一致した件数と実行できなかった件数、verifierが `refuted` と `uncertain` で破棄した候補のそれぞれの件数、以前の判断と同じ根本原因として破棄した候補の件数、`report.md`の全文
 - レビューURL(`post_review.sh` の標準出力)。head commitの更新によりCOMMENTで投稿した場合はその旨を書く。Phase 2.4でのキャンセル、SubAgentの起動失敗、指摘0件でのhead commit更新、投稿失敗のいずれかで未投稿の場合は、その理由を明記する
 - dismissした既存レビューとresolveした以前のthreadの件数(Phase 3.3を実行した場合のみ)
