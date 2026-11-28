@@ -8,6 +8,7 @@
 | ---------- | --------- | ------------------------------------------------------------------------------------- |
 | `language` | `ja`/`en` | 出力言語。`render_review.py --pr-text` がPRのタイトルと本文から決めた値をそのまま書く |
 | `reviewer` | string    | 実行中のレビュワー名。Claude Codeでは `Claude`                                        |
+| `model`    | string    | 実行中のmodelの名前。system promptにある表記をそのまま書く。フッターに入る            |
 | `commit`   | string    | レビュー対象の `<latest-commit-sha>`。フッターには先頭7文字が入る                     |
 | `summary`  | string    | PRの変更内容だけを1〜2文で書く。レビュー結果や指摘件数は書かない                      |
 | `notes`    | string[]  | 任意。CIが失敗している場合に1行追加する                                               |
@@ -45,6 +46,7 @@
 {
   "language": "ja",
   "reviewer": "Claude",
+  "model": "Opus 5.5",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "summary": "session refresh を logout と独立した非同期処理に分離する。",
   "notes": ["CI: `test (unit)` が失敗している"],
