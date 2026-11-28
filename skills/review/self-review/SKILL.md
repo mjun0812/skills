@@ -179,7 +179,7 @@ bash "<skill-dir>/scripts/self_review_snapshot.sh" verify --metadata "$metadata_
 1. 指摘ごとに次のentryを作り、`metadata.json`と同じdirectoryの`hunk-notes.json`へ`{"comments": [...]}`の形で書き出す。指摘が0件なら空の配列にする。古いnoteを消すため、0件でもscriptを実行する。このrepositoryのhunk sessionが無く指摘も0件の場合、scriptはpaneを開かずに終了コード3を返す
    - `filePath`: `path:line`のpath
    - `newLine`: `path:line`のline。`(side=LEFT)`が付いた削除行への指摘では`newLine`を書かず、`oldLine`にlineを書く。renameしたファイルの削除行への指摘では`filePath`に変更前のpathを、追加行への指摘では変更後のpathを使う。`git mv`していない未commitのrenameを、hunkは削除と追加の2ファイルとして表示するためである
-   - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`。未証明の指摘は`[カテゴリ]`の前に`[未証明]`を付ける
+   - `summary`: `<Phase 5の連番>. [カテゴリ] 要約`。未証明の指摘は`[カテゴリ]`の前に`[未再現]`を付ける
    - `rationale`: 問題と完了条件を改行で区切った文。Claim由来の指摘では根拠も含める
 2. scriptを実行する。scriptは以前のself-reviewが付けたnoteのうち返信が付いていないものを消し、sessionの内容をbranch modeでは`diff <baselineSha>`、commit modeでは`diff <baselineSha> <headSha>`へ切り替えてから、作成者`self-review`としてnoteを付ける。他のagentやユーザーが付けたnoteは消さない
 
@@ -196,37 +196,69 @@ bash "<skill-dir>/scripts/self_review_hunk.sh" show --metadata "$metadata_path" 
 - 要修正の指摘が1件以上: `CHANGES_REQUIRED`
 - 要修正の指摘が0件: `PASS`。未証明の指摘が何件あっても、Verdictは変えない
 
-冒頭にVerdict、対象範囲、言い直した変更の意図、指摘件数、hunkへの表示結果を記載する。対象範囲はbaseline SHAとhead SHAの先頭7文字で示し、branch modeではbaseのref、PRがあればPR番号、`hasUncommitted`がtrueなら未commit変更を含むことを添える。
-要修正の指摘は、下の形式の項目をすべて埋める。再現には、Verifierが実行したコマンド列と出力を書く。Claim由来の指摘では、`file:line`の連鎖の代わりに根拠として、説明の該当記述の引用を書く。
-未証明の指摘は、要修正の指摘の後に見出しを分けて並べ、再現の代わりに、実行で確かめられなかった理由を書く。連番は要修正の指摘から通して付ける。
+冒頭にVerdict、対象範囲、言い直した変更の意図、指摘件数、hunkへの表示結果、レビュワー名と実行中のmodelの名前を記載する。対象範囲はbaseline SHAとhead SHAの先頭7文字で示し、branch modeではbaseのref、PRがあればPR番号、`hasUncommitted`がtrueなら未commit変更を含むことを添える。レビュワー名は実行中のagentの名前で、Claude Codeでは`Claude`と書く。modelの名前は、system promptにある表記をそのまま書く。
+指摘は、要修正の指摘、未証明の指摘の順に通しの連番を付け、1つの一覧表に並べる。表の「再現」の列は、要修正の指摘を`✓`、未証明の指摘を`–`にする。指摘が0件なら、表の代わりに`なし`と書く。
+表の後に、指摘ごとの詳細を下の形式で連番の順に並べ、項目をすべて埋める。再現には、Verifierが実行したコマンド列と出力を書く。Claim由来の指摘では、`発生経路`の代わりに`根拠`として、説明の該当記述の引用を書く。未証明の指摘では、`再現`の代わりに`再現できなかった理由`として、実行で確かめられなかった理由を書く。
 Claim軸をスキップした場合は、件数の代わりにその旨を記載する。起動した場合は、説明の主張のうち実行して一致した件数と、実行できなかった件数を添える。
 hunkへの表示をスキップした場合はその理由を、hunk外のため表示できなかった指摘があればその件数を、返信が付いているため残した以前のnoteがあればその件数を記載する。
 Verifierが破棄した候補は、`refuted`と`uncertain`の件数だけを記載する。Verifierの検証過程、破棄した候補の内容、内部証拠は出力しない。
 
-```text
+````markdown
 Verdict: CHANGES_REQUIRED
 Range: <baseline-short-sha>..<head-short-sha> (base: <baseRef>, PR #<N>, 未commit変更を含む)
 Intent: <言い直した変更の意図>
-Findings: 要修正 <n>, 未証明 <n>, Claim: 不一致 <n> / 一致 <n> / 未確認 <n> | skipped
+Findings: 再現 <n>, 未再現 <n>, Claim: 不一致 <n> / 一致 <n> / 未確認 <n> | skipped
 Dropped: refuted <n>, uncertain <n>
 Hunk: <applied>件を表示, <omitted>件はhunk外, 以前のnote <kept>件を残した | skipped (<理由>)
+Reviewer: <レビュワー名> (<model>)
 
-## 要修正
+## 指摘事項
 
-1. `path:line` [カテゴリ] 要約
-   - 問題: ...
-   - 発生経路: `file:line` -> `file:line`
-   - 再現: `<コマンド列>` → <出力>
-   - 完了条件: ...
+| #   | 再現 | 種別     | 場所        | 指摘 |
+| --- | :--: | -------- | ----------- | ---- |
+| 1   |  ✓   | カテゴリ | `path:line` | 要約 |
+| 2   |  –   | カテゴリ | `path:line` | 要約 |
 
-## 未証明
+### 指摘1. 要約
 
-2. `path:line` [カテゴリ] 要約
-   - 問題: ...
-   - 発生経路: `file:line` -> `file:line`
-   - 再現できなかった理由: ...
-   - 完了条件: ...
+`path:line`
+
+<問題>
+
+**完了条件**
+
+- ...
+
+**発生経路**
+
+1. `file:line` (説明)
+2. `file:line` (説明)
+
+**再現**
+
+```text
+$ <コマンド列>
+<出力>
 ```
+
+### 指摘2. 要約
+
+`path:line`
+
+<問題>
+
+**完了条件**
+
+- ...
+
+**発生経路**
+
+1. `file:line` (説明)
+
+**再現できなかった理由**
+
+...
+````
 
 ### Phase 6: cleanup
 
