@@ -49,7 +49,7 @@ PRがあっても、レビューやcommentはGitHubへ投稿しない。PRを他
 - SubAgentが起動できない、または結果を返さない場合は中止し、原因を報告する。diffを自分で読んで代替レビューはしない。
 - 出力の前に、snapshotがagentに変更されていないことを確かめる。branchの変更か未commit変更のみが対象なら、元のrepositoryのHEADとworking treeがsnapshot作成時から変わっていないことも確かめる。どちらかが変わっていればレビュー結果を破棄し、再レビューが必要なことだけを報告する。
 - `hunk`があれば、指摘を対象差分の上にnoteとして表示する。このrepositoryのhunk sessionがあればその表示を対象差分へ切り替え、無ければHerdrのpaneでhunkを起動する。以前のself-reviewが付けたnoteだけを消し、他のagentやユーザーが付けたnoteは残す。以前のnoteでも、返信が付いているものは消さずに残す。diffのhunk外を指す指摘はhunkには表示せず、件数だけを報告する。hunk sessionが無く、Herdr外で実行している場合と、hunk sessionが無く指摘も0件の場合は、hunkへの表示をスキップする。
-- Verdictは要修正の指摘が1件以上なら`CHANGES_REQUIRED`、0件なら`PASS`になる。未証明の指摘はVerdictを変えない。hunkへ表示した場合も、すべての指摘をチャットへ出力する。ファイル保存やGitHubへの投稿はしない。
+- Verdictは要修正の指摘が1件以上なら`CHANGES_REQUIRED`、0件なら`PASS`になる。未証明の指摘はVerdictを変えない。指摘は1つの一覧表と指摘ごとの詳細で出力し、再現できたかどうかを表の「再現」の列で示す。冒頭にはレビュワー名とmodelの名前も記載する。hunkへ表示した場合も、すべての指摘をチャットへ出力する。ファイル保存やGitHubへの投稿はしない。
 - 最後にsnapshotのcleanupを試みる。作成時のHEAD、ファイル内容、indexから変化がなく、新しいuntracked fileもない場合だけ、初期入力のコピーをsnapshot内でrestoreしてから`git worktree remove`で削除する。調査中の編集、新しいcommit、削除拒否があればworktreeを残し、パスと理由を報告する。作成失敗時の部分的なworktree、親ディレクトリ、レビュー資料も残す。拒否された削除を別の方法で実行しない。元のrepositoryへreset、restore、stash、checkout、cleanは実行しない。hunkのsessionとnote、hunkを起動したpaneは残す。
 
 ## 依存
